@@ -1,4 +1,24 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { Engine } from '@babylonjs/core';
+import { createScene } from './babylon/main';
+
+const canvas = ref<HTMLCanvasElement | null>(null);
+
+onMounted(() => {
+  if (canvas.value) {
+    const engine = new Engine(canvas.value, true);
+    const scene = createScene(engine, canvas.value);
+
+    engine.runRenderLoop(() => {
+      scene.render();
+    });
+
+    window.addEventListener('resize', () => {
+      engine.resize();
+    });
+  }
+});
 </script>
 
 <template>
@@ -7,6 +27,9 @@
       <h1>hello world</h1>
     </div>
   </header>
+  <main>
+    <canvas ref="canvas"></canvas>
+  </main>
 </template>
 
 <style scoped>
@@ -17,6 +40,12 @@ header {
 .logo {
   display: block;
   margin: 0 auto 2rem;
+}
+
+canvas {
+  width: 100%;
+  height: 500px;
+  border: 1px solid black;
 }
 
 @media (min-width: 1024px) {
