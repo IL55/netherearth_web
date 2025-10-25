@@ -1,5 +1,13 @@
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
+import { loadModels } from './models';
+
+const setEnabledAll = (node: BABYLON.Node, enabled: boolean) => {
+    if (node instanceof BABYLON.AbstractMesh) {
+        node.setEnabled(enabled);
+    }
+    node.getChildren().forEach(child => setEnabledAll(child, enabled));
+}
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -12,26 +20,30 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   light.intensity = 0.7;
 
   const assetsManager = new BABYLON.AssetsManager(scene);
-
-  // H-Nuclear Task
-  const hNuclearTask = assetsManager.addMeshTask("hNuclearTask", "", "/models/", "h-nuclear.glb");
-  let hNuclearRoot: BABYLON.AbstractMesh;
-  hNuclearTask.onSuccess = (task) => {
-    hNuclearRoot = task.loadedMeshes[0];
-    hNuclearRoot.position = new BABYLON.Vector3(-1.55, 0, 0);
-    hNuclearRoot.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
-  };
-
-  // Bullet1 Task
-  const bullet1Task = assetsManager.addMeshTask("bullet1Task", "", "/models/", "bullet1.glb");
-  let bullet1Root: BABYLON.AbstractMesh;
-  bullet1Task.onSuccess = (task) => {
-    bullet1Root = task.loadedMeshes[0];
-    bullet1Root.position = new BABYLON.Vector3(1.01, 0, 0);
-    bullet1Root.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
-  };
-
+  const models = loadModels(assetsManager);
   await assetsManager.loadAsync();
+
+  const hNuclearModel = models.get('h-nuclear');
+  let hNuclearRoot: BABYLON.TransformNode | null = null;
+  if (hNuclearModel) {
+    hNuclearRoot = hNuclearModel.instantiateHierarchy();
+    if (hNuclearRoot) {
+      hNuclearRoot.position = new BABYLON.Vector3(-1.55, 0, 0);
+      hNuclearRoot.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+      setEnabledAll(hNuclearRoot, true);
+    }
+  }
+
+  const bullet1Model = models.get('bullet1');
+  let bullet1Root: BABYLON.TransformNode | null = null;
+  if (bullet1Model) {
+    bullet1Root = bullet1Model.instantiateHierarchy();
+    if (bullet1Root) {
+      bullet1Root.position = new BABYLON.Vector3(1.01, 0, 0);
+      bullet1Root.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+      setEnabledAll(bullet1Root, true);
+    }
+  }
 
   const box = BABYLON.MeshBuilder.CreateBox('box', { size: 2 }, scene);
 
