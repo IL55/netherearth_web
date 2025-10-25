@@ -7,11 +7,11 @@ export interface MapData {
     objects: { type: string; x: number; y: number; [key: string]: any }[];
 }
 
-const setEnabledAll = (node: BABYLON.Node, enabled: boolean) => {
+const setVisibleAll = (node: BABYLON.Node, visible: boolean) => {
     if (node instanceof BABYLON.AbstractMesh) {
-        node.setEnabled(enabled);
+        node.isVisible = visible;
     }
-    node.getChildren().forEach(child => setEnabledAll(child, enabled));
+    node.getChildren().forEach(child => setVisibleAll(child, visible));
 }
 
 export const loadMap = async (url: string): Promise<MapData> => {
@@ -57,7 +57,7 @@ export const loadMap = async (url: string): Promise<MapData> => {
     return { width, height, tiles, objects };
 };
 
-export const createMap = (mapData: MapData, models: Map<string, BABYLON.AbstractMesh>, scene: BABYLON.Scene) => {
+export const createMap = (mapData: MapData, models: Map<string, BABYLON.AbstractMesh>, scene: BABYLON.Scene, mapBegin: BABYLON.Vector3) => {
     const tileMapping: { [key: string]: string } = {
         'G': 'grass',
         'S': 'sand',
@@ -80,9 +80,15 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
                 if (model) {
                     const instance = model.instantiateHierarchy();
                     if (instance) {
-                        instance.position = new BABYLON.Vector3(x, 0, y);
-                        instance.rotation.y = Math.PI / 2;
-                        setEnabledAll(instance, true);
+                        instance.position = new BABYLON.Vector3(mapBegin.x + x, 0, mapBegin.z + y);
+                        if (modelName === 'grass') {
+                            // Apply the pivot correction discovered during debugging
+                            instance.position.x -= 1.5;
+                            instance.position.y += 1;
+                            instance.position.z += 4.5;
+                        }
+                        instance.rotation.x = Math.PI / 2;
+                        setVisibleAll(instance, true);
                     }
                 }
             }
@@ -108,15 +114,17 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
         if (model) {
             const instance = model.instantiateHierarchy();
             if (instance) {
-                instance.position = new BABYLON.Vector3(obj.x, 0, obj.y);
-                instance.rotation.y = Math.PI / 2;
-                setEnabledAll(instance, true);
+                const isoX = (obj.x - obj.y) / 2;
+                const isoZ = (obj.x + obj.y) / 4;
+                instance.position = new BABYLON.Vector3(mapBegin.x + isoX, 0, mapBegin.z + isoZ);
+                // instance.rotation.y = Math.PI / 2;
+                setVisibleAll(instance, true);
             }
         }
     });
 };
 
-export const debugLoadMap = (mapData: MapData, scene: BABYLON.Scene) => {
+export const debugLoadMap = (mapData: MapData, scene: BABYLON.Scene, mapBegin: BABYLON.Vector3) => {
     const createTextTexture = (text: string, size: number) => {
         const texture = new BABYLON.DynamicTexture("DynamicTexture", size, scene, true);
         texture.hasAlpha = true;
@@ -128,7 +136,7 @@ export const debugLoadMap = (mapData: MapData, scene: BABYLON.Scene) => {
         for (let x = 0; x < mapData.width; x++) {
             const tile = mapData.tiles[y][x];
             const plane = BABYLON.MeshBuilder.CreatePlane(`plane_${x}_${y}`, { size: 1 }, scene);
-            plane.position = new BABYLON.Vector3(x, 0, y);
+            plane.position = new BABYLON.Vector3(mapBegin.x + x, 0, mapBegin.z + y);
             plane.rotation.x = Math.PI / 2;
             plane.rotation.y = Math.PI / 2;
 
@@ -140,7 +148,7 @@ export const debugLoadMap = (mapData: MapData, scene: BABYLON.Scene) => {
 
     mapData.objects.forEach((obj, index) => {
         const box = BABYLON.MeshBuilder.CreateBox(`box_${index}`, { size: 0.5 }, scene);
-        box.position = new BABYLON.Vector3(obj.x, 0.25, obj.y);
+        box.position = new BABYLON.Vector3(mapBegin.x + obj.x, 0.25, mapBegin.z + obj.y);
         box.rotation.y = Math.PI / 2;
 
         const material = new BABYLON.StandardMaterial(`mat_box_${index}`, scene);
@@ -154,4 +162,19 @@ export const debugLoadMap = (mapData: MapData, scene: BABYLON.Scene) => {
         material.diffuseTexture = createTextTexture(text, 512);
         box.material = material;
     });
+};
+
+
+export const debugPlaceGrass = (models: Map<string, BABYLON.AbstractMesh>, scene: BABYLON.Scene, mapBegin: BABYLON.Vector3) => {
+    const model = models.get('grass');
+    if (model) {
+        const instance = model.instantiateHierarchy();
+        if (instance) {
+            // The grass model has an internal pivot point offset.
+            // The user found the precise offset needed to align it with the debug map's origin.
+            instance.position = new BABYLON.Vector3(mapBegin.x - 1.5, 1, mapBegin.z + 4.5);
+            instance.rotation.x = Math.PI / 2;
+            setVisibleAll(instance, true);
+        }
+    }
 };

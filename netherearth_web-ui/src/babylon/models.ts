@@ -22,8 +22,9 @@ export const loadModels = (assetsManager: BABYLON.AssetsManager): Map<string, BA
         task.onSuccess = (task) => {
             const modelNameWithoutExtension = modelName.split('.')[0];
             const rootMesh = task.loadedMeshes[0];
+            rootMesh.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
             models.set(modelNameWithoutExtension, rootMesh as BABYLON.AbstractMesh);
-            task.loadedMeshes.forEach(l => l.setEnabled(false));
+            task.loadedMeshes.forEach(l => l.isVisible = false);
         };
     });
 

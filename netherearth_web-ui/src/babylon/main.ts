@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { loadModels } from './models';
-import { loadMap, debugLoadMap } from './map';
+import { loadMap, debugLoadMap, createMap, debugPlaceGrass } from './map';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -10,16 +10,19 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   light.intensity = 0.7;
 
   const assetsManager = new BABYLON.AssetsManager(scene);
-  loadModels(assetsManager);
+  const models = loadModels(assetsManager);
   await assetsManager.loadAsync();
 
   const mapData = await loadMap('/maps/small2.map');
-  debugLoadMap(mapData, scene);
+  const mapBegin = new BABYLON.Vector3(0, 0, 0);
+  debugLoadMap(mapData, scene, mapBegin);
+  createMap(mapData, models, scene, mapBegin);
+  // debugPlaceGrass(models, scene, mapBegin);
 
-  const mapCenter = new BABYLON.Vector3(mapData.width / 2, 0, mapData.height / 2);
+  const mapCenter = new BABYLON.Vector3(mapBegin.x + mapData.width / 2, 10, mapBegin.z + mapData.height / 2);
 
   // ArcRotateCamera, rotated and looking at map center
-  const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI, Math.PI / 4, 40, mapCenter, scene);
+  const camera = new BABYLON.ArcRotateCamera("camera", 0, - Math.PI, 40, mapCenter, scene);
   camera.attachControl(canvas, true);
 
   // Keyboard controls for camera movement
