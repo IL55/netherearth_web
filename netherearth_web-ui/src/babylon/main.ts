@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { loadModels } from './models';
-import { loadMap, createMap } from './map';
+import { loadMap, debugLoadMap } from './map';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -14,11 +14,11 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   light.intensity = 0.7;
 
   const assetsManager = new BABYLON.AssetsManager(scene);
-  const models = loadModels(assetsManager);
+  loadModels(assetsManager);
   await assetsManager.loadAsync();
 
   const mapData = await loadMap('/maps/small1.map');
-  createMap(mapData, models, scene);
+  debugLoadMap(mapData, scene);
 
   return scene;
 };
