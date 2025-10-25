@@ -5,10 +5,10 @@ import { createScene } from './babylon/main';
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 
-onMounted(() => {
+onMounted(async () => {
   if (canvas.value) {
     const engine = new Engine(canvas.value, true);
-    const scene = createScene(engine, canvas.value);
+    const scene = await createScene(engine, canvas.value);
 
     engine.runRenderLoop(() => {
       scene.render();
