@@ -26,4 +26,19 @@ for file in "$ORIGINAL_MODEL_DIR"/*.ase; do
   fi
 done
 
+# Loop through all .asc files in the directory
+for file in "$ORIGINAL_MODEL_DIR"/*.asc; do
+  # Check if the file exists to avoid errors with no matches
+  if [ -f "$file" ]; then
+    # Get the filename without the extension
+    filename=$(basename -- "$file")
+    extension="${filename##*.}"
+    filename="${filename%.*}"
+    
+    # Run the python script
+    echo "Converting $file to $filename.glb..."
+    python3 "$SCRIPT_DIR/asc_to_glb.py" "$file" "$OUTPUT_DIR/$filename.glb"
+  fi
+done
+
 echo "Conversion complete."
