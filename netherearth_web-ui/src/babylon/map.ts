@@ -81,6 +81,7 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
                     const instance = model.instantiateHierarchy();
                     if (instance) {
                         instance.position = new BABYLON.Vector3(x, 0, y);
+                        instance.rotation.y = Math.PI / 2;
                         setEnabledAll(instance, true);
                     }
                 }
@@ -108,6 +109,7 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
             const instance = model.instantiateHierarchy();
             if (instance) {
                 instance.position = new BABYLON.Vector3(obj.x, 0, obj.y);
+                instance.rotation.y = Math.PI / 2;
                 setEnabledAll(instance, true);
             }
         }
@@ -128,6 +130,7 @@ export const debugLoadMap = (mapData: MapData, scene: BABYLON.Scene) => {
             const plane = BABYLON.MeshBuilder.CreatePlane(`plane_${x}_${y}`, { size: 1 }, scene);
             plane.position = new BABYLON.Vector3(x, 0, y);
             plane.rotation.x = Math.PI / 2;
+            plane.rotation.y = Math.PI / 2;
 
             const material = new BABYLON.StandardMaterial(`mat_${x}_${y}`, scene);
             material.diffuseTexture = createTextTexture(tile, 256);
@@ -138,6 +141,7 @@ export const debugLoadMap = (mapData: MapData, scene: BABYLON.Scene) => {
     mapData.objects.forEach((obj, index) => {
         const box = BABYLON.MeshBuilder.CreateBox(`box_${index}`, { size: 0.5 }, scene);
         box.position = new BABYLON.Vector3(obj.x, 0.25, obj.y);
+        box.rotation.y = Math.PI / 2;
 
         const material = new BABYLON.StandardMaterial(`mat_box_${index}`, scene);
         let text = obj.type;
