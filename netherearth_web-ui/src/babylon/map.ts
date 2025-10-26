@@ -81,12 +81,9 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
                     const instance = model.instantiateHierarchy();
                     if (instance) {
                         instance.position = new BABYLON.Vector3(mapBegin.x + x, 0, mapBegin.z + y);
-                        if (modelName === 'grass') {
-                            // Apply the pivot correction discovered during debugging
-                            instance.position.x -= 1.5;
-                            instance.position.y += 1;
-                            instance.position.z += 4.5;
-                        }
+                        instance.position.x -= 1.5;
+                        instance.position.y += 1;
+                        instance.position.z += 4.5;
                         instance.rotation.x = Math.PI / 2;
                         setVisibleAll(instance, true);
                     }
@@ -114,10 +111,10 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
         if (model) {
             const instance = model.instantiateHierarchy();
             if (instance) {
-                const isoX = (obj.x - obj.y) / 2;
-                const isoZ = (obj.x + obj.y) / 4;
-                instance.position = new BABYLON.Vector3(mapBegin.x + isoX, 0, mapBegin.z + isoZ);
-                // instance.rotation.y = Math.PI / 2;
+                instance.position = new BABYLON.Vector3(mapBegin.x + obj.x, 0, mapBegin.z + obj.y);
+                instance.position.x += 4.5;
+                instance.position.y += 1;
+                instance.position.z += 6.5;
                 setVisibleAll(instance, true);
             }
         }

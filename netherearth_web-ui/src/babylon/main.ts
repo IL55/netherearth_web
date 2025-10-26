@@ -13,7 +13,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const models = loadModels(assetsManager);
   await assetsManager.loadAsync();
 
-  const mapData = await loadMap('/maps/small2.map');
+  const mapData = await loadMap('/maps/small3.map');
   const mapBegin = new BABYLON.Vector3(0, 0, 0);
   debugLoadMap(mapData, scene, mapBegin);
   createMap(mapData, models, scene, mapBegin);
