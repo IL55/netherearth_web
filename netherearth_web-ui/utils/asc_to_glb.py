@@ -90,6 +90,15 @@ def parse_simple_asc(filepath):
         return None, None
 
     print(f"Parsed {len(vertices)} vertices and {len(faces)} faces.")
+    
+    # --- Center the model at the origin ---
+    if len(vertices) > 0:
+        vertices_np = np.array(vertices, dtype=np.float32)
+        center = vertices_np.mean(axis=0)
+        vertices_np -= center
+        print(f"Model centered. Original center was {center}")
+        return vertices_np, np.array(faces, dtype=np.uint32)
+
     return np.array(vertices, dtype=np.float32), np.array(faces, dtype=np.uint32)
 
 

@@ -81,10 +81,7 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
                     const instance = model.instantiateHierarchy();
                     if (instance) {
                         instance.position = new BABYLON.Vector3(mapBegin.x + x, 0, mapBegin.z + y);
-                        instance.position.x -= 1.5;
                         instance.position.y += 1;
-                        instance.position.z += 4.5;
-                        instance.rotation.x = Math.PI / 2;
                         setVisibleAll(instance, true);
                     }
                 }
@@ -112,9 +109,7 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
             const instance = model.instantiateHierarchy();
             if (instance) {
                 instance.position = new BABYLON.Vector3(mapBegin.x + obj.x, 0, mapBegin.z + obj.y);
-                instance.position.x += 4.5;
                 instance.position.y += 1;
-                instance.position.z += 6.5;
                 setVisibleAll(instance, true);
             }
         }
@@ -169,7 +164,7 @@ export const debugPlaceGrass = (models: Map<string, BABYLON.AbstractMesh>, scene
         if (instance) {
             // The grass model has an internal pivot point offset.
             // The user found the precise offset needed to align it with the debug map's origin.
-            instance.position = new BABYLON.Vector3(mapBegin.x - 1.5, 1, mapBegin.z + 4.5);
+            instance.position = new BABYLON.Vector3(mapBegin.x, 1, mapBegin.z);
             instance.rotation.x = Math.PI / 2;
             setVisibleAll(instance, true);
         }
