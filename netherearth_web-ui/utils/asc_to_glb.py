@@ -94,9 +94,18 @@ def parse_simple_asc(filepath):
     # --- Center the model at the origin ---
     if len(vertices) > 0:
         vertices_np = np.array(vertices, dtype=np.float32)
-        center = vertices_np.mean(axis=0)
-        vertices_np -= center
-        print(f"Model centered. Original center was {center}")
+        
+        # Center X and Z axes
+        center_x = vertices_np[:, 0].mean()
+        center_z = vertices_np[:, 2].mean()
+        vertices_np[:, 0] -= center_x
+        vertices_np[:, 2] -= center_z
+        
+        # Set bottom of the model to y=0
+        min_y = vertices_np[:, 1].min()
+        vertices_np[:, 1] -= min_y
+        
+        print(f"Model centered on XZ and grounded on Y. Original XZ center was ({center_x}, {center_z}), min Y was {min_y}")
         return vertices_np, np.array(faces, dtype=np.uint32)
 
     return np.array(vertices, dtype=np.float32), np.array(faces, dtype=np.uint32)

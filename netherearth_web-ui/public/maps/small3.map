@@ -8,3 +8,8 @@ S2 G G S2
 G G G G
 
 fence 0.0 0.0
+wall1 2.0 2.0
+wall2 3.0 2.0
+wall3 2.0 4.0
+wall4 1.0 4.0
+wall6 0.0 4.0
