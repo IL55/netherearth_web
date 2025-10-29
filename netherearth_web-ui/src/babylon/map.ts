@@ -90,27 +90,63 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
     }
 
     mapData.objects.forEach(obj => {
-        let modelName = obj.type;
         if (obj.type === 'factory') {
-            // For now, just use the factory model, subtype can be used later
-            modelName = 'factory';
-        } else if (obj.type.startsWith('wall')) {
-            // e.g. wall1 -> lowwall1, wall2 -> lowwall2
-            // This is a guess, might need adjustment based on original game assets
-            if (obj.type === 'wall1') modelName = 'lowwall1';
-            if (obj.type === 'wall2') modelName = 'lowwall2';
-            if (obj.type === 'wall3') modelName = 'lowwall3';
-            if (obj.type === 'wall4') modelName = 'highwall1';
-            if (obj.type === 'wall6') modelName = 'highwall2';
-        }
+            // Replicate factory structure from original game (maps.cpp)
+            const factoryParts = [
+                { model: 'highwall1', xo: 0, yo: 0 },
+                { model: 'highwall1', xo: 0, yo: 1 },
+                { model: 'highwall1', xo: 0, yo: 2 },
+                { model: 'lowwall2', xo: 1, yo: 0 },
+                { model: 'lowwall2', xo: 1, yo: 2 },
+            ];
 
-        const model = models.get(modelName);
-        if (model) {
-            const instance = model.instantiateHierarchy();
-            if (instance) {
-                instance.position = new BABYLON.Vector3(mapBegin.x + obj.x, 0, mapBegin.z + obj.y);
-                instance.position.y += 1;
-                setVisibleAll(instance, true);
+            factoryParts.forEach(part => {
+                const model = models.get(part.model);
+                if (model) {
+                    const instance = model.instantiateHierarchy();
+                    if (instance) {
+                        instance.position = new BABYLON.Vector3(mapBegin.x + obj.x + part.xo, 0, mapBegin.z + obj.y + part.yo);
+                        instance.position.y += 1;
+                        setVisibleAll(instance, true);
+                    }
+                }
+            });
+
+            // Central factory piece
+            if (obj.subtype) {
+                const modelName = `e-${obj.subtype}`;
+                const model = models.get(modelName);
+                if (model) {
+                    const instance = model.instantiateHierarchy();
+                    if (instance) {
+                        // The model is now fixed and centered correctly.
+                        // The original game logic places the electronics piece at the same x/z as the
+                        // central wall, with a height offset.
+                        instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 4.5, 2, mapBegin.z + obj.y + 2.5);
+                        setVisibleAll(instance, true);
+                    }
+                }
+            }
+        } else {
+            let modelName = obj.type;
+            if (obj.type.startsWith('wall')) {
+                // e.g. wall1 -> lowwall1, wall2 -> lowwall2
+                // This is a guess, might need adjustment based on original game assets
+                if (obj.type === 'wall1') modelName = 'lowwall1';
+                if (obj.type === 'wall2') modelName = 'lowwall2';
+                if (obj.type === 'wall3') modelName = 'lowwall3';
+                if (obj.type === 'wall4') modelName = 'highwall1';
+                if (obj.type === 'wall6') modelName = 'highwall2';
+            }
+    
+            const model = models.get(modelName);
+            if (model) {
+                const instance = model.instantiateHierarchy();
+                if (instance) {
+                    instance.position = new BABYLON.Vector3(mapBegin.x + obj.x, 0, mapBegin.z + obj.y);
+                    instance.position.y += 1;
+                    setVisibleAll(instance, true);
+                }
             }
         }
     });
