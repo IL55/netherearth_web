@@ -114,15 +114,29 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
 
             // Central factory piece
             if (obj.subtype) {
-                const modelName = `e-${obj.subtype}`;
+                let modelName = `e-${obj.subtype}`;
+                if (obj.subtype === 'chassis') {
+                    modelName = 'e-tracks';
+                } else if (obj.subtype === 'cannons') {
+                    modelName = 'e-cannon';
+                }
                 const model = models.get(modelName);
                 if (model) {
                     const instance = model.instantiateHierarchy();
                     if (instance) {
-                        // The model is now fixed and centered correctly.
-                        // The original game logic places the electronics piece at the same x/z as the
-                        // central wall, with a height offset.
-                        instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 4.5, 2, mapBegin.z + obj.y + 2.5);
+                        if (obj.subtype === 'electronics') {
+                            instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 4.5, 2.1, mapBegin.z + obj.y + 2.5);
+                        } else if (obj.subtype === 'missiles') {
+                            instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 1.5, 2.1, mapBegin.z + obj.y + 4.0);
+                        } else if (obj.subtype === 'phasers') {
+                            instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 1.7, 2.0, mapBegin.z + obj.y + 3.7);
+                        } else if (obj.subtype === 'nuclear') {
+                            instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 2.6, 2.1, mapBegin.z + obj.y + 1.5);
+                        } else if (obj.subtype === 'chassis') {
+                            instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 6.3, 2.1, mapBegin.z + obj.y + 4.4);
+                        } else if (obj.subtype === 'cannons') {
+                            instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 2.4, 2.1, mapBegin.z + obj.y + 5.9);
+                        }
                         setVisibleAll(instance, true);
                     }
                 }
