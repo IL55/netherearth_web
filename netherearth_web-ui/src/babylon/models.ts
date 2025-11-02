@@ -22,7 +22,7 @@ export const loadModels = (assetsManager: BABYLON.AssetsManager): Map<string, BA
         task.onSuccess = (task) => {
             const modelNameWithoutExtension = modelName.split('.')[0];
             const rootMesh = task.loadedMeshes[0];
-            if (modelName === "e-phasers.glb") {
+            if (modelName.startsWith("e-") || modelName.startsWith("h-")) {
                 rootMesh.position = new BABYLON.Vector3(0, 0, 0);
                 rootMesh.rotation = new BABYLON.Vector3(0, 0, 0);
                 rootMesh.computeWorldMatrix(true);

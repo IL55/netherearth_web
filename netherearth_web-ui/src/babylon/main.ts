@@ -13,7 +13,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const models = loadModels(assetsManager);
   await assetsManager.loadAsync();
 
-  const mapData = await loadMap('/maps/factory_test.map');
+  const mapData = await loadMap('/maps/small1.map');
   const mapBegin = new BABYLON.Vector3(0, 0, 0);
   debugLoadMap(mapData, scene, mapBegin);
   createMap(mapData, models, scene, mapBegin);
@@ -22,7 +22,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const mapCenter = new BABYLON.Vector3(mapBegin.x + mapData.width / 4, 2, mapBegin.z + mapData.height / 4);
 
   // ArcRotateCamera, rotated and looking at map center
-  const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 6, Math.PI / 6, 8, mapCenter, scene);
+  const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI /100, Math.PI / 2.5, 8, mapCenter, scene);
   camera.attachControl(canvas, true);
 
   // Keyboard controls for camera movement
