@@ -22,6 +22,15 @@ export const loadModels = (assetsManager: BABYLON.AssetsManager): Map<string, BA
         task.onSuccess = (task) => {
             const modelNameWithoutExtension = modelName.split('.')[0];
             const rootMesh = task.loadedMeshes[0];
+            if (modelName === "e-phasers.glb") {
+                rootMesh.position = new BABYLON.Vector3(0, 0, 0);
+                rootMesh.rotation = new BABYLON.Vector3(0, 0, 0);
+                rootMesh.computeWorldMatrix(true);
+                const center = rootMesh.getBoundingInfo().boundingSphere.center;
+                console.log(`Center of ${modelNameWithoutExtension}:`, center);
+                //const translationMatrix = BABYLON.Matrix.Translation(-center.x, -center.y, -center.z);
+                //rootMesh._worldMatrix = translationMatrix;
+            }
             rootMesh.scaling = new BABYLON.Vector3(0.01, 0.01, 0.01);
             models.set(modelNameWithoutExtension, rootMesh as BABYLON.AbstractMesh);
             task.loadedMeshes.forEach(l => l.isVisible = false);

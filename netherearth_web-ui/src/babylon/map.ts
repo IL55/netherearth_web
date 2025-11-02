@@ -129,7 +129,7 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
                         } else if (obj.subtype === 'missiles') {
                             instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 1.5, 2.1, mapBegin.z + obj.y + 4.0);
                         } else if (obj.subtype === 'phasers') {
-                            instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 1.7, 2.0, mapBegin.z + obj.y + 3.7);
+                            instance.position = new BABYLON.Vector3(mapBegin.x + obj.x + 1.7, 2.0, mapBegin.z + obj.y - 1.7);
                         } else if (obj.subtype === 'nuclear') {
                             instance.position = new BABYLON.Vector3(mapBegin.x + obj.x - 2.6, 2.1, mapBegin.z + obj.y + 1.5);
                         } else if (obj.subtype === 'chassis') {
