@@ -141,16 +141,35 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
                     }
                 }
             }
+        } else if (obj.type === 'warbase') {
+            const warbaseParts = [
+                { model: 'highwall1', xo: 0.5, yo: 0 }, { model: 'highwall2', xo: 1.5, yo: 0 },
+                { model: 'highwall1', xo: 0, yo: 1 }, { model: 'lowwall1', xo: 1, yo: 1 }, { model: 'lowwall1', xo: 2, yo: 1 }, { model: 'lowwall2', xo: 3, yo: 1 },
+                { model: 'highwall1', xo: 0.5, yo: 2 }, { model: 'warbase', xo: 1.5, yo: 2 }, { model: 'lowwall2', xo: 2.5, yo: 2 },
+                { model: 'highwall1', xo: 0, yo: 3 }, { model: 'lowwall1', xo: 1, yo: 3 }, { model: 'lowwall1', xo: 2, yo: 3 }, { model: 'lowwall2', xo: 3, yo: 3 },
+                { model: 'highwall1', xo: 0.5, yo: 4 }, { model: 'highwall2', xo: 1.5, yo: 4 }
+            ];
+
+            warbaseParts.forEach(part => {
+                const model = models.get(part.model);
+                if (model) {
+                    const instance = model.instantiateHierarchy();
+                    if (instance) {
+                        instance.position = new BABYLON.Vector3(mapBegin.x + obj.x + part.xo, 0, mapBegin.z + obj.y + part.yo);
+                        instance.position.y += 1;
+                        setVisibleAll(instance, true);
+                    }
+                }
+            });
         } else {
             let modelName = obj.type;
             if (obj.type.startsWith('wall')) {
-                // e.g. wall1 -> lowwall1, wall2 -> lowwall2
-                // This is a guess, might need adjustment based on original game assets
                 if (obj.type === 'wall1') modelName = 'lowwall1';
-                if (obj.type === 'wall2') modelName = 'lowwall2';
-                if (obj.type === 'wall3') modelName = 'lowwall3';
-                if (obj.type === 'wall4') modelName = 'highwall1';
-                if (obj.type === 'wall6') modelName = 'highwall2';
+                else if (obj.type === 'wall2') modelName = 'lowwall2';
+                else if (obj.type === 'wall3') modelName = 'lowwall3';
+                else if (obj.type === 'wall4') modelName = 'highwall1';
+                else if (obj.type === 'wall5') modelName = 'highwall2';
+                else if (obj.type === 'wall6') modelName = 'highwall2';
             }
     
             const model = models.get(modelName);

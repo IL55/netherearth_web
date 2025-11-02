@@ -22,7 +22,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const mapCenter = new BABYLON.Vector3(mapBegin.x + mapData.width / 4, 2, mapBegin.z + mapData.height / 4);
 
   // ArcRotateCamera, rotated and looking at map center
-  const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI /100, Math.PI / 2.5, 8, mapCenter, scene);
+  const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI /3, Math.PI / 4, 8, mapCenter, scene);
   camera.attachControl(canvas, true);
 
   // Keyboard controls for camera movement
