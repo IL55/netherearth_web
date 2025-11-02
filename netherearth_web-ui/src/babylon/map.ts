@@ -157,10 +157,43 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
                     if (instance) {
                         instance.position = new BABYLON.Vector3(mapBegin.x + obj.x + part.xo, 0, mapBegin.z + obj.y + part.yo);
                         instance.position.y += 1;
+
+                        if (part.model === 'warbase' && obj.owner) {
+                            const material = new BABYLON.StandardMaterial("warbaseMat_" + obj.owner, scene);
+                            let textureName;
+                            if (obj.owner === 1) {
+                                textureName = 'warbasew1.bmp'; // white for owner 1
+                            } else if (obj.owner === 2) {
+                                textureName = 'warbaser1.bmp'; // Red for owner 2
+                            }
+
+                            if (textureName) {
+                                material.diffuseTexture = new BABYLON.Texture(`/models/textures/${textureName}`, scene);
+                                instance.getChildMeshes().forEach(m => m.material = material);
+                            }
+                        }
+                        
                         setVisibleAll(instance, true);
                     }
                 }
             });
+
+            if (obj.owner) {
+                const flagModel = models.get('flag');
+                if (flagModel) {
+                    const flagInstance = flagModel.instantiateHierarchy();
+                    if (flagInstance) {
+                        let yOffset = 0;
+                        if (obj.owner === 1) {
+                            yOffset = -0;
+                        } else if (obj.owner === 2) {
+                            yOffset = 4.1;
+                        }
+                        flagInstance.position = new BABYLON.Vector3(mapBegin.x + obj.x + 1.5, 2, mapBegin.z + obj.y + yOffset);
+                        setVisibleAll(flagInstance, true);
+                    }
+                }
+            }
         } else {
             let modelName = obj.type;
             if (obj.type.startsWith('wall')) {
