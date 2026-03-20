@@ -265,37 +265,74 @@ export const debugLoadMap = (mapData: MapData, scene: BABYLON.Scene, mapBegin: B
 };
 
 
-export const robotModels = ['h-tracks', 'h-antigrav', 'h-bipod', 'e-tracks', 'e-antigrav', 'e-bipod'];
+// Places one model part at groundY, centers it on XZ, returns the top Y for the next part.
+// stackGap is subtracted from the returned topY to account for bounding box padding above visible geometry.
+const placePart = (model: BABYLON.AbstractMesh, tx: number, groundY: number, tz: number, rotation: number, stackGap = 0): number => {
+    const instance = model.instantiateHierarchy();
+    if (!instance) return groundY;
 
-export const placeRobot = (models: Map<string, BABYLON.AbstractMesh>, scene: BABYLON.Scene, mapBegin: BABYLON.Vector3, x: number, y: number, modelName?: string) => {
-    const name = modelName ?? robotModels[x % robotModels.length];
-    const model = models.get(name);
-    if (model) {
-        const instance = model.instantiateHierarchy();
-        if (instance) {
-            instance.position = new BABYLON.Vector3(mapBegin.x + x, 1, mapBegin.z + y);
-            setVisibleAll(instance, true);
+    instance.position.set(tx, groundY, tz);
+    instance.rotation.set(0, rotation, 0);
+    setVisibleAll(instance, true);
+    instance.computeWorldMatrix(true);
 
-            // Auto-center on tile: compute world bounding box and offset by its XZ center
-            instance.computeWorldMatrix(true);
-            const childMeshes = instance.getChildMeshes(false);
-            if (childMeshes.length > 0) {
-                let minX = Infinity, maxX = -Infinity, minY = Infinity, minZ = Infinity, maxZ = -Infinity;
-                childMeshes.forEach(mesh => {
-                    mesh.computeWorldMatrix(true);
-                    const info = mesh.getBoundingInfo();
-                    minX = Math.min(minX, info.boundingBox.minimumWorld.x);
-                    maxX = Math.max(maxX, info.boundingBox.maximumWorld.x);
-                    minY = Math.min(minY, info.boundingBox.minimumWorld.y);
-                    minZ = Math.min(minZ, info.boundingBox.minimumWorld.z);
-                    maxZ = Math.max(maxZ, info.boundingBox.maximumWorld.z);
-                });
-                instance.position.x += (mapBegin.x + x) - (minX + maxX) / 2;
-                instance.position.y += 1 - minY; // align bottom of model to ground
-                instance.position.z += (mapBegin.z + y) - (minZ + maxZ) / 2;
-            }
-        }
+    const childMeshes = instance.getChildMeshes(false);
+    if (childMeshes.length === 0) return groundY;
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    childMeshes.forEach(mesh => {
+        mesh.computeWorldMatrix(true);
+        const bb = mesh.getBoundingInfo().boundingBox;
+        minX = Math.min(minX, bb.minimumWorld.x);
+        maxX = Math.max(maxX, bb.maximumWorld.x);
+        minY = Math.min(minY, bb.minimumWorld.y);
+        maxY = Math.max(maxY, bb.maximumWorld.y);
+        minZ = Math.min(minZ, bb.minimumWorld.z);
+        maxZ = Math.max(maxZ, bb.maximumWorld.z);
+    });
+
+    instance.position.x += tx - (minX + maxX) / 2;
+    instance.position.y += groundY - minY;
+    instance.position.z += tz - (minZ + maxZ) / 2;
+
+    return groundY + (maxY - minY) - stackGap;
+};
+
+export interface RobotConfig {
+    chassis: string;
+    weapon: string;
+    nuclear?: boolean;
+    electronics: string;
+}
+
+export const robotConfigs: RobotConfig[] = [
+    { chassis: 'h-tracks',   weapon: 'h-cannon',   electronics: 'h-electronics' },
+    { chassis: 'h-antigrav', weapon: 'h-missiles',  electronics: 'h-electronics' },
+    { chassis: 'h-bipod',    weapon: 'h-phasers',   nuclear: true, electronics: 'h-electronics' },
+    { chassis: 'e-tracks',   weapon: 'e-cannon',    electronics: 'e-electronics' },
+    { chassis: 'e-antigrav', weapon: 'e-missiles',  nuclear: true, electronics: 'e-electronics' },
+    { chassis: 'e-bipod',    weapon: 'e-phasers',   electronics: 'e-electronics' },
+];
+
+export const placeRobot = (models: Map<string, BABYLON.AbstractMesh>, mapBegin: BABYLON.Vector3, x: number, y: number, config: RobotConfig, rotation = 0, stackGap = 0.15) => {
+    const tx = mapBegin.x + x;
+    const tz = mapBegin.z + y;
+
+    const chassis = models.get(config.chassis);
+    if (!chassis) return;
+    let topY = placePart(chassis, tx, 1, tz, rotation);
+
+    const weapon = models.get(config.weapon);
+    if (weapon) topY = placePart(weapon, tx, topY, tz, rotation);
+
+    if (config.nuclear) {
+        const nuclearModel = models.get(config.chassis.startsWith('e') ? 'e-nuclear' : 'h-nuclear');
+        if (nuclearModel) topY = placePart(nuclearModel, tx, topY, tz, rotation);
     }
+
+    // stackGap only applied before electronics to close the bounding-box padding gap
+    const elec = models.get(config.electronics);
+    if (elec) placePart(elec, tx, topY - stackGap, tz, rotation);
 };
 
 export const debugPlaceGrass = (models: Map<string, BABYLON.AbstractMesh>, scene: BABYLON.Scene, mapBegin: BABYLON.Vector3) => {
