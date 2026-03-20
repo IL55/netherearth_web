@@ -162,14 +162,20 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
                             const material = new BABYLON.StandardMaterial("warbaseMat_" + obj.owner, scene);
                             let textureName;
                             if (obj.owner === 1) {
-                                textureName = 'warbasew1.bmp'; // white for owner 1
-                            } else if (obj.owner === 2) {
-                                textureName = 'warbaser1.bmp'; // Red for owner 2
+                                textureName = 'warbaser1.bmp'; // white for owner 1
                             }
 
                             if (textureName) {
-                                material.diffuseTexture = new BABYLON.Texture(`/models/textures/${textureName}`, scene);
-                                instance.getChildMeshes().forEach(m => m.material = material);
+                                const decalMaterial = new BABYLON.StandardMaterial("decalMat_" + obj.owner, scene);
+                                decalMaterial.diffuseTexture = new BABYLON.Texture(`/models/textures/${textureName}`, scene);
+                                decalMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+                                decalMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+                                decalMaterial.zOffset = -2;
+
+                                const decal = BABYLON.MeshBuilder.CreatePlane("decal", { size: 0.8 }, scene);
+                                decal.material = decalMaterial;
+                                decal.position = new BABYLON.Vector3(mapBegin.x + obj.x + part.xo, 2, mapBegin.z + obj.y + part.yo);
+                                decal.rotation.x = Math.PI / 2;
                             }
                         }
                         
@@ -258,6 +264,39 @@ export const debugLoadMap = (mapData: MapData, scene: BABYLON.Scene, mapBegin: B
     });
 };
 
+
+export const robotModels = ['h-tracks', 'h-antigrav', 'h-bipod', 'e-tracks', 'e-antigrav', 'e-bipod'];
+
+export const placeRobot = (models: Map<string, BABYLON.AbstractMesh>, scene: BABYLON.Scene, mapBegin: BABYLON.Vector3, x: number, y: number, modelName?: string) => {
+    const name = modelName ?? robotModels[x % robotModels.length];
+    const model = models.get(name);
+    if (model) {
+        const instance = model.instantiateHierarchy();
+        if (instance) {
+            instance.position = new BABYLON.Vector3(mapBegin.x + x, 1, mapBegin.z + y);
+            setVisibleAll(instance, true);
+
+            // Auto-center on tile: compute world bounding box and offset by its XZ center
+            instance.computeWorldMatrix(true);
+            const childMeshes = instance.getChildMeshes(false);
+            if (childMeshes.length > 0) {
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, minZ = Infinity, maxZ = -Infinity;
+                childMeshes.forEach(mesh => {
+                    mesh.computeWorldMatrix(true);
+                    const info = mesh.getBoundingInfo();
+                    minX = Math.min(minX, info.boundingBox.minimumWorld.x);
+                    maxX = Math.max(maxX, info.boundingBox.maximumWorld.x);
+                    minY = Math.min(minY, info.boundingBox.minimumWorld.y);
+                    minZ = Math.min(minZ, info.boundingBox.minimumWorld.z);
+                    maxZ = Math.max(maxZ, info.boundingBox.maximumWorld.z);
+                });
+                instance.position.x += (mapBegin.x + x) - (minX + maxX) / 2;
+                instance.position.y += 1 - minY; // align bottom of model to ground
+                instance.position.z += (mapBegin.z + y) - (minZ + maxZ) / 2;
+            }
+        }
+    }
+};
 
 export const debugPlaceGrass = (models: Map<string, BABYLON.AbstractMesh>, scene: BABYLON.Scene, mapBegin: BABYLON.Vector3) => {
     const model = models.get('grass');

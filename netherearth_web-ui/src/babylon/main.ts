@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { loadModels } from './models';
-import { loadMap, debugLoadMap, createMap, debugPlaceGrass } from './map';
+import { loadMap, debugLoadMap, createMap, placeRobot, robotModels } from './map';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -18,6 +18,9 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   debugLoadMap(mapData, scene, mapBegin);
   createMap(mapData, models, scene, mapBegin);
   // debugPlaceGrass(models, scene, mapBegin);
+  for (let x = 0; x < mapData.width; x++) {
+    placeRobot(models, scene, mapBegin, x, 9, robotModels[x % robotModels.length]);
+  }
 
   const mapCenter = new BABYLON.Vector3(mapBegin.x + mapData.width / 4, 2, mapBegin.z + mapData.height / 4);
 
