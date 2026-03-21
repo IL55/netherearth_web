@@ -38,11 +38,13 @@ export const loadMap = async (url: string): Promise<MapData> => {
                 y: parseFloat(parts[2])
             });
         } else if (type === 'factory') {
+            const flagSide = parts[4]; // optional: 'left' | 'right'
             objects.push({
                 type,
                 x: parseFloat(parts[1]),
                 y: parseFloat(parts[2]),
-                subtype: parts[3]
+                subtype: parts[3],
+                ...(flagSide ? { flagSide } : {})
             });
         } else if (type === 'warbase') {
             objects.push({
@@ -138,6 +140,18 @@ export const createMap = (mapData: MapData, models: Map<string, BABYLON.Abstract
                             instance.position = new BABYLON.Vector3(mapBegin.x + obj.x + 2.4, 2.1, mapBegin.z + obj.y - 3.9);
                         }
                         setVisibleAll(instance, true);
+                    }
+                }
+            }
+
+            if (obj.flagSide === 'left' || obj.flagSide === 'right') {
+                const flagModel = models.get('flag');
+                if (flagModel) {
+                    const flagInstance = flagModel.instantiateHierarchy();
+                    if (flagInstance) {
+                        const xo = obj.flagSide === 'left' ? 0 : 1;
+                        flagInstance.position = new BABYLON.Vector3(mapBegin.x + obj.x + xo, 2, mapBegin.z + obj.y + 1);
+                        setVisibleAll(flagInstance, true);
                     }
                 }
             }
