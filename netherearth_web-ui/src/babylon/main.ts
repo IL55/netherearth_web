@@ -1,7 +1,12 @@
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
-import { loadModels } from './models';
-import { loadMap, debugLoadMap, createMap, placeRobot, robotConfigs } from './map';
+import { loadModels } from './view/shared/models';
+import { loadMap } from './data/map';
+import { debugLoadMap } from './view/map/map';
+import { Renderer } from './view/map/renderer';
+import { createWarMap } from './game/warmap';
+import { robotConfigs } from './data/robot';
+import { attachCameraControls } from './controls/camera';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -15,12 +20,23 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const mapData = await loadMap('/maps/small1.map');
   const mapBegin = new BABYLON.Vector3(0, 0, 0);
+
   debugLoadMap(mapData, scene, mapBegin);
-  createMap(mapData, models, scene, mapBegin);
-  // debugPlaceGrass(models, scene, mapBegin);
+
+  const warMap = createWarMap(mapData);
   for (let x = 0; x < mapData.width; x++) {
-    placeRobot(models, mapBegin, x, 14, robotConfigs[x % robotConfigs.length], -Math.PI / 2);
+    warMap.objects.push({
+      id: `robot_${x}`,
+      type: 'robot',
+      x,
+      y: 14,
+      robotConfig: robotConfigs[x % robotConfigs.length],
+      rotation: -Math.PI / 2,
+    });
   }
+
+  const renderer = new Renderer(models, scene, mapBegin);
+  renderer.render(warMap);
 
   const mapCenter = new BABYLON.Vector3(mapBegin.x + mapData.width / 4, 2, mapBegin.z + mapData.height / 4);
 
@@ -28,21 +44,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI /3, Math.PI / 4, 8, mapCenter, scene);
   camera.attachControl(canvas, true);
 
-  // Keyboard controls for camera movement
-  scene.onKeyboardObservable.add((kbInfo) => {
-    switch (kbInfo.type) {
-      case BABYLON.KeyboardEventTypes.KEYDOWN:
-        switch (kbInfo.event.key) {
-          case "a":
-            camera.target.z -= 1;
-            break;
-          case "d":
-            camera.target.z += 1;
-            break;
-        }
-        break;
-    }
-  });
+  attachCameraControls(scene, camera);
 
   return scene;
 };
