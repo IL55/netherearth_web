@@ -25,6 +25,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   debugLoadMap(mapData, scene, mapBegin);
 
   const warMap = createWarMap(mapData);
+  warMap.objects.filter(o => o.type === 'factory').forEach(o => { o.owner = 2; });
   for (let x = 0; x < mapData.width; x++) {
     warMap.objects.push({
       id: `robot_${x}`,

@@ -10,10 +10,9 @@ function makeEnv() {
         width: 1,
         height: 1,
         objects: [
-            { id: 'tile_0_0', type: 'tile', x: 0, y: 0, subtype: 'G' },
-            { id: 'robot_0', type: 'robot', x: 0, y: 0 },
-            { id: 'robot_1', type: 'robot', x: 1, y: 0 },
-            { id: 'robot_2', type: 'robot', x: 2, y: 0 },
+            { id: 'tile_0_0',  type: 'tile',     x: 0, y: 0 },
+            { id: 'factory_0', type: 'factory',  x: 1, y: 0, subtype: 'cannons' },
+            { id: 'warbase_0', type: 'warbase',  x: 2, y: 0 },
         ],
     };
     return { engine, scene, warMap };
@@ -25,7 +24,7 @@ function pressKey(scene: Scene, key: string) {
     );
 }
 
-describe('attachGameControls', () => {
+describe('attachGameControls - t key cycles owner', () => {
     let engine: NullEngine;
     let scene: Scene;
     let warMap: WarMap;
@@ -42,46 +41,61 @@ describe('attachGameControls', () => {
         engine.dispose();
     });
 
-    it('pressing "t" removes the last robot', () => {
+    it('first press sets owner to 1 on all factories and warbases', () => {
         pressKey(scene, 't');
-        expect(warMap.objects.find(o => o.id === 'robot_2')).toBeUndefined();
-        expect(warMap.objects).toHaveLength(3);
+        const factory = warMap.objects.find(o => o.id === 'factory_0')!;
+        const warbase = warMap.objects.find(o => o.id === 'warbase_0')!;
+        expect(factory.owner).toBe(1);
+        expect(warbase.owner).toBe(1);
     });
 
-    it('pressing "t" removes robots in reverse order', () => {
+    it('second press sets owner to 2', () => {
         pressKey(scene, 't');
         pressKey(scene, 't');
-        expect(warMap.objects.find(o => o.id === 'robot_2')).toBeUndefined();
-        expect(warMap.objects.find(o => o.id === 'robot_1')).toBeUndefined();
-        expect(warMap.objects.find(o => o.id === 'robot_0')).toBeDefined();
+        const factory = warMap.objects.find(o => o.id === 'factory_0')!;
+        const warbase = warMap.objects.find(o => o.id === 'warbase_0')!;
+        expect(factory.owner).toBe(2);
+        expect(warbase.owner).toBe(2);
     });
 
-    it('pressing "t" calls onUpdate', () => {
+    it('third press clears owner back to neutral', () => {
         pressKey(scene, 't');
-        expect(updateCount).toBe(1);
+        pressKey(scene, 't');
+        pressKey(scene, 't');
+        const factory = warMap.objects.find(o => o.id === 'factory_0')!;
+        const warbase = warMap.objects.find(o => o.id === 'warbase_0')!;
+        expect(factory.owner).toBeUndefined();
+        expect(warbase.owner).toBeUndefined();
     });
 
-    it('pressing "t" with no robots does not call onUpdate', () => {
-        warMap.objects = warMap.objects.filter(o => o.type !== 'robot');
+    it('calls onUpdate on every press', () => {
         pressKey(scene, 't');
-        expect(updateCount).toBe(0);
+        pressKey(scene, 't');
+        expect(updateCount).toBe(2);
     });
 
-    it('pressing "t" does not remove non-robot objects', () => {
-        warMap.objects = [{ id: 'tile_0_0', type: 'tile', x: 0, y: 0 }];
+    it('does not affect tiles', () => {
         pressKey(scene, 't');
-        expect(warMap.objects).toHaveLength(1);
+        const tile = warMap.objects.find(o => o.id === 'tile_0_0')!;
+        expect(tile.owner).toBeUndefined();
+    });
+
+    it('rotates all robots by π/2 on each press', () => {
+        const robot = { id: 'robot_0', type: 'robot', x: 0, y: 0, rotation: 0 };
+        warMap.objects.push(robot);
+        pressKey(scene, 't');
+        expect(robot.rotation).toBeCloseTo(Math.PI / 2, 5);
+        pressKey(scene, 't');
+        expect(robot.rotation).toBeCloseTo(Math.PI, 5);
     });
 
     it('other keys do not trigger updates', () => {
         pressKey(scene, 'a');
         pressKey(scene, 'd');
-        pressKey(scene, 'r');
         expect(updateCount).toBe(0);
-        expect(warMap.objects).toHaveLength(4);
     });
 
-    it('KEYUP for "t" does not trigger update', () => {
+    it('KEYUP for t does not trigger update', () => {
         scene.onKeyboardObservable.notifyObservers(
             new KeyboardInfo(KeyboardEventTypes.KEYUP, { key: 't' } as KeyboardEvent)
         );

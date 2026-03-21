@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { removeObject, findLastByType } from '../game/warmap';
+import { cycleOwner, rotateRobots } from '../game/warmap';
 import type { WarMap } from '../game/warmap';
 
 export const attachGameControls = (
@@ -12,11 +12,11 @@ export const attachGameControls = (
 
         switch (kbInfo.event.key) {
             case 't': {
-                const robot = findLastByType(warMap, 'robot');
-                if (robot) {
-                    removeObject(warMap, robot.id);
-                    onUpdate();
-                }
+                warMap.objects
+                    .filter(o => o.type === 'factory' || o.type === 'warbase')
+                    .forEach(o => cycleOwner(o));
+                rotateRobots(warMap);
+                onUpdate();
                 break;
             }
         }

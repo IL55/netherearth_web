@@ -48,3 +48,17 @@ export function removeObject(warMap: WarMap, id: string): void {
 export function findLastByType(warMap: WarMap, type: string): WarObject | undefined {
     return [...warMap.objects].reverse().find(o => o.type === type);
 }
+
+// Cycles owner: undefined → 1 → 2 → undefined
+export function cycleOwner(obj: WarObject): void {
+    if (obj.owner === undefined) obj.owner = 1;
+    else if (obj.owner === 1)    obj.owner = 2;
+    else                         obj.owner = undefined;
+}
+
+// Rotates all robots by 90 degrees (π/2)
+export function rotateRobots(warMap: WarMap): void {
+    warMap.objects
+        .filter(o => o.type === 'robot')
+        .forEach(o => { o.rotation = (o.rotation ?? 0) + Math.PI / 2; });
+}

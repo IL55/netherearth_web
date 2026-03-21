@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { addWarbase } from '../../../view/map/warbase';
 import { makeEnv } from '../../test-utils';
 
-const WARBASE_PART_COUNT = 15;
+const WARBASE_PART_COUNT = 15; // 14 wall pieces + 1 central H (warbase model), always visible
 
 describe('addWarbase', () => {
     it('does not throw without owner', () => {
@@ -11,13 +11,28 @@ describe('addWarbase', () => {
         scene.dispose(); engine.dispose();
     });
 
-    it('does not throw with owner 1', () => {
-        const { engine, scene, models, mapBegin } = makeEnv();
-        expect(() => addWarbase(models, scene, mapBegin, 0, 0, 1)).not.toThrow();
-        scene.dispose(); engine.dispose();
+    it('does not throw with any owner', () => {
+        [1, 2].forEach(owner => {
+            const { engine, scene, models, mapBegin } = makeEnv();
+            expect(() => addWarbase(models, scene, mapBegin, 0, 0, owner)).not.toThrow();
+            scene.dispose(); engine.dispose();
+        });
     });
 
-    it('creates 15 part instances (no owner)', () => {
+    it('creates 15 part instances regardless of owner', () => {
+        [undefined, 1, 2].forEach(owner => {
+            const { engine, scene, models, mapBegin } = makeEnv();
+            const before = scene.transformNodes.length;
+            addWarbase(models, scene, mapBegin, 0, 0, owner);
+            const parts = scene.transformNodes.length - before;
+            // owner with flag adds 1 extra transform node
+            const expected = owner !== undefined ? WARBASE_PART_COUNT + 1 : WARBASE_PART_COUNT;
+            expect(parts).toBe(expected);
+            scene.dispose(); engine.dispose();
+        });
+    });
+
+    it('no flag when owner is absent', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         addWarbase(models, scene, mapBegin, 0, 0);
@@ -25,15 +40,7 @@ describe('addWarbase', () => {
         scene.dispose(); engine.dispose();
     });
 
-    it('creates 16 instances (15 parts + flag) when owner is set', () => {
-        const { engine, scene, models, mapBegin } = makeEnv();
-        const before = scene.transformNodes.length;
-        addWarbase(models, scene, mapBegin, 0, 0, 1);
-        expect(scene.transformNodes.length - before).toBe(WARBASE_PART_COUNT + 1);
-        scene.dispose(); engine.dispose();
-    });
-
-    it('flag for owner 1 (red) is placed on the right (zo=4.5)', () => {
+    it('flag for owner 1 (red) is placed on the right (zo=4.1)', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 3, oy = 4;
@@ -45,7 +52,7 @@ describe('addWarbase', () => {
         scene.dispose(); engine.dispose();
     });
 
-    it('flag for owner 2 (blue) is placed on the left (zo=-0.5)', () => {
+    it('flag for owner 2 (blue) is placed on the left (zo=0.1)', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 3, oy = 4;
@@ -66,15 +73,31 @@ describe('addWarbase', () => {
         scene.dispose(); engine.dispose();
     });
 
-    it('warbase model is placed at xo=1.5, yo=2 from origin', () => {
+    it('H (warbase model) is placed at xo=1.5, yo=2 from origin', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 2, oy = 5;
         addWarbase(models, scene, mapBegin, ox, oy);
-        // warbase model is the 8th part in WARBASE_PARTS (index 7)
+        // warbase H model is the 8th part in WARBASE_PARTS (index 7)
         const warbasePart = scene.transformNodes[before + 7];
         expect(warbasePart.position.x).toBeCloseTo(ox + 1.5, 5);
         expect(warbasePart.position.z).toBeCloseTo(oy + 2, 5);
         scene.dispose(); engine.dispose();
+    });
+
+    it('owner=2 adds exactly 1 extra mesh (decal plane) compared to owner=1', () => {
+        const env1 = makeEnv();
+        const before1 = env1.scene.meshes.length;
+        addWarbase(env1.models, env1.scene, env1.mapBegin, 0, 0, 1);
+        const meshCount1 = env1.scene.meshes.length - before1;
+        env1.scene.dispose(); env1.engine.dispose();
+
+        const env2 = makeEnv();
+        const before2 = env2.scene.meshes.length;
+        addWarbase(env2.models, env2.scene, env2.mapBegin, 0, 0, 2);
+        const meshCount2 = env2.scene.meshes.length - before2;
+        env2.scene.dispose(); env2.engine.dispose();
+
+        expect(meshCount2 - meshCount1).toBe(1);
     });
 });

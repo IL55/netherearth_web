@@ -31,9 +31,9 @@ export const addWarbase = (
         instance.position = new BABYLON.Vector3(mapBegin.x + x + part.xo, 1, mapBegin.z + y + part.yo);
         setVisibleAll(instance, true);
 
-        if (part.model === 'warbase' && owner && OWNER_TEXTURE[owner]) {
+        if (part.model === 'warbase' && owner === 2 && OWNER_TEXTURE[1]) {
             const decalMaterial = new BABYLON.StandardMaterial(`decalMat_${owner}`, scene);
-            decalMaterial.diffuseTexture = new BABYLON.Texture(`/models/textures/${OWNER_TEXTURE[owner]}`, scene);
+            decalMaterial.diffuseTexture = new BABYLON.Texture(`/models/textures/${OWNER_TEXTURE[1]}`, scene);
             decalMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
             decalMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
             decalMaterial.zOffset = -2;

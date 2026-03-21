@@ -28,7 +28,11 @@ const CENTRAL_PIECE_OFFSET: Record<string, { x: number; y: number; z: number }> 
 };
 
 // owner: 1=red (flag right), 2=blue (flag left), absent=neutral (no flag)
-const FLAG_X_OFFSET: Record<number, number> = { 1: 1, 2: 0 };
+// Note: flag GLB model origin is not at 0,0,0 — tune xo/yo/zo per side to compensate
+const FLAG_OFFSET: Record<number, { xo: number; yo: number; zo: number }> = {
+    1: { xo: 0,   yo: 2, zo: 0.1 },  // red:  right wall
+    2: { xo: 0,   yo: 2, zo: 2.1 },  // blue: left wall
+};
 
 export const addFactory = (
     models: Map<string, BABYLON.AbstractMesh>,
@@ -62,12 +66,13 @@ export const addFactory = (
         }
     }
 
-    if (owner !== undefined && FLAG_X_OFFSET[owner] !== undefined) {
+    if (owner !== undefined && FLAG_OFFSET[owner] !== undefined) {
         const flagModel = models.get('flag');
         if (flagModel) {
             const instance = flagModel.instantiateHierarchy();
             if (instance) {
-                instance.position = new BABYLON.Vector3(mapBegin.x + x + FLAG_X_OFFSET[owner], 2, mapBegin.z + y + 1);
+                const { xo, yo, zo } = FLAG_OFFSET[owner];
+                instance.position = new BABYLON.Vector3(mapBegin.x + x + xo, yo, mapBegin.z + y + zo);
                 setVisibleAll(instance, true);
             }
         }
