@@ -6,9 +6,8 @@ export interface WarObject {
     type: string;       // 'tile' | 'factory' | 'warbase' | 'robot' | 'wall*' | 'fence'
     x: number;
     y: number;
-    owner?: number;
-    subtype?: string;   // tile type (e.g. 'G'), factory subtype, robot chassis info
-    flagSide?: string;  // factory flag position
+    owner?: number;     // 1=red (right flag), 2=blue (left flag), absent=neutral
+    subtype?: string;   // tile type (e.g. 'G'), factory subtype
     rotation?: number;  // robot facing (radians)
     robotConfig?: RobotConfig;
 }
@@ -36,9 +35,16 @@ export function createWarMap(mapData: MapData): WarMap {
             y: obj.y,
             ...(obj.owner !== undefined ? { owner: obj.owner } : {}),
             ...(obj.subtype ? { subtype: obj.subtype } : {}),
-            ...(obj.flagSide ? { flagSide: obj.flagSide } : {}),
         });
     });
 
     return { width: mapData.width, height: mapData.height, objects };
+}
+
+export function removeObject(warMap: WarMap, id: string): void {
+    warMap.objects = warMap.objects.filter(o => o.id !== id);
+}
+
+export function findLastByType(warMap: WarMap, type: string): WarObject | undefined {
+    return [...warMap.objects].reverse().find(o => o.type === type);
 }

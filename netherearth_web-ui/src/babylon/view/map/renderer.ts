@@ -80,7 +80,7 @@ export class Renderer {
                 }
             }
         } else if (obj.type === 'factory') {
-            addFactory(this.models, this.mapBegin, obj.x, obj.y, obj.subtype!, obj.flagSide);
+            addFactory(this.models, this.mapBegin, obj.x, obj.y, obj.subtype!, obj.owner);
         } else if (obj.type === 'warbase') {
             addWarbase(this.models, this.scene, this.mapBegin, obj.x, obj.y, obj.owner);
         } else if (obj.type === 'robot') {

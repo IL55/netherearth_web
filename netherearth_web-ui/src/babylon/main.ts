@@ -7,6 +7,7 @@ import { Renderer } from './view/map/renderer';
 import { createWarMap } from './game/warmap';
 import { robotConfigs } from './data/robot';
 import { attachCameraControls } from './controls/camera';
+import { attachGameControls } from './controls/game';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -30,7 +31,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       type: 'robot',
       x,
       y: 14,
-      robotConfig: robotConfigs[x % robotConfigs.length],
+      robotConfig: Object.values(robotConfigs)[x % Object.values(robotConfigs).length],
       rotation: -Math.PI / 2,
     });
   }
@@ -45,6 +46,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   camera.attachControl(canvas, true);
 
   attachCameraControls(scene, camera);
+  attachGameControls(scene, warMap, () => renderer.render(warMap));
 
   return scene;
 };

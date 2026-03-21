@@ -9,7 +9,9 @@ const WARBASE_PARTS = [
     { model: 'highwall1', xo: 0.5, yo: 4 }, { model: 'highwall2', xo: 1.5, yo: 4 },
 ];
 
-const FLAG_Z_OFFSET: Record<number, number> = { 1: 0, 2: 4.1 };
+// owner: 1=red (flag right = high Z), 2=blue (flag left = low Z); xo=1.5 is center of structure
+// Note: the flag GLB model origin is not at 0,0,0 — offsets are tuned visually to compensate
+const FLAG_Z_OFFSET: Record<number, number> = { 1: 4.1, 2: 0.1 };
 const OWNER_TEXTURE: Record<number, string> = { 1: 'warbaser1.bmp' };
 
 export const addWarbase = (

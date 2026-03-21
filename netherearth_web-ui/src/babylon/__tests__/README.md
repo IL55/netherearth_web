@@ -16,3 +16,7 @@ Tests for the 3D battlefield view:
 ## view/workshop/, view/ui/
 
 _(planned)_
+
+## controls/
+
+- `camera.test.ts` — `attachCameraControls`: key `a`/`d` pan, other keys and KEYUP are ignored

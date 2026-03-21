@@ -43,7 +43,7 @@ describe('addFactory', () => {
         scene.dispose(); engine.dispose();
     });
 
-    it('no flag is placed when flagSide is absent', () => {
+    it('no flag is placed when owner is absent (neutral)', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         addFactory(models, mapBegin, 0, 0, 'cannons');
@@ -51,11 +51,11 @@ describe('addFactory', () => {
         scene.dispose(); engine.dispose();
     });
 
-    it('places a flag when flagSide is "left"', () => {
+    it('places flag on left when owner is 2 (blue)', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 2, oy = 3;
-        addFactory(models, mapBegin, ox, oy, 'cannons', 'left');
+        addFactory(models, mapBegin, ox, oy, 'cannons', 2);
         expect(scene.transformNodes.length - before).toBe(FACTORY_WALL_COUNT + 1 + 1); // + flag
         const flag = scene.transformNodes[before + FACTORY_WALL_COUNT + 1];
         expect(flag.position.x).toBeCloseTo(ox + 0, 5);
@@ -64,11 +64,11 @@ describe('addFactory', () => {
         scene.dispose(); engine.dispose();
     });
 
-    it('places a flag when flagSide is "right"', () => {
+    it('places flag on right when owner is 1 (red)', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 2, oy = 3;
-        addFactory(models, mapBegin, ox, oy, 'cannons', 'right');
+        addFactory(models, mapBegin, ox, oy, 'cannons', 1);
         expect(scene.transformNodes.length - before).toBe(FACTORY_WALL_COUNT + 1 + 1); // + flag
         const flag = scene.transformNodes[before + FACTORY_WALL_COUNT + 1];
         expect(flag.position.x).toBeCloseTo(ox + 1, 5);

@@ -25,13 +25,13 @@ export const loadMap = async (url: string): Promise<MapData> => {
         if (type === 'fence' || type.startsWith('wall')) {
             objects.push({ type, x: parseFloat(parts[1]), y: parseFloat(parts[2]) });
         } else if (type === 'factory') {
-            const flagSide = parts[4];
+            const owner = parts[4] ? parseInt(parts[4]) : undefined;
             objects.push({
                 type,
                 x: parseFloat(parts[1]),
                 y: parseFloat(parts[2]),
                 subtype: parts[3],
-                ...(flagSide ? { flagSide } : {}),
+                ...(owner !== undefined && !isNaN(owner) ? { owner } : {}),
             });
         } else if (type === 'warbase') {
             objects.push({ type, x: parseFloat(parts[1]), y: parseFloat(parts[2]), owner: parseInt(parts[3]) });

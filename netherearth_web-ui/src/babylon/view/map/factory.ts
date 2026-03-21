@@ -27,13 +27,16 @@ const CENTRAL_PIECE_OFFSET: Record<string, { x: number; y: number; z: number }> 
     cannons:     { x: 2.4, y: 2.1, z: -3.9 },
 };
 
+// owner: 1=red (flag right), 2=blue (flag left), absent=neutral (no flag)
+const FLAG_X_OFFSET: Record<number, number> = { 1: 1, 2: 0 };
+
 export const addFactory = (
     models: Map<string, BABYLON.AbstractMesh>,
     mapBegin: BABYLON.Vector3,
     x: number,
     y: number,
     subtype: string,
-    flagSide?: string,
+    owner?: number,
 ) => {
     FACTORY_PARTS.forEach(part => {
         const model = models.get(part.model);
@@ -59,13 +62,12 @@ export const addFactory = (
         }
     }
 
-    if (flagSide === 'left' || flagSide === 'right') {
+    if (owner !== undefined && FLAG_X_OFFSET[owner] !== undefined) {
         const flagModel = models.get('flag');
         if (flagModel) {
             const instance = flagModel.instantiateHierarchy();
             if (instance) {
-                const xo = flagSide === 'left' ? 0 : 1;
-                instance.position = new BABYLON.Vector3(mapBegin.x + x + xo, 2, mapBegin.z + y + 1);
+                instance.position = new BABYLON.Vector3(mapBegin.x + x + FLAG_X_OFFSET[owner], 2, mapBegin.z + y + 1);
                 setVisibleAll(instance, true);
             }
         }
