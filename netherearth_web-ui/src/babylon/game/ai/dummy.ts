@@ -1,7 +1,7 @@
 import type { WarMap, WarObject } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
 import { isOccupied } from '../occupancy';
-import { type RobotAction, type Direction, rotationToDirection, directionToRotation } from '../actions';
+import { type RobotAction, type Direction, rotationToDirection, directionToRotation, MOVE_STEP } from '../actions';
 
 // Directions in priority order for each goal direction
 const ALL_DIRS: Direction[] = ['N', 'E', 'S', 'W'];
@@ -41,13 +41,13 @@ export function dummyAI(robot: WarObject, warMap: WarMap, occupancy: OccupancyMa
 
     // Try to move in the preferred direction; rotate toward it if not already facing
     for (const dir of dirs) {
-        const delta = dir === 'N' ? { dx: 0, dy: -1 }
-                    : dir === 'S' ? { dx: 0, dy:  1 }
-                    : dir === 'E' ? { dx: 1, dy:  0 }
-                    :               { dx: -1, dy: 0 };
+        const delta = dir === 'N' ? { dx: 0,         dy: -MOVE_STEP }
+                    : dir === 'S' ? { dx: 0,         dy:  MOVE_STEP }
+                    : dir === 'E' ? { dx: MOVE_STEP,  dy:  0 }
+                    :               { dx: -MOVE_STEP, dy:  0 };
         const tx = robot.x + delta.dx;
         const ty = robot.y + delta.dy;
-        if (isOccupied(occupancy, tx, ty)) continue;
+        if (isOccupied(occupancy, tx, ty, robot.id)) continue;
 
         if (facing === dir) {
             return { type: 'move', direction: dir };

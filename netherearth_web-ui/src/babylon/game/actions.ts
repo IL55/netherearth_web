@@ -1,6 +1,6 @@
 import type { WarMap, WarObject } from './warmap';
 import type { OccupancyMap } from './occupancy';
-import { isOccupied, key } from './occupancy';
+import { isOccupied, updateRobotPosition } from './occupancy';
 import { getTerrainRule, chassisTypeOf } from './terrain';
 
 export type Direction = 'N' | 'E' | 'S' | 'W';
@@ -10,19 +10,22 @@ export type RobotAction =
     | { type: 'rotate'; direction: 'left' | 'right' }
     | { type: 'idle' };
 
+// Robots move in 1/4 grid increments per tick (4 ticks to cross one cell)
+export const MOVE_STEP = 0.25;
+
 const DIR_DELTA: Record<Direction, { dx: number; dy: number }> = {
-    N: { dx:  0, dy: -1 },
-    S: { dx:  0, dy:  1 },
-    E: { dx:  1, dy:  0 },
-    W: { dx: -1, dy:  0 },
+    N: { dx:  0, dy: -MOVE_STEP },
+    S: { dx:  0, dy:  MOVE_STEP },
+    E: { dx:  MOVE_STEP, dy:  0 },
+    W: { dx: -MOVE_STEP, dy:  0 },
 };
 
 // Convert a rotation (radians) to the nearest cardinal Direction.
-// In our coordinate system: rotation=0 → facing N (y-1), π/2 → E (x+1), π → S (y+1), -π/2 → W (x-1)
+// Weapon is along local +X: rotation=0 → world +X → East.
 export function rotationToDirection(rotation: number): Direction {
     const normalized = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
     const idx = Math.round(normalized / (Math.PI / 2)) % 4;
-    return (['E', 'N', 'W', 'S'] as Direction[])[idx]; // weapon is local +X: rotation=0 → world +X → East
+    return (['E', 'N', 'W', 'S'] as Direction[])[idx];
 }
 
 export function directionToRotation(dir: Direction): number {
@@ -30,12 +33,13 @@ export function directionToRotation(dir: Direction): number {
 }
 
 function getTileSubtype(warMap: WarMap, x: number, y: number): string {
-    const tile = warMap.objects.find(o => o.type === 'tile' && o.x === x && o.y === y);
+    // Tile lookup uses integer cell coordinates
+    const tile = warMap.objects.find(o => o.type === 'tile' && o.x === Math.floor(x) && o.y === Math.floor(y));
     return tile?.subtype ?? 'G';
 }
 
 // Apply an action to a robot, respecting terrain + occupancy.
-// Returns true if the action was executed (move/rotate happened), false if blocked.
+// Returns true if the action was executed, false if blocked.
 export function applyAction(
     robot: WarObject,
     action: RobotAction,
@@ -64,7 +68,7 @@ export function applyAction(
     const rule = getTerrainRule(tileSubtype, chassis);
 
     if (!rule.passable) return false;
-    if (isOccupied(occupancy, tx, ty)) return false;
+    if (isOccupied(occupancy, tx, ty, robot.id)) return false;
 
     // Terrain speed penalty: skip move on some ticks
     if (rule.speedFactor < 1) {
@@ -73,11 +77,10 @@ export function applyAction(
         robot.slowCounter -= 1;
     }
 
-    // Update occupancy atomically
-    occupancy.delete(key(robot.x, robot.y));
+    // Update position
     robot.x = tx;
     robot.y = ty;
-    occupancy.set(key(robot.x, robot.y), robot);
+    updateRobotPosition(occupancy, robot.id, tx, ty);
 
     return true;
 }
