@@ -62,3 +62,14 @@ export function rotateRobots(warMap: WarMap): void {
         .filter(o => o.type === 'robot')
         .forEach(o => { o.rotation = (o.rotation ?? 0) + Math.PI / 2; });
 }
+
+// Moves all robots 1 unit forward in their facing direction
+export function moveRobotsForward(warMap: WarMap): void {
+    warMap.objects
+        .filter(o => o.type === 'robot')
+        .forEach(o => {
+            const r = o.rotation ?? 0;
+            o.x += Math.round(Math.sin(r));
+            o.y += Math.round(Math.cos(r));
+        });
+}

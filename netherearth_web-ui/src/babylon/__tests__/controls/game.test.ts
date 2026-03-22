@@ -89,6 +89,18 @@ describe('attachGameControls - t key cycles owner', () => {
         expect(robot.rotation).toBeCloseTo(Math.PI, 5);
     });
 
+    it('moves all robots forward by 1 in their facing direction on each press', () => {
+        const robot = { id: 'robot_0', type: 'robot', x: 5, y: 5, rotation: 0 };
+        warMap.objects.push(robot);
+        // rotation=0 → facing +Z → y+1, after rotate becomes π/2 → facing +X → x+1
+        pressKey(scene, 't'); // rotate to π/2, move at π/2: x+=1
+        expect(robot.x).toBe(6);
+        expect(robot.y).toBe(5);
+        pressKey(scene, 't'); // rotate to π, move at π: y-=1
+        expect(robot.x).toBe(6);
+        expect(robot.y).toBe(4);
+    });
+
     it('other keys do not trigger updates', () => {
         pressKey(scene, 'a');
         pressKey(scene, 'd');
