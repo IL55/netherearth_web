@@ -67,7 +67,7 @@ export function isOccupied(
     tx: number, ty: number,
     excludeId?: string,
 ): boolean {
-    if (occupancy.structures.some(s => tx >= s.x0 && tx < s.x1 && ty >= s.y0 && ty < s.y1)) return true;
+    if (occupancy.structures.some(s => tx >= s.x0 && tx <= s.x1 && ty >= s.y0 && ty <= s.y1)) return true;
     return occupancy.robots.some(r =>
         r.id !== excludeId &&
         Math.max(Math.abs(r.x - tx), Math.abs(r.y - ty)) < ROBOT_COLLISION_DISTANCE

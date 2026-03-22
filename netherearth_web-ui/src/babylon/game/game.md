@@ -53,10 +53,14 @@ Each robot has a **goal** and an **AI strategy**:
 
 | Goal | Behaviour |
 |------|-----------|
-| `attack_robots` | Find and move toward the nearest enemy robot |
-| `capture_factory` | Move toward the nearest neutral or enemy factory |
-| `capture_warbase` | Move toward the nearest neutral or enemy warbase |
-| `defend` | Stay in place (no movement target yet) |
+| `attack_robots`           | Nearest enemy robot |
+| `capture_factory`         | Nearest non-owned factory (enemy **or** neutral) |
+| `capture_enemy_factory`   | Nearest enemy-owned factory only |
+| `capture_neutral_factory` | Nearest neutral (unowned) factory only |
+| `capture_warbase`         | Nearest non-owned warbase (enemy **or** neutral) |
+| `capture_enemy_warbase`   | Nearest enemy-owned warbase only |
+| `capture_neutral_warbase` | Nearest neutral (unowned) warbase only |
+| `defend`                  | Stay in place (no movement target) |
 
 ### AI Strategies
 
@@ -83,17 +87,21 @@ Every blocking structure is an **axis-aligned bounding box (AABB)**.
 A robot's movement target `(tx, ty)` is blocked when its center falls inside the box:
 
 ```
-tx >= x0  &&  tx < x1  &&  ty >= y0  &&  ty < y1
+tx >= x0  &&  tx <= x1  &&  ty >= y0  &&  ty <= y1
 ```
 
-All models are visually **centered** on their `(x, y)` origin (a 1×1 model spans `[x−0.5, x+0.5)`).
-`STRUCTURE_AABB` in `occupancy.ts` defines the offsets for each type:
+**Both bounds are inclusive.** This ensures symmetric clearance: a robot approaching
+from any direction stops one `MOVE_STEP` (0.25) before the boundary, giving a 0.5-unit
+gap between the robot center and the visual model edge on all four sides.
+
+All models are visually **centered** on their `(x, y)` origin. The AABBs in
+`STRUCTURE_AABB` (`occupancy.ts`) are inflated by `INFLATE=0.25` beyond the visual edge:
 
 | Type | x range | y range |
 |------|---------|---------|
-| wall\*, fence (1×1) | `[x−0.5, x+0.5)` | `[y−0.5, y+0.5)` |
-| factory (2 cols × 3 rows) | `[x−0.5, x+1.5)` | `[y−0.5, y+2.5)` |
-| warbase (4 cols × 5 rows) | `[x−0.5, x+3.5)` | `[y−0.5, y+4.5)` |
+| wall\*, fence (1×1) | `[x−0.75, x+0.75]` | `[y−0.75, y+0.75]` |
+| factory (2×3) | `[x−0.75, x+1.75]` | `[y−0.75, y+2.75]` |
+| warbase (4×5) | `[x−0.75, x+3.75]` | `[y−0.75, y+4.75]` |
 
 **Do NOT use `floor()` / `Math.floor()` for structure collision.**
 `floor()` maps a continuous position to an integer cell index, which only works when

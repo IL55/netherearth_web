@@ -1,7 +1,15 @@
 import type { MapData } from '../data/map';
 import type { RobotConfig } from '../data/robot';
 
-export type RobotGoal = 'attack_robots' | 'defend' | 'capture_factory' | 'capture_warbase';
+export type RobotGoal =
+    | 'attack_robots'
+    | 'capture_factory'         // any non-owned factory (enemy or neutral)
+    | 'capture_enemy_factory'   // enemy-owned factories only
+    | 'capture_neutral_factory' // neutral (unowned) factories only
+    | 'capture_warbase'         // any non-owned warbase (enemy or neutral)
+    | 'capture_enemy_warbase'   // enemy-owned warbases only
+    | 'capture_neutral_warbase' // neutral (unowned) warbases only
+    | 'defend';
 export type RobotAI   = 'dummy' | 'advanced';
 
 export interface WarObject {

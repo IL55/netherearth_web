@@ -91,8 +91,15 @@ describe('isOccupied — structures (AABB, no floor)', () => {
     it('not blocked just outside wall AABB', () => {
         const map = makeMap([{ id: 'w1', type: 'wall3', x: 2, y: 49 }]);
         const occ = buildOccupancy(map);
-        expect(isOccupied(occ, 1.0,  49)).toBe(false);  // one MOVE_STEP outside inflated edge
-        expect(isOccupied(occ, 2.75, 49)).toBe(false);  // at right edge (exclusive)
+        expect(isOccupied(occ, 1.0,  49)).toBe(false);  // one MOVE_STEP before left edge (1.25)
+        expect(isOccupied(occ, 3.0,  49)).toBe(false);  // one MOVE_STEP beyond right edge (2.75)
+    });
+
+    it('blocked at AABB boundaries (both bounds inclusive)', () => {
+        const map = makeMap([{ id: 'w1', type: 'wall3', x: 2, y: 49 }]);
+        const occ = buildOccupancy(map);
+        expect(isOccupied(occ, 1.25, 49)).toBe(true);   // exactly at x0
+        expect(isOccupied(occ, 2.75, 49)).toBe(true);   // exactly at x1 — robot stops here, half-width clears visual edge
     });
 
     it('blocked inside warbase AABB', () => {
@@ -106,9 +113,9 @@ describe('isOccupied — structures (AABB, no floor)', () => {
     it('not blocked outside warbase AABB', () => {
         const map = makeMap([{ id: 'wb', type: 'warbase', x: 2, y: 5 }]);
         const occ = buildOccupancy(map);
-        // warbase at (2,5): inflated x1=5.75, y1=9.75
-        expect(isOccupied(occ, 5.75, 5)).toBe(false);   // at right edge (exclusive)
-        expect(isOccupied(occ, 6,    5)).toBe(false);   // clearly outside
+        // warbase at (2,5): inflated x1=5.75 — boundary is now inclusive so robot stops at 6.0
+        expect(isOccupied(occ, 5.75, 5)).toBe(true);    // at right edge (inclusive) — blocked
+        expect(isOccupied(occ, 6.0,  5)).toBe(false);   // one MOVE_STEP beyond right edge — free
     });
 });
 

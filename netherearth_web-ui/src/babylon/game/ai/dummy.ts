@@ -8,9 +8,13 @@ const ALL_DIRS: Direction[] = ['N', 'E', 'S', 'W'];
 
 function findTarget(robot: WarObject, warMap: WarMap): WarObject | undefined {
     const candidates = warMap.objects.filter(o => {
-        if (robot.goal === 'attack_robots')    return o.type === 'robot' && o.owner !== robot.owner;
-        if (robot.goal === 'capture_factory')  return o.type === 'factory' && o.owner !== robot.owner;
-        if (robot.goal === 'capture_warbase')  return o.type === 'warbase' && o.owner !== robot.owner;
+        if (robot.goal === 'attack_robots')           return o.type === 'robot'   && o.owner !== robot.owner;
+        if (robot.goal === 'capture_factory')         return o.type === 'factory' && o.owner !== robot.owner;
+        if (robot.goal === 'capture_enemy_factory')   return o.type === 'factory' && o.owner !== undefined && o.owner !== robot.owner;
+        if (robot.goal === 'capture_neutral_factory') return o.type === 'factory' && o.owner === undefined;
+        if (robot.goal === 'capture_warbase')         return o.type === 'warbase' && o.owner !== robot.owner;
+        if (robot.goal === 'capture_enemy_warbase')   return o.type === 'warbase' && o.owner !== undefined && o.owner !== robot.owner;
+        if (robot.goal === 'capture_neutral_warbase') return o.type === 'warbase' && o.owner === undefined;
         return false;
     });
     if (candidates.length === 0) return undefined;
