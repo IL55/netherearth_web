@@ -1,6 +1,9 @@
 import type { MapData } from '../data/map';
 import type { RobotConfig } from '../data/robot';
 
+export type RobotGoal = 'attack_robots' | 'defend' | 'capture_factory' | 'capture_warbase';
+export type RobotAI   = 'dummy' | 'advanced';
+
 export interface WarObject {
     id: string;
     type: string;       // 'tile' | 'factory' | 'warbase' | 'robot' | 'wall*' | 'fence'
@@ -10,12 +13,16 @@ export interface WarObject {
     subtype?: string;   // tile type (e.g. 'G'), factory subtype
     rotation?: number;  // robot facing (radians)
     robotConfig?: RobotConfig;
+    goal?: RobotGoal;
+    ai?: RobotAI;
+    slowCounter?: number; // ticks accumulated for terrain speed penalty
 }
 
 export interface WarMap {
     width: number;
     height: number;
     objects: WarObject[];
+    tick?: number;
 }
 
 export function createWarMap(mapData: MapData): WarMap {

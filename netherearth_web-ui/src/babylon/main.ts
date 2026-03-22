@@ -5,9 +5,11 @@ import { loadMap } from './data/map';
 import { debugLoadMap } from './view/map/map';
 import { Renderer } from './view/map/renderer';
 import { createWarMap } from './game/warmap';
+import type { RobotGoal } from './game/warmap';
 import { robotConfigs } from './data/robot';
 import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';
+import { startClock } from './game/clock';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -26,14 +28,20 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const warMap = createWarMap(mapData);
   warMap.objects.filter(o => o.type === 'factory').forEach(o => { o.owner = 2; });
+
+  const goals: RobotGoal[] = ['attack_robots', 'capture_factory', 'capture_warbase', 'defend'];
+  const configValues = Object.values(robotConfigs);
   for (let x = 0; x < mapData.width; x++) {
     warMap.objects.push({
       id: `robot_${x}`,
       type: 'robot',
       x,
       y: 14,
-      robotConfig: Object.values(robotConfigs)[x % Object.values(robotConfigs).length],
+      owner: x % 2 === 0 ? 1 : 2,
+      robotConfig: configValues[x % configValues.length],
       rotation: -Math.PI / 2,
+      goal: goals[x % goals.length],
+      ai: 'dummy',
     });
   }
 
@@ -48,6 +56,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   attachCameraControls(scene, camera);
   attachGameControls(scene, warMap, () => renderer.render(warMap));
+  startClock(warMap, () => renderer.render(warMap));
 
   return scene;
 };
