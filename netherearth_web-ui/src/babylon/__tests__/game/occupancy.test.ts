@@ -14,17 +14,27 @@ describe('buildOccupancy', () => {
         expect(occ.robots[0]).toMatchObject({ id: 'r1', x: 2.75, y: 3.5 });
     });
 
-    it('stores blocking structures by cell key', () => {
+    it('stores factory as AABB inflated by MOVE_STEP beyond visual edge', () => {
         const map = makeMap([{ id: 'f1', type: 'factory', x: 5, y: 7, subtype: 'cannons' }]);
         const occ = buildOccupancy(map);
-        expect(occ.structures.has('5,7')).toBe(true);
+        expect(occ.structures).toHaveLength(1);
+        // factory visual edge at ±0.5/+1.5/+2.5, inflated by 0.25
+        expect(occ.structures[0]).toMatchObject({ x0: 4.25, y0: 6.25, x1: 6.75, y1: 9.75 });
+    });
+
+    it('stores 1×1 wall as AABB inflated by MOVE_STEP beyond visual edge', () => {
+        const map = makeMap([{ id: 'w1', type: 'wall3', x: 2, y: 49 }]);
+        const occ = buildOccupancy(map);
+        expect(occ.structures).toHaveLength(1);
+        // visual edge at ±0.5, inflated by 0.25
+        expect(occ.structures[0]).toMatchObject({ x0: 1.25, y0: 48.25, x1: 2.75, y1: 49.75 });
     });
 
     it('does not add tiles to occupancy', () => {
         const map = makeMap([{ id: 't1', type: 'tile', x: 1, y: 1, subtype: 'G' }]);
         const occ = buildOccupancy(map);
         expect(occ.robots).toHaveLength(0);
-        expect(occ.structures.size).toBe(0);
+        expect(occ.structures).toHaveLength(0);
     });
 });
 
@@ -62,19 +72,43 @@ describe('isOccupied — robots', () => {
     });
 });
 
-describe('isOccupied — structures', () => {
-    it('blocked inside structure cell', () => {
-        const map = makeMap([{ id: 'w1', type: 'warbase', x: 2, y: 5 }]);
+describe('isOccupied — structures (AABB, no floor)', () => {
+    it('blocked at structure center', () => {
+        const map = makeMap([{ id: 'w1', type: 'wall3', x: 2, y: 5 }]);
         const occ = buildOccupancy(map);
         expect(isOccupied(occ, 2, 5)).toBe(true);
-        expect(isOccupied(occ, 2.5, 5.25)).toBe(true); // same cell
     });
 
-    it('not blocked outside warbase footprint (warbase spans 4×5 cells)', () => {
-        const map = makeMap([{ id: 'w1', type: 'warbase', x: 2, y: 5 }]);
+    it('blocked inside wall AABB — position that floor() would have missed', () => {
+        // wall3 at (2,49): inflated AABB x=[1.25, 2.75), y=[48.25, 49.75)
+        // floor(1.75)=1 → old code missed it; AABB catches it
+        const map = makeMap([{ id: 'w1', type: 'wall3', x: 2, y: 49 }]);
         const occ = buildOccupancy(map);
-        // warbase at (2,5) blocks cells x=[2,5], y=[5,9]; (6,5) is outside that range
-        expect(isOccupied(occ, 6, 5)).toBe(false);
+        expect(isOccupied(occ, 1.75, 49)).toBe(true);
+        expect(isOccupied(occ, 1.25, 49)).toBe(true);   // at inflated AABB left edge
+    });
+
+    it('not blocked just outside wall AABB', () => {
+        const map = makeMap([{ id: 'w1', type: 'wall3', x: 2, y: 49 }]);
+        const occ = buildOccupancy(map);
+        expect(isOccupied(occ, 1.0,  49)).toBe(false);  // one MOVE_STEP outside inflated edge
+        expect(isOccupied(occ, 2.75, 49)).toBe(false);  // at right edge (exclusive)
+    });
+
+    it('blocked inside warbase AABB', () => {
+        const map = makeMap([{ id: 'wb', type: 'warbase', x: 2, y: 5 }]);
+        const occ = buildOccupancy(map);
+        // warbase at (2,5): inflated x=[1.25, 5.75), y=[4.25, 9.75)
+        expect(isOccupied(occ, 2, 5)).toBe(true);
+        expect(isOccupied(occ, 5.5, 9.5)).toBe(true);   // near far corner, inside
+    });
+
+    it('not blocked outside warbase AABB', () => {
+        const map = makeMap([{ id: 'wb', type: 'warbase', x: 2, y: 5 }]);
+        const occ = buildOccupancy(map);
+        // warbase at (2,5): inflated x1=5.75, y1=9.75
+        expect(isOccupied(occ, 5.75, 5)).toBe(false);   // at right edge (exclusive)
+        expect(isOccupied(occ, 6,    5)).toBe(false);   // clearly outside
     });
 });
 

@@ -75,6 +75,37 @@ The simulation runs on an **internal tick loop** (default 500 ms/tick):
 
 Tick count is stored in `warMap.tick`.
 
+## Collision System
+
+### Structure collision — AABB, never floor()
+
+Every blocking structure is an **axis-aligned bounding box (AABB)**.
+A robot's movement target `(tx, ty)` is blocked when its center falls inside the box:
+
+```
+tx >= x0  &&  tx < x1  &&  ty >= y0  &&  ty < y1
+```
+
+All models are visually **centered** on their `(x, y)` origin (a 1×1 model spans `[x−0.5, x+0.5)`).
+`STRUCTURE_AABB` in `occupancy.ts` defines the offsets for each type:
+
+| Type | x range | y range |
+|------|---------|---------|
+| wall\*, fence (1×1) | `[x−0.5, x+0.5)` | `[y−0.5, y+0.5)` |
+| factory (2 cols × 3 rows) | `[x−0.5, x+1.5)` | `[y−0.5, y+2.5)` |
+| warbase (4 cols × 5 rows) | `[x−0.5, x+3.5)` | `[y−0.5, y+4.5)` |
+
+**Do NOT use `floor()` / `Math.floor()` for structure collision.**
+`floor()` maps a continuous position to an integer cell index, which only works when
+model origins are at cell *corners*. Our models use centered origins, so `floor(1.75) = 1`
+would wrongly allow a robot to stop at `x=1.75` inside a wall centered at `x=2.0`.
+The AABB approach catches this correctly.
+
+### Robot–robot collision
+
+Uses **Chebyshev distance** (square footprint): blocked when
+`max(|dx|, |dy|) < ROBOT_COLLISION_DISTANCE` (1.0).
+
 ## Structures
 
 | Type | Blocks movement | Capturable |
