@@ -28,6 +28,11 @@ export type RobotAction =
 // Robots move in 1/4 grid increments per tick (4 ticks to cross one cell)
 export const MOVE_STEP = 0.25;
 
+// Map coordinate system:
+//   x: 0 = west edge, increases eastward,  max center = width−1
+//   y: 0 = north edge, increases southward, max center = height−1
+// Tiles are centered at integer positions, so tile (x,y) occupies [x−0.5, x+0.5] in world space.
+// Robot center is kept in [0, width−1] × [0, height−1]; body (±0.5) then stays within the tile grid.
 const DIR_DELTA: Record<Direction, { dx: number; dy: number }> = {
     N: { dx:  0, dy: -MOVE_STEP },
     S: { dx:  0, dy:  MOVE_STEP },
@@ -94,7 +99,7 @@ export function applyAction(
     const tx = robot.x + dx;
     const ty = robot.y + dy;
 
-    if (tx < 0 || tx >= warMap.width || ty < 0 || ty >= warMap.height) return false;
+    if (tx < 0 || tx > warMap.width - 1 || ty < 0 || ty > warMap.height - 1) return false;
 
     const tileSubtype = getTileSubtype(warMap, tx, ty);
     const rule = getTerrainRule(tileSubtype, chassis);

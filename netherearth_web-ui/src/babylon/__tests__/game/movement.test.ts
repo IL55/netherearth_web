@@ -165,7 +165,8 @@ describe('bipod + mountain barrier', () => {
 describe('boundary: robot stays within map bounds', () => {
     /**
      * Four scenarios each push the robot toward a different map edge via wall_follow.
-     * In all cases x and y must remain in [0, width) × [0, height) every tick.
+     * Valid range: x ∈ [0, width−1], y ∈ [0, height−1].
+     * (Center-based coords; tiles are centered at integers so the last tile center is width−1.)
      *
      *  left  (min-x): U-trap open to the west  — robot travels west then north
      *  right (max-x): U-trap open to the east  — robot travels east then south
@@ -182,7 +183,7 @@ describe('boundary: robot stays within map bounds', () => {
             applyAction(robot, dummyAI(robot, map, occ), map, occ);
             minX = Math.min(minX, robot.x); maxX = Math.max(maxX, robot.x);
             minY = Math.min(minY, robot.y); maxY = Math.max(maxY, robot.y);
-            if (robot.x < 0 || robot.y < 0 || robot.x >= map.width || robot.y >= map.height) {
+            if (robot.x < 0 || robot.y < 0 || robot.x > map.width - 1 || robot.y > map.height - 1) {
                 violated = true; break;
             }
         }
@@ -217,7 +218,7 @@ describe('boundary: robot stays within map bounds', () => {
 
         const { violated, maxX } = checkBounds(map, robot, 400);
         expect(violated).toBe(false);
-        expect(maxX).toBeLessThan(20);
+        expect(maxX).toBeLessThanOrEqual(map.width - 1);
     });
 
     it('top boundary (min-y): wall row forces robot north, never exits y < 0', () => {
@@ -245,7 +246,7 @@ describe('boundary: robot stays within map bounds', () => {
 
         const { violated, maxY } = checkBounds(map, robot, 400);
         expect(violated).toBe(false);
-        expect(maxY).toBeLessThan(12);
+        expect(maxY).toBeLessThanOrEqual(map.height - 1);
     });
 });
 

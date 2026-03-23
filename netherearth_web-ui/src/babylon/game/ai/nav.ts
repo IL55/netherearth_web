@@ -33,7 +33,7 @@ export function isPassable(
     x: number,
     y: number,
 ): boolean {
-    if (x < 0 || y < 0 || x >= warMap.width || y >= warMap.height) return false;
+    if (x < 0 || y < 0 || x > warMap.width - 1 || y > warMap.height - 1) return false;
     const chassis = chassisTypeOf(robot.robotConfig?.chassis ?? 'tracks');
     if (!getTerrainRule(tileAt(warMap, x, y), chassis).passable) return false;
     if (isOccupied(occupancy, x, y, robot.id)) return false;
