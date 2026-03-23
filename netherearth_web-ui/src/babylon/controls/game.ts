@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import { cycleOwner, rotateRobots, moveRobotsForward } from '../game/warmap';
+import { cycleOwner } from '../game/warmap';
 import type { WarMap } from '../game/warmap';
 
 export const attachGameControls = (
@@ -15,8 +15,6 @@ export const attachGameControls = (
                 warMap.objects
                     .filter(o => o.type === 'factory' || o.type === 'warbase')
                     .forEach(o => cycleOwner(o));
-                rotateRobots(warMap);
-                moveRobotsForward(warMap);
                 onUpdate();
                 break;
             }

@@ -2,12 +2,15 @@ import type { WarMap, WarObject } from './warmap';
 import type { OccupancyMap } from './occupancy';
 import { isOccupied, updateRobotPosition } from './occupancy';
 import { getTerrainRule, chassisTypeOf } from './terrain';
+import { WEAPON_DAMAGE, WEAPON_RANGE, calcDamageFalloff } from '../data/robot';
+import { spawnProjectile } from './projectile';
 
 export type Direction = 'N' | 'E' | 'S' | 'W';
 
 export type RobotAction =
     | { type: 'move'; direction: Direction }
     | { type: 'rotate'; direction: 'left' | 'right' }
+    | { type: 'fire'; targetId: string }
     | { type: 'idle' };
 
 // Robots move in 1/4 grid increments per tick (4 ticks to cross one cell)
@@ -26,6 +29,14 @@ export function rotationToDirection(rotation: number): Direction {
     const normalized = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
     const idx = Math.round(normalized / (Math.PI / 2)) % 4;
     return (['E', 'N', 'W', 'S'] as Direction[])[idx];
+}
+
+// Primary cardinal direction from (fromX, fromY) toward (toX, toY).
+function directionToward(fromX: number, fromY: number, toX: number, toY: number): Direction {
+    const dx = toX - fromX;
+    const dy = toY - fromY;
+    if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? 'E' : 'W';
+    return dy > 0 ? 'S' : 'N';
 }
 
 export function directionToRotation(dir: Direction): number {
@@ -51,6 +62,25 @@ export function applyAction(
     if (action.type === 'rotate') {
         const delta = action.direction === 'right' ? Math.PI / 2 : -Math.PI / 2;
         robot.rotation = (robot.rotation ?? 0) + delta;
+        return true;
+    }
+
+    if (action.type === 'fire') {
+        robot.lastFiredAt = warMap.tick ?? 0;
+        const target = warMap.objects.find(o => o.id === action.targetId);
+        if (target) {
+            const weapon = robot.robotConfig?.weapon;
+            if (weapon && target.health !== undefined) {
+                const baseDmg  = WEAPON_DAMAGE[weapon] ?? 0;
+                const maxRange = WEAPON_RANGE[weapon]  ?? 1;
+                const dist     = Math.abs(target.x - robot.x) + Math.abs(target.y - robot.y);
+                const dmg      = Math.round(baseDmg * calcDamageFalloff(dist, maxRange));
+                target.health  = Math.max(0, target.health - dmg);
+            }
+            // Target immediately rotates to face the attacker
+            target.rotation = directionToRotation(directionToward(target.x, target.y, robot.x, robot.y));
+            spawnProjectile(warMap, robot, target);
+        }
         return true;
     }
 

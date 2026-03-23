@@ -1,6 +1,17 @@
 import type { MapData } from '../data/map';
 import type { RobotConfig } from '../data/robot';
 
+export type WeaponType = 'cannon' | 'missile' | 'phaser';
+
+export interface Projectile {
+    id: string;
+    weaponType: WeaponType;
+    fromX: number; fromY: number;
+    toX:   number; toY:   number;
+    progress: number; // 0.0 → 1.0; advances each sub-tick by 1/SUB_TICKS
+    ownerId: string;
+}
+
 export type RobotGoal =
     | 'attack_robots'
     | 'capture_factory'         // any non-owned factory (enemy or neutral)
@@ -23,7 +34,15 @@ export interface WarObject {
     robotConfig?: RobotConfig;
     goal?: RobotGoal;
     ai?: RobotAI;
-    slowCounter?: number; // ticks accumulated for terrain speed penalty
+    health?: number;         // hit points 1–100, derived from robot parts at creation; decreases when hit
+    lastFiredAt?: number;    // warMap.tick when this robot last fired (for weapon cooldown)
+    dyingTicks?: number;     // countdown for death-blink animation; robot removed when it reaches 0
+    slowCounter?: number;    // ticks accumulated for terrain speed penalty
+    captureCounter?: number; // ticks a robot has been in this structure's capture zone
+    stuckTicks?: number;          // consecutive ticks with no progress toward goal (distance not decreasing)
+    stuckCheckDist?: number;      // last recorded Manhattan distance to goal — used to detect stagnation
+    navMode?: 'goal' | 'wall_follow'; // 'wall_follow' = boundary tracing when stuck (Bug2-style)
+    wallFollowStartDist?: number; // dist to goal when wall_follow mode was entered; exit when dist falls below this
 }
 
 export interface WarMap {
@@ -31,6 +50,7 @@ export interface WarMap {
     height: number;
     objects: WarObject[];
     tick?: number;
+    projectiles?: Projectile[];
 }
 
 export function createWarMap(mapData: MapData): WarMap {
@@ -53,7 +73,7 @@ export function createWarMap(mapData: MapData): WarMap {
         });
     });
 
-    return { width: mapData.width, height: mapData.height, objects };
+    return { width: mapData.width, height: mapData.height, objects, projectiles: [] };
 }
 
 export function removeObject(warMap: WarMap, id: string): void {

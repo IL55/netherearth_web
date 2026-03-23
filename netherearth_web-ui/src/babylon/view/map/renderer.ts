@@ -84,6 +84,8 @@ export class Renderer {
         } else if (obj.type === 'warbase') {
             addWarbase(this.models, this.scene, this.mapBegin, obj.x, obj.y, obj.owner);
         } else if (obj.type === 'robot') {
+            // Death blink: hide on odd ticks, show on even ticks
+            if (obj.dyingTicks !== undefined && obj.dyingTicks % 2 === 1) return;
             if (obj.robotConfig) {
                 placeRobot(this.models, this.mapBegin, obj.x, obj.y, obj.robotConfig, obj.rotation ?? 0);
             }

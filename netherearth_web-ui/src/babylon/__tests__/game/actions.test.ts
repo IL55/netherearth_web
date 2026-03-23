@@ -8,7 +8,8 @@ function makeMap(objects: WarMap['objects'] = [], width = 20, height = 20): WarM
 }
 
 function makeRobot(id: string, x: number, y: number, rotation = 0): WarObject {
-    return { id, type: 'robot', x, y, rotation };
+    // antigrav: speedFactor=1 on all terrain — avoids terrain-slowdown interference in movement tests
+    return { id, type: 'robot', x, y, rotation, robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' } };
 }
 
 describe('rotationToDirection / directionToRotation round-trip', () => {

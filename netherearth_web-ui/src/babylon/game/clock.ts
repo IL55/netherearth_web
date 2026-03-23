@@ -2,35 +2,67 @@ import type { WarMap } from './warmap';
 import { buildOccupancy } from './occupancy';
 import { applyAction } from './actions';
 import { dummyAI } from './ai/dummy';
+import { tickCapture } from './capture';
+import { advanceProjectiles, SUB_TICKS } from './projectile';
 
 export interface Clock {
     stop: () => void;
 }
 
-// Starts the game simulation loop.
-// intervalMs: time between ticks (default 500ms)
+// One game tick = SUB_TICKS sub-ticks.
+// Sub-ticks advance projectiles and call onTick (renderer).
+// Every SUB_TICKS sub-ticks the full game logic (AI, movement, capture) also runs.
+// Default sub-tick interval is 100ms → game tick every 500ms.
 export function startClock(
     warMap: WarMap,
     onTick: () => void,
-    intervalMs = 500,
+    subTickMs = 100,
 ): Clock {
+    let subTick = 0;
     const id = setInterval(() => {
-        tick(warMap);
+        if (subTick === 0) {
+            gameTick(warMap);
+        }
+        advanceProjectiles(warMap);
         onTick();
-    }, intervalMs);
+        subTick = (subTick + 1) % SUB_TICKS;
+    }, subTickMs);
     return { stop: () => clearInterval(id) };
 }
 
-function tick(warMap: WarMap): void {
+// Number of ticks for the death-blink animation (show/hide alternates each tick).
+const DEATH_BLINK_TICKS = 6; // 3 blinks: show@6, hide@5, show@4, hide@3, show@2, hide@1 → removed
+
+function gameTick(warMap: WarMap): void {
     warMap.tick = (warMap.tick ?? 0) + 1;
+
+    // Step dying-robot countdown; remove those that have finished
+    for (const obj of warMap.objects) {
+        if (obj.type === 'robot' && obj.dyingTicks !== undefined) {
+            obj.dyingTicks--;
+        }
+    }
+    warMap.objects = warMap.objects.filter(
+        o => o.type !== 'robot' || o.dyingTicks === undefined || o.dyingTicks > 0,
+    );
 
     const occupancy = buildOccupancy(warMap);
 
-    for (const obj of warMap.objects) {
-        if (obj.type !== 'robot') continue;
+    // Run AI only for live (non-dying) robots
+    for (const obj of [...warMap.objects]) {
+        if (obj.type !== 'robot' || obj.dyingTicks !== undefined) continue;
 
         const ai = obj.ai ?? 'dummy';
         const action = ai === 'dummy' ? dummyAI(obj, warMap, occupancy) : { type: 'idle' as const };
         applyAction(obj, action, warMap, occupancy);
     }
+
+    // Start death animation for robots that just reached 0 health
+    for (const obj of warMap.objects) {
+        if (obj.type === 'robot' && (obj.health ?? 1) <= 0 && obj.dyingTicks === undefined) {
+            obj.dyingTicks = DEATH_BLINK_TICKS;
+        }
+    }
+
+    tickCapture(warMap);
 }

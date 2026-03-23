@@ -14,12 +14,25 @@ describe('buildOccupancy', () => {
         expect(occ.robots[0]).toMatchObject({ id: 'r1', x: 2.75, y: 3.5 });
     });
 
-    it('stores factory as AABB inflated by MOVE_STEP beyond visual edge', () => {
+    it('factory produces 5 part AABBs (C-shape, hole at xo=1 yo=1)', () => {
         const map = makeMap([{ id: 'f1', type: 'factory', x: 5, y: 7, subtype: 'cannons' }]);
         const occ = buildOccupancy(map);
-        expect(occ.structures).toHaveLength(1);
-        // factory visual edge at ±0.5/+1.5/+2.5, inflated by 0.25
-        expect(occ.structures[0]).toMatchObject({ x0: 4.25, y0: 6.25, x1: 6.75, y1: 9.75 });
+        expect(occ.structures).toHaveLength(5);
+        // left column
+        expect(occ.structures[0]).toMatchObject({ x0: 4.25, y0: 6.25, x1: 5.75, y1: 7.75 }); // (0,0)
+        expect(occ.structures[1]).toMatchObject({ x0: 4.25, y0: 7.25, x1: 5.75, y1: 8.75 }); // (0,1)
+        expect(occ.structures[2]).toMatchObject({ x0: 4.25, y0: 8.25, x1: 5.75, y1: 9.75 }); // (0,2)
+        // right column — no part at (1,1)
+        expect(occ.structures[3]).toMatchObject({ x0: 5.25, y0: 6.25, x1: 6.75, y1: 7.75 }); // (1,0)
+        expect(occ.structures[4]).toMatchObject({ x0: 5.25, y0: 8.25, x1: 6.75, y1: 9.75 }); // (1,2)
+    });
+
+    it('factory hole at (xo=1, yo=1) is accessible', () => {
+        const map = makeMap([{ id: 'f1', type: 'factory', x: 5, y: 7, subtype: 'cannons' }]);
+        const occ = buildOccupancy(map);
+        // capture zone center (5+1, 7+1) = (6, 8) must not be blocked
+        expect(isOccupied(occ, 6, 8)).toBe(false);
+        expect(isOccupied(occ, 6.25, 8)).toBe(false);
     });
 
     it('stores 1×1 wall as AABB inflated by MOVE_STEP beyond visual edge', () => {
@@ -102,20 +115,26 @@ describe('isOccupied — structures (AABB, no floor)', () => {
         expect(isOccupied(occ, 2.75, 49)).toBe(true);   // exactly at x1 — robot stops here, half-width clears visual edge
     });
 
-    it('blocked inside warbase AABB', () => {
+    it('blocked inside warbase wall parts', () => {
         const map = makeMap([{ id: 'wb', type: 'warbase', x: 2, y: 5 }]);
         const occ = buildOccupancy(map);
-        // warbase at (2,5): inflated x=[1.25, 5.75), y=[4.25, 9.75)
-        expect(isOccupied(occ, 2, 5)).toBe(true);
-        expect(isOccupied(occ, 5.5, 9.5)).toBe(true);   // near far corner, inside
+        expect(isOccupied(occ, 2, 5)).toBe(true);   // inside top part (xo=0.5, yo=0)
+        expect(isOccupied(occ, 5, 8)).toBe(true);   // inside bottom-right part (xo=3, yo=3)
     });
 
-    it('not blocked outside warbase AABB', () => {
+    it('not blocked at warbase capture hole (right-side gap at xo≈3.5, yo≈2)', () => {
         const map = makeMap([{ id: 'wb', type: 'warbase', x: 2, y: 5 }]);
         const occ = buildOccupancy(map);
-        // warbase at (2,5): inflated x1=5.75 — boundary is now inclusive so robot stops at 6.0
-        expect(isOccupied(occ, 5.75, 5)).toBe(true);    // at right edge (inclusive) — blocked
-        expect(isOccupied(occ, 6.0,  5)).toBe(false);   // one MOVE_STEP beyond right edge — free
+        // gap between (xo=3,yo=1) AABB top=6.75 and (xo=3,yo=3) AABB bottom=7.25
+        expect(isOccupied(occ, 5.5, 7)).toBe(false);
+    });
+
+    it('not blocked outside warbase right wall', () => {
+        const map = makeMap([{ id: 'wb', type: 'warbase', x: 2, y: 5 }]);
+        const occ = buildOccupancy(map);
+        // part (xo=3, yo=1): AABB x=[4.25, 5.75], y=[5.25, 6.75]
+        expect(isOccupied(occ, 5.75, 6)).toBe(true);   // at right edge (inclusive) — blocked
+        expect(isOccupied(occ, 6.0,  6)).toBe(false);  // one MOVE_STEP beyond right edge — free
     });
 });
 

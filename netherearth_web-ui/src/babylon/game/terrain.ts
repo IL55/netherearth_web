@@ -9,17 +9,20 @@ interface TerrainRule {
 }
 
 // tile subtype → chassis type → rule
+//   tracks:   any terrain except holes; slower on sand and mountains
+//   antigrav: best — full speed on all terrain including holes (flies over)
+//   bipod:    grass and sand only, always at half speed
 const TERRAIN: Record<string, Partial<Record<ChassisType, TerrainRule>>> = {
-    G:  { tracks: { passable: true, speedFactor: 1   }, antigrav: { passable: true, speedFactor: 1   }, bipod: { passable: true, speedFactor: 1   } },
-    S:  { tracks: { passable: true, speedFactor: 0.5 }, antigrav: { passable: true, speedFactor: 1   }, bipod: { passable: true, speedFactor: 0.5 } },
-    S2: { tracks: { passable: true, speedFactor: 0.5 }, antigrav: { passable: true, speedFactor: 1   }, bipod: { passable: true, speedFactor: 0.5 } },
-    M:  { tracks: { passable: false, speedFactor: 0  }, antigrav: { passable: true, speedFactor: 0.5 }, bipod: { passable: true, speedFactor: 0.5 } },
-    H1: { tracks: { passable: false, speedFactor: 0  }, antigrav: { passable: false, speedFactor: 0  }, bipod: { passable: false, speedFactor: 0  } },
-    H2: { tracks: { passable: false, speedFactor: 0  }, antigrav: { passable: false, speedFactor: 0  }, bipod: { passable: false, speedFactor: 0  } },
-    H3: { tracks: { passable: false, speedFactor: 0  }, antigrav: { passable: false, speedFactor: 0  }, bipod: { passable: false, speedFactor: 0  } },
-    H4: { tracks: { passable: false, speedFactor: 0  }, antigrav: { passable: false, speedFactor: 0  }, bipod: { passable: false, speedFactor: 0  } },
-    H5: { tracks: { passable: false, speedFactor: 0  }, antigrav: { passable: false, speedFactor: 0  }, bipod: { passable: false, speedFactor: 0  } },
-    H6: { tracks: { passable: false, speedFactor: 0  }, antigrav: { passable: false, speedFactor: 0  }, bipod: { passable: false, speedFactor: 0  } },
+    G:  { tracks: { passable: true,  speedFactor: 0.75 }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: true,  speedFactor: 0.5 } },
+    S:  { tracks: { passable: true,  speedFactor: 0.5 }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: true,  speedFactor: 0.5 } },
+    S2: { tracks: { passable: true,  speedFactor: 0.5 }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: true,  speedFactor: 0.5 } },
+    M:  { tracks: { passable: true,  speedFactor: 0.5 }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
+    H1: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
+    H2: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
+    H3: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
+    H4: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
+    H5: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
+    H6: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
 };
 
 const DEFAULT_RULE: TerrainRule = { passable: true, speedFactor: 1 };

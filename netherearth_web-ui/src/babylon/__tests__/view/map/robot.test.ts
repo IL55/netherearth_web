@@ -9,12 +9,17 @@ import type { RobotConfig } from '../../../view/map/robot';
 const configs = Object.values(robotConfigs) as RobotConfig[];
 
 describe('robotConfigs', () => {
-    it('each config has chassis, weapon, and electronics', () => {
+    it('each config has chassis and electronics', () => {
         configs.forEach(config => {
             expect(config.chassis).toBeTruthy();
-            expect(config.weapon).toBeTruthy();
             expect(config.electronics).toBeTruthy();
         });
+    });
+
+    it('armed configs have a weapon', () => {
+        const armed = configs.filter(c => c.weapon);
+        expect(armed.length).toBeGreaterThan(0);
+        armed.forEach(config => expect(config.weapon).toBeTruthy());
     });
 
     it('chassis and electronics belong to the same team prefix', () => {
@@ -33,8 +38,8 @@ describe('robotConfigs', () => {
         });
     });
 
-    it('has 6 configs', () => {
-        expect(configs).toHaveLength(6);
+    it('has 7 configs', () => {
+        expect(configs).toHaveLength(7);
     });
 });
 
@@ -70,8 +75,8 @@ describe('placeRobot', () => {
         expect(() => placeRobot(partial, mapBegin, 5, 5, robotConfigs['h-cannon'], 0, STACK_GAP)).not.toThrow();
     });
 
-    it('adds 3 transform nodes for a config without nuclear', () => {
-        const config = configs.find(c => !c.nuclearModel)!;
+    it('adds 3 transform nodes for an armed config without nuclear', () => {
+        const config = configs.find(c => c.weapon && !c.nuclearModel)!;
         const before = scene.transformNodes.length;
         placeRobot(models, mapBegin, 0, 0, config, 0, STACK_GAP);
         expect(scene.transformNodes.length - before).toBe(3); // chassis + weapon + electronics
@@ -130,7 +135,7 @@ describe('placeRobot', () => {
         expect(minY).toBeCloseTo(1, 1);
     });
 
-    it('all six configs place robots without throwing', () => {
+    it('all configs place robots without throwing', () => {
         configs.forEach((config, i) => {
             expect(() => placeRobot(models, mapBegin, i, 0, config, 0, STACK_GAP)).not.toThrow();
         });

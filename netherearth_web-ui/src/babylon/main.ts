@@ -6,7 +6,7 @@ import { debugLoadMap } from './view/map/map';
 import { Renderer } from './view/map/renderer';
 import { createWarMap } from './game/warmap';
 import type { RobotGoal } from './game/warmap';
-import { robotConfigs } from './data/robot';
+import { robotConfigs, calcHealth } from './data/robot';
 import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';
 import { startClock } from './game/clock';
@@ -39,6 +39,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       y: 14,
       owner: x % 2 === 0 ? 1 : 2,
       robotConfig: configValues[x % configValues.length],
+      health: calcHealth(configValues[x % configValues.length]),
       rotation: -Math.PI / 2,
       goal: goals[x % goals.length],
       ai: 'dummy',

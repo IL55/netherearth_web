@@ -54,7 +54,7 @@ export const placeRobot = (
     if (!chassis) return;
     let topY = placePart(chassis, tx, 1, tz, rotation);
 
-    const weapon = models.get(config.weapon);
+    const weapon = config.weapon ? models.get(config.weapon) : undefined;
     if (weapon) topY = placePart(weapon, tx, topY, tz, rotation);
 
     if (config.nuclearModel) {
