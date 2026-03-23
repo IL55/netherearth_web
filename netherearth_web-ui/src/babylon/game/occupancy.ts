@@ -2,49 +2,39 @@ import type { WarMap } from './warmap';
 
 interface AABBDef { dx0: number; dy0: number; dx1: number; dy1: number; }
 
-// Inflate all AABBs by MOVE_STEP (0.25) beyond the visual model edge so robot
-// chassis (~1.0 unit wide) clears the wall visually on all four sides.
-// Both bounds are INCLUSIVE (>=, <=) for symmetric clearance.
-// DO NOT switch back to floor()/cellKey — see game.md "Collision System".
-const INFLATE = 0.25;
+// All structures are 1×1 blocks. AABBs use exact visual boundaries (±0.5 from center).
+// isOccupied checks robot box [rx±0.5] vs structure box overlap — no inflation needed.
 
-const DEFAULT_AABB: AABBDef = {
-    dx0: -(0.5 + INFLATE), dy0: -(0.5 + INFLATE),
-    dx1:   0.5 + INFLATE,  dy1:   0.5 + INFLATE,
-};
+const DEFAULT_AABB: AABBDef = { dx0: -0.5, dy0: -0.5, dx1: 0.5, dy1: 0.5 };
 
-// Per-structure AABB parts (relative to obj.x, obj.y).
-// Factory is C-shaped: left column of 3 + right top+bottom, hole at (xo=1, yo=1).
-// Any type not listed here uses a single DEFAULT_AABB.
+// Per-structure AABB parts (relative to obj.x, obj.y), one entry per 1×1 block.
+// Factory is C-shaped: left column at xo=0 (yo=0,1,2) + right top/bottom at xo=1 (yo=0,2).
+// Hole at (xo=1, yo=1) is the capture slot.
+// Warbase: 15 blocks; hole at (xo≈3.5, yo≈2) is the capture slot.
 const STRUCTURE_PARTS: Partial<Record<string, AABBDef[]>> = {
     factory: [
-        // Left column: highwall1 at (xo=0, yo=0..2)
-        { dx0: -0.75, dy0: -0.75, dx1:  0.75, dy1:  0.75 },  // (0,0)
-        { dx0: -0.75, dy0:  0.25, dx1:  0.75, dy1:  1.75 },  // (0,1)
-        { dx0: -0.75, dy0:  1.25, dx1:  0.75, dy1:  2.75 },  // (0,2)
-        // Right column: lowwall2 at (xo=1, yo=0) and (xo=1, yo=2) — yo=1 is the capture slot
-        { dx0:  0.25, dy0: -0.75, dx1:  1.75, dy1:  0.75 },  // (1,0)
-        { dx0:  0.25, dy0:  1.25, dx1:  1.75, dy1:  2.75 },  // (1,2)
+        { dx0: -0.5, dy0: -0.5, dx1:  0.5, dy1:  0.5 },  // (0,0)
+        { dx0: -0.5, dy0:  0.5, dx1:  0.5, dy1:  1.5 },  // (0,1)
+        { dx0: -0.5, dy0:  1.5, dx1:  0.5, dy1:  2.5 },  // (0,2)
+        { dx0:  0.5, dy0: -0.5, dx1:  1.5, dy1:  0.5 },  // (1,0)
+        { dx0:  0.5, dy0:  1.5, dx1:  1.5, dy1:  2.5 },  // (1,2)
     ],
-    // Warbase: 15 individual parts matching WARBASE_PARTS in view/map/warbase.ts.
-    // Each part is a 1×1 model centered at (obj.x + xo, obj.y + yo), inflated by INFLATE.
-    // Hole at (xo≈3.5, yo≈2.0): gap between right-column parts (xo=3,yo=1) and (xo=3,yo=3).
     warbase: [
-        { dx0: -0.25, dy0: -0.75, dx1:  1.25, dy1:  0.75 },  // xo=0.5, yo=0
-        { dx0:  0.75, dy0: -0.75, dx1:  2.25, dy1:  0.75 },  // xo=1.5, yo=0
-        { dx0: -0.75, dy0:  0.25, dx1:  0.75, dy1:  1.75 },  // xo=0,   yo=1
-        { dx0:  0.25, dy0:  0.25, dx1:  1.75, dy1:  1.75 },  // xo=1,   yo=1
-        { dx0:  1.25, dy0:  0.25, dx1:  2.75, dy1:  1.75 },  // xo=2,   yo=1
-        { dx0:  2.25, dy0:  0.25, dx1:  3.75, dy1:  1.75 },  // xo=3,   yo=1
-        { dx0: -0.25, dy0:  1.25, dx1:  1.25, dy1:  2.75 },  // xo=0.5, yo=2
-        { dx0:  0.75, dy0:  1.25, dx1:  2.25, dy1:  2.75 },  // xo=1.5, yo=2
-        { dx0:  1.75, dy0:  1.25, dx1:  3.25, dy1:  2.75 },  // xo=2.5, yo=2
-        { dx0: -0.75, dy0:  2.25, dx1:  0.75, dy1:  3.75 },  // xo=0,   yo=3
-        { dx0:  0.25, dy0:  2.25, dx1:  1.75, dy1:  3.75 },  // xo=1,   yo=3
-        { dx0:  1.25, dy0:  2.25, dx1:  2.75, dy1:  3.75 },  // xo=2,   yo=3
-        { dx0:  2.25, dy0:  2.25, dx1:  3.75, dy1:  3.75 },  // xo=3,   yo=3
-        { dx0: -0.25, dy0:  3.25, dx1:  1.25, dy1:  4.75 },  // xo=0.5, yo=4
-        { dx0:  0.75, dy0:  3.25, dx1:  2.25, dy1:  4.75 },  // xo=1.5, yo=4
+        { dx0:  0.0, dy0: -0.5, dx1:  1.0, dy1:  0.5 },  // xo=0.5, yo=0
+        { dx0:  1.0, dy0: -0.5, dx1:  2.0, dy1:  0.5 },  // xo=1.5, yo=0
+        { dx0: -0.5, dy0:  0.5, dx1:  0.5, dy1:  1.5 },  // xo=0,   yo=1
+        { dx0:  0.5, dy0:  0.5, dx1:  1.5, dy1:  1.5 },  // xo=1,   yo=1
+        { dx0:  1.5, dy0:  0.5, dx1:  2.5, dy1:  1.5 },  // xo=2,   yo=1
+        { dx0:  2.5, dy0:  0.5, dx1:  3.5, dy1:  1.5 },  // xo=3,   yo=1
+        { dx0:  0.0, dy0:  1.5, dx1:  1.0, dy1:  2.5 },  // xo=0.5, yo=2
+        { dx0:  1.0, dy0:  1.5, dx1:  2.0, dy1:  2.5 },  // xo=1.5, yo=2
+        { dx0:  2.0, dy0:  1.5, dx1:  3.0, dy1:  2.5 },  // xo=2.5, yo=2
+        { dx0: -0.5, dy0:  2.5, dx1:  0.5, dy1:  3.5 },  // xo=0,   yo=3
+        { dx0:  0.5, dy0:  2.5, dx1:  1.5, dy1:  3.5 },  // xo=1,   yo=3
+        { dx0:  1.5, dy0:  2.5, dx1:  2.5, dy1:  3.5 },  // xo=2,   yo=3
+        { dx0:  2.5, dy0:  2.5, dx1:  3.5, dy1:  3.5 },  // xo=3,   yo=3
+        { dx0:  0.0, dy0:  3.5, dx1:  1.0, dy1:  4.5 },  // xo=0.5, yo=4
+        { dx0:  1.0, dy0:  3.5, dx1:  2.0, dy1:  4.5 },  // xo=1.5, yo=4
     ],
 };
 
@@ -84,13 +74,16 @@ function isBlockingType(type: string): boolean {
     return ['wall1', 'wall2', 'wall3', 'wall4', 'wall5', 'wall6', 'fence'].includes(type);
 }
 
-// Returns true if (tx, ty) is blocked by any structure AABB or by another robot.
+// Returns true if the robot box [tx±0.5, ty±0.5] overlaps any structure AABB or another robot.
 export function isOccupied(
     occupancy: OccupancyMap,
     tx: number, ty: number,
     excludeId?: string,
 ): boolean {
-    if (occupancy.structures.some(s => tx >= s.x0 && tx <= s.x1 && ty >= s.y0 && ty <= s.y1)) return true;
+    if (occupancy.structures.some(s =>
+        tx - 0.5 < s.x1 && tx + 0.5 > s.x0 &&
+        ty - 0.5 < s.y1 && ty + 0.5 > s.y0,
+    )) return true;
     return occupancy.robots.some(r =>
         r.id !== excludeId &&
         Math.max(Math.abs(r.x - tx), Math.abs(r.y - ty)) < ROBOT_COLLISION_DISTANCE
@@ -106,14 +99,12 @@ export function isLOSBlocked(
     tx: number, ty: number,
 ): boolean {
     if (sy === ty) {
-        // Horizontal ray
         const minX = Math.min(sx, tx);
         const maxX = Math.max(sx, tx);
         return occupancy.structures.some(s =>
             s.x0 < maxX && s.x1 > minX && s.y0 <= sy && s.y1 >= sy
         );
     } else {
-        // Vertical ray
         const minY = Math.min(sy, ty);
         const maxY = Math.max(sy, ty);
         return occupancy.structures.some(s =>

@@ -1,17 +1,29 @@
-import type { WarMap, WarObject } from './warmap';
+import { CW_DIRS } from './warmap';
+import type { WarMap, RobotObject, MapObject, Direction } from './warmap';
 import type { OccupancyMap } from './occupancy';
 import { isOccupied, updateRobotPosition } from './occupancy';
 import { getTerrainRule, chassisTypeOf } from './terrain';
 import { WEAPON_DAMAGE, WEAPON_RANGE, calcDamageFalloff } from '../data/robot';
 import { spawnProjectile } from './projectile';
 
-export type Direction = 'N' | 'E' | 'S' | 'W';
+export type { Direction };
+
+export enum ActionType {
+    /** Move one step forward in the current facing direction. */
+    MOVE   = 'move',
+    /** Rotate 90° clockwise (right) or counter-clockwise (left). */
+    ROTATE = 'rotate',
+    /** Fire the equipped weapon at a target robot. */
+    FIRE   = 'fire',
+    /** Do nothing this tick. */
+    IDLE   = 'idle',
+}
 
 export type RobotAction =
-    | { type: 'move'; direction: Direction }
-    | { type: 'rotate'; direction: 'left' | 'right' }
-    | { type: 'fire'; targetId: string }
-    | { type: 'idle' };
+    | { type: ActionType.MOVE;   direction: Direction }
+    | { type: ActionType.ROTATE; direction: 'left' | 'right' }
+    | { type: ActionType.FIRE;   targetId: string }
+    | { type: ActionType.IDLE };
 
 // Robots move in 1/4 grid increments per tick (4 ticks to cross one cell)
 export const MOVE_STEP = 0.25;
@@ -23,14 +35,6 @@ const DIR_DELTA: Record<Direction, { dx: number; dy: number }> = {
     W: { dx: -MOVE_STEP, dy:  0 },
 };
 
-// Convert a rotation (radians) to the nearest cardinal Direction.
-// Weapon is along local +X: rotation=0 → world +X → East.
-export function rotationToDirection(rotation: number): Direction {
-    const normalized = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-    const idx = Math.round(normalized / (Math.PI / 2)) % 4;
-    return (['E', 'N', 'W', 'S'] as Direction[])[idx];
-}
-
 // Primary cardinal direction from (fromX, fromY) toward (toX, toY).
 function directionToward(fromX: number, fromY: number, toX: number, toY: number): Direction {
     const dx = toX - fromX;
@@ -39,35 +43,34 @@ function directionToward(fromX: number, fromY: number, toX: number, toY: number)
     return dy > 0 ? 'S' : 'N';
 }
 
-export function directionToRotation(dir: Direction): number {
-    return { E: 0, N: Math.PI / 2, W: Math.PI, S: -Math.PI / 2 }[dir];
-}
-
 function getTileSubtype(warMap: WarMap, x: number, y: number): string {
-    // Tile lookup uses integer cell coordinates
-    const tile = warMap.objects.find(o => o.type === 'tile' && o.x === Math.floor(x) && o.y === Math.floor(y));
+    const tile = warMap.objects.find(
+        (o): o is MapObject => o.type === 'tile' && o.x === Math.floor(x) && o.y === Math.floor(y),
+    );
     return tile?.subtype ?? 'G';
 }
 
 // Apply an action to a robot, respecting terrain + occupancy.
 // Returns true if the action was executed, false if blocked.
 export function applyAction(
-    robot: WarObject,
+    robot: RobotObject,
     action: RobotAction,
     warMap: WarMap,
     occupancy: OccupancyMap,
 ): boolean {
-    if (action.type === 'idle') return false;
+    if (action.type === ActionType.IDLE) return false;
 
-    if (action.type === 'rotate') {
-        const delta = action.direction === 'right' ? Math.PI / 2 : -Math.PI / 2;
-        robot.rotation = (robot.rotation ?? 0) + delta;
+    if (action.type === ActionType.ROTATE) {
+        const idx = CW_DIRS.indexOf(robot.facing ?? 'N');
+        robot.facing = CW_DIRS[(idx + (action.direction === 'right' ? 1 : 3)) % 4];
         return true;
     }
 
-    if (action.type === 'fire') {
+    if (action.type === ActionType.FIRE) {
         robot.lastFiredAt = warMap.tick ?? 0;
-        const target = warMap.objects.find(o => o.id === action.targetId);
+        const target = warMap.objects.find(
+            (o): o is RobotObject => o.id === action.targetId && o.type === 'robot',
+        );
         if (target) {
             const weapon = robot.robotConfig?.weapon;
             if (weapon && target.health !== undefined) {
@@ -77,15 +80,14 @@ export function applyAction(
                 const dmg      = Math.round(baseDmg * calcDamageFalloff(dist, maxRange));
                 target.health  = Math.max(0, target.health - dmg);
             }
-            // Target immediately rotates to face the attacker
-            target.rotation = directionToRotation(directionToward(target.x, target.y, robot.x, robot.y));
+            target.facing = directionToward(target.x, target.y, robot.x, robot.y);
             spawnProjectile(warMap, robot, target);
         }
         return true;
     }
 
     // move — robot must be facing the requested direction
-    if (rotationToDirection(robot.rotation ?? 0) !== action.direction) return false;
+    if ((robot.facing ?? 'N') !== action.direction) return false;
 
     const chassis = chassisTypeOf(robot.robotConfig?.chassis ?? 'tracks');
     const { dx, dy } = DIR_DELTA[action.direction];
@@ -100,14 +102,12 @@ export function applyAction(
     if (!rule.passable) return false;
     if (isOccupied(occupancy, tx, ty, robot.id)) return false;
 
-    // Terrain speed penalty: skip move on some ticks
     if (rule.speedFactor < 1) {
         robot.slowCounter = (robot.slowCounter ?? 0) + rule.speedFactor;
         if (robot.slowCounter < 1) return false;
         robot.slowCounter -= 1;
     }
 
-    // Update position
     robot.x = tx;
     robot.y = ty;
     updateRobotPosition(occupancy, robot.id, tx, ty);

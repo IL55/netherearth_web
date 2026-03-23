@@ -1,18 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../game/ai/dummy';
-import { applyAction, directionToRotation } from '../../game/actions';
+import { applyAction } from '../../game/actions';
 import { buildOccupancy } from '../../game/occupancy';
 import { tickCapture, CAPTURE_ZONES } from '../../game/capture';
-import type { WarMap, WarObject } from '../../game/warmap';
+import { RobotGoal } from '../../game/warmap';
+import type { WarMap, WarObject, RobotObject } from '../../game/warmap';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-function makeRobot(overrides: Partial<WarObject> & { id: string; x: number; y: number }): WarObject {
+function makeRobot(overrides: Partial<RobotObject> & { id: string; x: number; y: number }): RobotObject {
     return {
         type: 'robot',
-        rotation: directionToRotation('E'),
+        facing: 'E',
         owner: 1,
-        goal: 'capture_neutral_factory',
+        goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
         robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' },
         ...overrides,
     };
@@ -34,7 +35,7 @@ function makeTile(x: number, y: number, subtype: string): WarObject {
  *  capture zone (Chebyshev ≤ radius), or -1 if it never did. */
 function runUntilCapture(
     map: WarMap,
-    robot: WarObject,
+    robot: RobotObject,
     factory: WarObject,
     maxTicks: number,
 ): number {
@@ -156,6 +157,95 @@ describe('bipod + mountain barrier', () => {
         }
 
         expect(maxStuck).toBeGreaterThanOrEqual(3);
+    });
+});
+
+// ─── Test 3b: map boundaries — robot must never step outside the map ──────────
+
+describe('boundary: robot stays within map bounds', () => {
+    /**
+     * Four scenarios each push the robot toward a different map edge via wall_follow.
+     * In all cases x and y must remain in [0, width) × [0, height) every tick.
+     *
+     *  left  (min-x): U-trap open to the west  — robot travels west then north
+     *  right (max-x): U-trap open to the east  — robot travels east then south
+     *  top   (min-y): U-trap open to the north — robot travels north then east
+     *  bottom(max-y): U-trap open to the south — robot travels south then west
+     */
+
+    function checkBounds(map: WarMap, robot: RobotObject, ticks: number): { violated: boolean; minX: number; maxX: number; minY: number; maxY: number } {
+        let violated = false;
+        let minX = robot.x, maxX = robot.x, minY = robot.y, maxY = robot.y;
+        for (let tick = 0; tick < ticks; tick++) {
+            map.tick = tick;
+            const occ = buildOccupancy(map);
+            applyAction(robot, dummyAI(robot, map, occ), map, occ);
+            minX = Math.min(minX, robot.x); maxX = Math.max(maxX, robot.x);
+            minY = Math.min(minY, robot.y); maxY = Math.max(maxY, robot.y);
+            if (robot.x < 0 || robot.y < 0 || robot.x >= map.width || robot.y >= map.height) {
+                violated = true; break;
+            }
+        }
+        return { violated, minX, maxX, minY, maxY };
+    }
+
+    it('left boundary (min-x): U-trap open west, robot never exits x < 0', () => {
+        // U-trap: top y=2 x=5..11, right x=11 y=3..7, bottom y=8 x=5..11
+        // robot approaches east, bounces west, wall_follow drives to x≈0
+        const walls: WarObject[] = [
+            ...([5,6,7,8,9,10,11].map(x => makeWall(x, 2))),
+            ...([3,4,5,6,7].map(y => makeWall(11, y))),
+            ...([5,6,7,8,9,10,11].map(x => makeWall(x, 8))),
+        ];
+        const map: WarMap = { width: 20, height: 10,
+            objects: [...walls, makeFactory('f0', 16, 5), makeRobot({ id: 'r0', x: 2, y: 5 })], tick: 0 };
+        const robot = map.objects.find(o => o.id === 'r0')! as RobotObject;
+
+        const { violated, minX } = checkBounds(map, robot, 400);
+        expect(violated).toBe(false);
+        expect(minX).toBeGreaterThanOrEqual(0);
+    });
+
+    it('right boundary (max-x): robot placed near right edge never exits x >= width', () => {
+        // Wall column at x=12 y=2..8 blocks eastward path from x=10
+        // factory is to the west — robot approaches east, bounces off wall, wall_follow
+        const walls = [2,3,4,5,6,7,8].map(y => makeWall(12, y));
+        const factory = makeFactory('f0', 17, 5);
+        const robot   = makeRobot({ id: 'r0', x: 10, y: 5 });
+        const map: WarMap = { width: 20, height: 12,
+            objects: [...walls, factory, robot], tick: 0 };
+
+        const { violated, maxX } = checkBounds(map, robot, 400);
+        expect(violated).toBe(false);
+        expect(maxX).toBeLessThan(20);
+    });
+
+    it('top boundary (min-y): wall row forces robot north, never exits y < 0', () => {
+        // Wall row at y=3 x=2..10 blocks southward approach; factory above row
+        const walls = [2,3,4,5,6,7,8,9,10].map(x => makeWall(x, 3));
+        const factory = makeFactory('f0', 6, 0);
+        const robot   = makeRobot({ id: 'r0', x: 6, y: 8,
+            robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' } });
+        const map: WarMap = { width: 15, height: 12,
+            objects: [...walls, factory, robot], tick: 0 };
+
+        const { violated, minY } = checkBounds(map, robot, 400);
+        expect(violated).toBe(false);
+        expect(minY).toBeGreaterThanOrEqual(0);
+    });
+
+    it('bottom boundary (max-y): wall row forces robot south, never exits y >= height', () => {
+        // Wall row at y=7 x=2..10 blocks northward approach; factory below row
+        const walls = [2,3,4,5,6,7,8,9,10].map(x => makeWall(x, 7));
+        const factory = makeFactory('f0', 6, 10);
+        const robot   = makeRobot({ id: 'r0', x: 6, y: 3,
+            robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' } });
+        const map: WarMap = { width: 15, height: 12,
+            objects: [...walls, factory, robot], tick: 0 };
+
+        const { violated, maxY } = checkBounds(map, robot, 400);
+        expect(violated).toBe(false);
+        expect(maxY).toBeLessThan(12);
     });
 });
 

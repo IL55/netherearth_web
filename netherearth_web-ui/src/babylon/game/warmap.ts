@@ -1,6 +1,10 @@
 import type { MapData } from '../data/map';
 import type { RobotConfig } from '../data/robot';
 
+export type Direction = 'N' | 'E' | 'S' | 'W';
+// Clockwise order — used for rotation index math and direction iteration.
+export const CW_DIRS: Direction[] = ['N', 'E', 'S', 'W'];
+
 export type WeaponType = 'cannon' | 'missile' | 'phaser';
 
 export interface Projectile {
@@ -12,38 +16,73 @@ export interface Projectile {
     ownerId: string;
 }
 
-export type RobotGoal =
-    | 'attack_robots'
-    | 'capture_factory'         // any non-owned factory (enemy or neutral)
-    | 'capture_enemy_factory'   // enemy-owned factories only
-    | 'capture_neutral_factory' // neutral (unowned) factories only
-    | 'capture_warbase'         // any non-owned warbase (enemy or neutral)
-    | 'capture_enemy_warbase'   // enemy-owned warbases only
-    | 'capture_neutral_warbase' // neutral (unowned) warbases only
-    | 'defend';
-export type RobotAI   = 'dummy' | 'advanced';
+export enum RobotGoal {
+    /** Hunt and attack the nearest enemy robot. */
+    ATTACK_ROBOTS           = 'attack_robots',
+    /** Capture the nearest non-owned factory (enemy or neutral). */
+    CAPTURE_FACTORY         = 'capture_factory',
+    /** Capture the nearest enemy-owned factory only. */
+    CAPTURE_ENEMY_FACTORY   = 'capture_enemy_factory',
+    /** Capture the nearest neutral (unowned) factory only. */
+    CAPTURE_NEUTRAL_FACTORY = 'capture_neutral_factory',
+    /** Capture the nearest non-owned warbase (enemy or neutral). */
+    CAPTURE_WARBASE         = 'capture_warbase',
+    /** Capture the nearest enemy-owned warbase only. */
+    CAPTURE_ENEMY_WARBASE   = 'capture_enemy_warbase',
+    /** Capture the nearest neutral (unowned) warbase only. */
+    CAPTURE_NEUTRAL_WARBASE = 'capture_neutral_warbase',
+    /** Stay in place; no movement target. */
+    DEFEND                  = 'defend',
+}
+export type RobotAI = 'dummy' | 'advanced';
 
-export interface WarObject {
-    id: string;
-    type: string;       // 'tile' | 'factory' | 'warbase' | 'robot' | 'wall*' | 'fence'
-    x: number;
-    y: number;
-    owner?: number;     // 1=red (right flag), 2=blue (left flag), absent=neutral
-    subtype?: string;   // tile type (e.g. 'G'), factory subtype
-    rotation?: number;  // robot facing (radians)
+export enum NavMode {
+    /** Greedy movement: head directly toward the goal by Manhattan distance. */
+    GOAL        = 'goal',
+    /** Bug2 wall-follow: hug the obstacle (right-hand rule) until the path to the goal is clear. */
+    WALL_FOLLOW = 'wall_follow',
+}
+
+// All non-robot map objects (tiles, structures, walls)
+export type StructureType =
+    | 'tile'
+    | 'factory' | 'warbase'
+    | 'wall1' | 'wall2' | 'wall3' | 'wall4' | 'wall5' | 'wall6'
+    | 'fence';
+
+interface ObjectBase { id: string; x: number; y: number; }
+
+// Mobile unit — robot-specific fields
+export interface RobotObject extends ObjectBase {
+    type: 'robot';
+    owner?: number;
+    facing?: Direction;
     robotConfig?: RobotConfig;
     goal?: RobotGoal;
     ai?: RobotAI;
-    health?: number;         // hit points 1–100, derived from robot parts at creation; decreases when hit
-    lastFiredAt?: number;    // warMap.tick when this robot last fired (for weapon cooldown)
-    dyingTicks?: number;     // countdown for death-blink animation; robot removed when it reaches 0
-    slowCounter?: number;    // ticks accumulated for terrain speed penalty
-    captureCounter?: number; // ticks a robot has been in this structure's capture zone
-    stuckTicks?: number;          // consecutive ticks with no progress toward goal (distance not decreasing)
-    stuckCheckDist?: number;      // last recorded Manhattan distance to goal — used to detect stagnation
-    navMode?: 'goal' | 'wall_follow'; // 'wall_follow' = boundary tracing when stuck (Bug2-style)
-    wallFollowStartDist?: number; // dist to goal when wall_follow mode was entered; exit when dist falls below this
+    health?: number;
+    lastFiredAt?: number;
+    dyingTicks?: number;
+    slowCounter?: number;
+    captureCounter?: number;
+    stuckTicks?: number;
+    stuckCheckDist?: number;
+    navMode?: NavMode;
+    wallFollowStartDist?: number;
 }
+
+// Static map object (tile, factory, warbase, wall, fence)
+export interface MapObject extends ObjectBase {
+    type: StructureType;
+    owner?: number;
+    subtype?: string;
+    captureCounter?: number;
+}
+
+export type WarObject = RobotObject | MapObject;
+
+export function isRobot(obj: WarObject): obj is RobotObject { return obj.type === 'robot'; }
+export function isMapObj(obj: WarObject): obj is MapObject  { return obj.type !== 'robot'; }
 
 export interface WarMap {
     width: number;
@@ -65,7 +104,7 @@ export function createWarMap(mapData: MapData): WarMap {
     mapData.objects.forEach((obj, i) => {
         objects.push({
             id: `${obj.type}_${i}`,
-            type: obj.type,
+            type: obj.type as StructureType,
             x: obj.x,
             y: obj.y,
             ...(obj.owner !== undefined ? { owner: obj.owner } : {}),
@@ -89,22 +128,4 @@ export function cycleOwner(obj: WarObject): void {
     if (obj.owner === undefined) obj.owner = 1;
     else if (obj.owner === 1)    obj.owner = 2;
     else                         obj.owner = undefined;
-}
-
-// Rotates all robots by 90 degrees (π/2)
-export function rotateRobots(warMap: WarMap): void {
-    warMap.objects
-        .filter(o => o.type === 'robot')
-        .forEach(o => { o.rotation = (o.rotation ?? 0) + Math.PI / 2; });
-}
-
-// Moves all robots 1 unit forward in their facing direction
-export function moveRobotsForward(warMap: WarMap): void {
-    warMap.objects
-        .filter(o => o.type === 'robot')
-        .forEach(o => {
-            const r = o.rotation ?? 0;
-            o.x += Math.round(Math.sin(r));
-            o.y += Math.round(Math.cos(r));
-        });
 }

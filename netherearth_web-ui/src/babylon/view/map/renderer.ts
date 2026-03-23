@@ -4,6 +4,7 @@ import { addFactory } from './factory';
 import { addWarbase } from './warbase';
 import { placeRobot } from './robot';
 import type { WarMap, WarObject } from '../../game/warmap';
+import { directionToRotation } from './rotation';
 
 const TILE_MODELS: Record<string, string> = {
     G: 'grass', S: 'sand', S2: 'sand1', M: 'mountains',
@@ -87,7 +88,7 @@ export class Renderer {
             // Death blink: hide on odd ticks, show on even ticks
             if (obj.dyingTicks !== undefined && obj.dyingTicks % 2 === 1) return;
             if (obj.robotConfig) {
-                placeRobot(this.models, this.mapBegin, obj.x, obj.y, obj.robotConfig, obj.rotation ?? 0);
+                placeRobot(this.models, this.mapBegin, obj.x, obj.y, obj.robotConfig, directionToRotation(obj.facing ?? 'N'));
             }
         } else {
             // wall, fence, or any other placed model

@@ -15,12 +15,18 @@ Objects can be **neutral** (no owner), **red** (owner=1), or **blue** (owner=2).
 
 ## Robots
 
+### Facing direction
+
+A robot's orientation is stored as `facing: Direction` — one of `'N' | 'E' | 'S' | 'W'`.
+The view layer converts this to a radian angle for rendering (`directionToRotation`).
+
 ### Movement
 
 - Robots move in **1/4 grid increments** per tick (4 ticks to cross one cell).
 - Robots can only move in **4 cardinal directions** (N, E, S, W).
 - A robot can **only move in the direction it is currently facing** (weapon side = front).
-- To face a different direction a robot must first **rotate 90° per tick**.
+- To face a different direction a robot must first **rotate 90° per tick** (changes `facing`).
+  Rotating **right** is clockwise: N→E→S→W→N. Rotating **left** is counter-clockwise.
 - Robots **cannot move outside the map boundaries**.
 - **Collision uses Chebyshev distance** — a move is blocked if the target position is within
   `1.0` of any other robot on **either axis independently** (`max(|dx|, |dy|) < 1.0`).
@@ -32,12 +38,13 @@ Terrain affects movement based on the robot's chassis type:
 
 | Tile | Tracks | Antigrav | Bipod |
 |------|--------|----------|-------|
-| Grass (G)       | full speed | full speed | full speed |
+| Grass (G)       | 3/4 speed | full speed | half speed |
 | Sand (S, S2)    | half speed | full speed | half speed |
-| Mountains (M)   | impassable | half speed | half speed |
-| Holes (H1–H6)   | impassable | impassable | impassable |
+| Mountains (M)   | half speed | full speed | impassable |
+| Holes (H1–H6)   | impassable | full speed | impassable |
 
-**Half speed** means the robot moves every 2nd tick (accumulates a slow counter).
+**Half speed / 3/4 speed** means the robot skips some ticks (accumulates a slow counter).
+Antigrav moves at full speed on all terrain, including holes (flies over them).
 
 ### Chassis types
 
@@ -66,6 +73,7 @@ Each robot has a **goal** and an **AI strategy**:
 
 - **dummy** — navigates toward the nearest target by Manhattan distance; rotates to face the
   preferred direction, moves when aligned, tries alternate directions if primary is blocked.
+  Uses Bug2-style wall-follow when stuck (right-hand rule, exits when path to goal is clear).
 - **advanced** *(planned)* — same as dummy but uses electronics bonus for extended look-ahead
   and threat detection.
 
@@ -81,33 +89,32 @@ Tick count is stored in `warMap.tick`.
 
 ## Collision System
 
-### Structure collision — AABB, never floor()
+All structures are modelled as **1×1 cubic blocks**. Collision uses exact AABB overlap —
+no inflation. Both robots and structure blocks are treated as 1×1 squares.
 
-Every blocking structure is an **axis-aligned bounding box (AABB)**.
-A robot's movement target `(tx, ty)` is blocked when its center falls inside the box:
+A robot at `(tx, ty)` is blocked by a structure block centered at `(bx, by)` when their
+boxes overlap:
 
 ```
-tx >= x0  &&  tx <= x1  &&  ty >= y0  &&  ty <= y1
+tx - 0.5 < bx + 0.5  &&  tx + 0.5 > bx - 0.5   (x axis)
+ty - 0.5 < by + 0.5  &&  ty + 0.5 > by - 0.5   (y axis)
 ```
 
-**Both bounds are inclusive.** This ensures symmetric clearance: a robot approaching
-from any direction stops one `MOVE_STEP` (0.25) before the boundary, giving a 0.5-unit
-gap between the robot center and the visual model edge on all four sides.
+Simplified: blocked when `|tx − bx| < 1.0` on both axes simultaneously.
 
-All models are visually **centered** on their `(x, y)` origin. The AABBs in
-`STRUCTURE_AABB` (`occupancy.ts`) are inflated by `INFLATE=0.25` beyond the visual edge:
+This is consistent with robot–robot collision, which also uses a 1.0 clearance threshold.
 
-| Type | x range | y range |
-|------|---------|---------|
-| wall\*, fence (1×1) | `[x−0.75, x+0.75]` | `[y−0.75, y+0.75]` |
-| factory (2×3) | `[x−0.75, x+1.75]` | `[y−0.75, y+2.75]` |
-| warbase (4×5) | `[x−0.75, x+3.75]` | `[y−0.75, y+4.75]` |
+### Structure shapes
+
+| Type | Blocks |
+|------|--------|
+| wall\*, fence | 1 block at `(x, y)` |
+| factory | 5 blocks (C-shape): left column `(x, y)`, `(x, y+1)`, `(x, y+2)` + right top/bottom `(x+1, y)`, `(x+1, y+2)`. Hole (capture slot) at `(x+1, y+1)`. |
+| warbase | 15 blocks matching the visual H-shape. Capture slot gap at approx `(x+3.5, y+2)`. |
 
 **Do NOT use `floor()` / `Math.floor()` for structure collision.**
-`floor()` maps a continuous position to an integer cell index, which only works when
-model origins are at cell *corners*. Our models use centered origins, so `floor(1.75) = 1`
-would wrongly allow a robot to stop at `x=1.75` inside a wall centered at `x=2.0`.
-The AABB approach catches this correctly.
+`floor()` maps a continuous position to an integer cell index. Since models use centered
+origins, `floor(1.75) = 1` would wrongly allow a robot inside a block centered at `x=2.0`.
 
 ### Robot–robot collision
 
@@ -118,8 +125,8 @@ Uses **Chebyshev distance** (square footprint): blocked when
 
 | Type | Blocks movement | Capturable |
 |------|----------------|-----------|
-| Factory | Yes (full cell) | Yes (owner changes) |
-| Warbase | Yes (full cell) | Yes (owner changes) |
+| Factory | Yes (C-shaped) | Yes (owner changes) |
+| Warbase | Yes (H-shaped) | Yes (owner changes) |
 | Walls (wall1–wall6) | Yes | No |
 | Fence | Yes | No |
 

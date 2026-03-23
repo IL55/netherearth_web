@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../game/ai/dummy';
-import { applyAction, directionToRotation } from '../../game/actions';
+import { applyAction } from '../../game/actions';
 import { buildOccupancy } from '../../game/occupancy';
-import type { WarMap, WarObject } from '../../game/warmap';
+import { RobotGoal } from '../../game/warmap';
+import type { WarMap, WarObject, RobotObject } from '../../game/warmap';
 
 /**
  * Maze layout (each cell = 1 unit, walls are 'wall3' objects)
@@ -54,13 +55,13 @@ function makeMap(): WarMap {
         // no owner → neutral
     };
 
-    const robot: WarObject = {
+    const robot: RobotObject = {
         id: 'robot_0',
         type: 'robot',
         x: 2, y: 5,
-        rotation: directionToRotation('E'),
+        facing: 'E',
         owner: 1,
-        goal: 'capture_neutral_factory',
+        goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
         robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' },
     };
 
@@ -74,7 +75,7 @@ function makeMap(): WarMap {
 describe('anti-maze: robot escapes U-shaped dead end and reaches factory', () => {
     it('robot reaches factory capture zone within 500 ticks', () => {
         const map = makeMap();
-        const robot = map.objects.find(o => o.id === 'robot_0')!;
+        const robot = map.objects.find(o => o.id === 'robot_0')! as RobotObject;
 
         // Factory capture zone center
         const goalX = 17, goalY = 6;
@@ -96,7 +97,7 @@ describe('anti-maze: robot escapes U-shaped dead end and reaches factory', () =>
 
     it('stuckTicks rises to ≥3 when robot enters the dead end', () => {
         const map = makeMap();
-        const robot = map.objects.find(o => o.id === 'robot_0')!;
+        const robot = map.objects.find(o => o.id === 'robot_0')! as RobotObject;
 
         let maxStuck = 0;
         for (let tick = 0; tick < 60; tick++) {

@@ -1,6 +1,6 @@
 import type { WarMap } from './warmap';
 import { buildOccupancy } from './occupancy';
-import { applyAction } from './actions';
+import { applyAction, ActionType, type RobotAction } from './actions';
 import { dummyAI } from './ai/dummy';
 import { tickCapture } from './capture';
 import { advanceProjectiles, SUB_TICKS } from './projectile';
@@ -53,7 +53,7 @@ function gameTick(warMap: WarMap): void {
         if (obj.type !== 'robot' || obj.dyingTicks !== undefined) continue;
 
         const ai = obj.ai ?? 'dummy';
-        const action = ai === 'dummy' ? dummyAI(obj, warMap, occupancy) : { type: 'idle' as const };
+        const action: RobotAction = ai === 'dummy' ? dummyAI(obj, warMap, occupancy) : { type: ActionType.IDLE };
         applyAction(obj, action, warMap, occupancy);
     }
 

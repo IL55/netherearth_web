@@ -1,4 +1,4 @@
-import type { WarMap, WarObject } from './warmap';
+import type { WarMap, WarObject, RobotObject } from './warmap';
 
 interface CaptureZone {
     dx: number;    // offset from obj.x to zone center
@@ -14,7 +14,7 @@ export const CAPTURE_ZONES: Partial<Record<string, CaptureZone>> = {
     warbase: { dx: 3.5, dy: 2.0, radius: 0.5, ticks: 12 },
 };
 
-export function isInCaptureZone(robot: WarObject, structure: WarObject): boolean {
+export function isInCaptureZone(robot: RobotObject, structure: WarObject): boolean {
     const zone = CAPTURE_ZONES[structure.type];
     if (!zone) return false;
     return (
