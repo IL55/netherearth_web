@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { spawnProjectile, advanceProjectiles, SUB_TICKS } from '../../game/projectile';
-import type { WarMap, WarObject } from '../../game/warmap';
+import { spawnProjectile, advanceProjectiles, SUB_TICKS } from '../../../game/projectile';
+import type { WarMap, WarObject } from '../../../game/warmap';
 
 function makeMap(): WarMap {
     return { width: 20, height: 20, objects: [] };

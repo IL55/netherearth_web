@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { applyAction, ActionType, MOVE_STEP } from '../../game/actions';
-import { rotationToDirection, directionToRotation } from '../../view/map/rotation';
-import { buildOccupancy, isOccupied } from '../../game/occupancy';
-import type { WarMap, WarObject, RobotObject } from '../../game/warmap';
+import { applyAction, ActionType, MOVE_STEP } from '../../../game/actions';
+import { rotationToDirection, directionToRotation } from '../../../view/map/rotation';
+import { buildOccupancy, isOccupied } from '../../../game/occupancy';
+import type { WarMap, WarObject, RobotObject } from '../../../game/warmap';
 
 function makeMap(objects: WarMap['objects'] = [], width = 20, height = 20): WarMap {
     return { width, height, objects };

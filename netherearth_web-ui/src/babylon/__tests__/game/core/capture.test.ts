@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { isInCaptureZone, tickCapture, CAPTURE_ZONES } from '../../game/capture';
-import type { WarMap, WarObject } from '../../game/warmap';
+import { isInCaptureZone, tickCapture, CAPTURE_ZONES } from '../../../game/capture';
+import type { WarMap, WarObject } from '../../../game/warmap';
 
 function makeMap(objects: WarObject[]): WarMap {
     return { width: 20, height: 20, objects };

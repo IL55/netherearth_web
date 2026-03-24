@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildOccupancy, isOccupied, updateRobotPosition, ROBOT_COLLISION_DISTANCE } from '../../game/occupancy';
-import type { WarMap } from '../../game/warmap';
+import { buildOccupancy, isOccupied, updateRobotPosition, ROBOT_COLLISION_DISTANCE } from '../../../game/occupancy';
+import type { WarMap } from '../../../game/warmap';
 
 function makeMap(objects: WarMap['objects']): WarMap {
     return { width: 10, height: 10, objects };

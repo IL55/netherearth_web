@@ -17,12 +17,12 @@
  * capture zone within a reasonable tick budget.
  */
 import { describe, it, expect } from 'vitest';
-import { dummyAI } from '../../game/ai/dummy';
-import { applyAction } from '../../game/actions';
-import { buildOccupancy } from '../../game/occupancy';
-import { CAPTURE_ZONES } from '../../game/capture';
-import type { WarMap, WarObject, RobotObject } from '../../game/warmap';
-import { isRobot, RobotGoal } from '../../game/warmap';
+import { dummyAI } from '../../../game/ai/dummy';
+import { applyAction } from '../../../game/actions';
+import { buildOccupancy } from '../../../game/occupancy';
+import { CAPTURE_ZONES } from '../../../game/capture';
+import type { WarMap, WarObject, RobotObject } from '../../../game/warmap';
+import { isRobot, RobotGoal } from '../../../game/warmap';
 
 const MAP_W = 8, MAP_H = 64;
 

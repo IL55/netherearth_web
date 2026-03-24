@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getTerrainRule, chassisTypeOf } from '../../game/terrain';
+import { getTerrainRule, chassisTypeOf } from '../../../game/terrain';
 
 describe('getTerrainRule — antigrav (best: full speed everywhere)', () => {
     it('grass: passable, speed 1',     () => expect(getTerrainRule('G',  'antigrav')).toEqual({ passable: true, speedFactor: 1 }));

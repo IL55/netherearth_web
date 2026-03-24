@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { dummyAI } from '../../game/ai/dummy';
-import { applyAction } from '../../game/actions';
-import { buildOccupancy } from '../../game/occupancy';
-import { RobotGoal } from '../../game/warmap';
-import type { WarMap, WarObject, RobotObject } from '../../game/warmap';
+import { dummyAI } from '../../../../game/ai/dummy';
+import { applyAction } from '../../../../game/actions';
+import { buildOccupancy } from '../../../../game/occupancy';
+import { RobotGoal } from '../../../../game/warmap';
+import type { WarMap, WarObject, RobotObject } from '../../../../game/warmap';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
