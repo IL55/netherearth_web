@@ -43,6 +43,19 @@ export enum NavMode {
     WALL_FOLLOW = 'wall_follow',
 }
 
+/** Runtime navigation + movement state — kept in one sub-object so it is easy to inspect or reset. */
+export interface NavState {
+    // terrain speed accumulator (all chassis types)
+    slowCounter?: number;
+    // Bug2 wall-follow state (h-electronics / e-electronics)
+    stuckTicks?: number;
+    stuckCheckDist?: number;
+    navMode?: NavMode;
+    wallFollowStartDist?: number;
+    // Trémaux state (h-tremaux electronics)
+    recentCells?: string[];   // visited positions at 0.25-cell resolution, sliding window
+}
+
 // All non-robot map objects (tiles, structures, walls)
 export type StructureType =
     | 'tile'
@@ -63,12 +76,8 @@ export interface RobotObject extends ObjectBase {
     health?: number;
     lastFiredAt?: number;
     dyingTicks?: number;
-    slowCounter?: number;
     captureCounter?: number;
-    stuckTicks?: number;
-    stuckCheckDist?: number;
-    navMode?: NavMode;
-    wallFollowStartDist?: number;
+    nav?: NavState;
 }
 
 // Static map object (tile, factory, warbase, wall, fence)

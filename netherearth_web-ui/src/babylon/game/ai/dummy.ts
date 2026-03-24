@@ -54,8 +54,10 @@ function wallFollowDirs(
         }
     }
 
+    const nav = robot.nav ??= {};
+
     // Exit wall-follow when the primary direction is clear all the way to the goal
-    if (robot.navMode === NavMode.WALL_FOLLOW) {
+    if (nav.navMode === NavMode.WALL_FOLLOW) {
         const primaryGoalDist = primaryDir === 'E' ? tx - robot.x
                               : primaryDir === 'W' ? robot.x - tx
                               : primaryDir === 'S' ? ty - robot.y
@@ -69,25 +71,25 @@ function wallFollowDirs(
             }
         }
         if (clearToGoal) {
-            robot.navMode = NavMode.GOAL;
-            robot.stuckTicks = 0;
+            nav.navMode = NavMode.GOAL;
+            nav.stuckTicks = 0;
         }
     }
 
     // Stuck detection in goal mode
-    if (robot.navMode !== NavMode.WALL_FOLLOW) {
+    if (nav.navMode !== NavMode.WALL_FOLLOW) {
         if (primaryBlocked) {
-            robot.stuckTicks = (robot.stuckTicks ?? 0) + 1;
-            if (robot.stuckTicks >= 3) {
-                robot.navMode = NavMode.WALL_FOLLOW;
-                robot.wallFollowStartDist = distToGoal;
+            nav.stuckTicks = (nav.stuckTicks ?? 0) + 1;
+            if (nav.stuckTicks >= 3) {
+                nav.navMode = NavMode.WALL_FOLLOW;
+                nav.wallFollowStartDist = distToGoal;
             }
         } else {
-            robot.stuckTicks = 0;
+            nav.stuckTicks = 0;
         }
     }
 
-    return robot.navMode === NavMode.WALL_FOLLOW
+    return nav.navMode === NavMode.WALL_FOLLOW
         ? [facing, rightOf(facing), leftOf(facing), backOf(facing)]
         : preferredDirs(robot, tx, ty);
 }

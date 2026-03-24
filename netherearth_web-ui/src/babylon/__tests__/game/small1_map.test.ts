@@ -135,7 +135,7 @@ describe('small1.map full setup', () => {
             const action = dummyAI(robot, map, occ);
             applyAction(robot, action, map, occ);
 
-            trace.push(`t=${String(tick).padStart(3)} (${robot.x.toFixed(2)},${robot.y.toFixed(2)}) f=${robot.facing??'N'} ${robot.navMode??'goal'}`);
+            trace.push(`t=${String(tick).padStart(3)} (${robot.x.toFixed(2)},${robot.y.toFixed(2)}) f=${robot.facing??'N'} ${robot.nav?.navMode??'goal'}`);
 
             const inZone = factories.some(fac => {
                 const gx = fac.x + zone.dx, gy = fac.y + zone.dy;

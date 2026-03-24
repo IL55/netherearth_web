@@ -105,7 +105,7 @@ describe('anti-maze: robot escapes U-shaped dead end and reaches factory', () =>
             const occ = buildOccupancy(map);
             const action = dummyAI(robot, map, occ);
             applyAction(robot, action, map, occ);
-            maxStuck = Math.max(maxStuck, robot.stuckTicks ?? 0);
+            maxStuck = Math.max(maxStuck, robot.nav?.stuckTicks ?? 0);
         }
 
         expect(maxStuck).toBeGreaterThanOrEqual(3);

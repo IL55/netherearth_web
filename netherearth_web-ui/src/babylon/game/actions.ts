@@ -108,9 +108,10 @@ export function applyAction(
     if (isOccupied(occupancy, tx, ty, robot.id)) return false;
 
     if (rule.speedFactor < 1) {
-        robot.slowCounter = (robot.slowCounter ?? 0) + rule.speedFactor;
-        if (robot.slowCounter < 1) return false;
-        robot.slowCounter -= 1;
+        robot.nav ??= {};
+        robot.nav.slowCounter = (robot.nav.slowCounter ?? 0) + rule.speedFactor;
+        if (robot.nav.slowCounter < 1) return false;
+        robot.nav.slowCounter -= 1;
     }
 
     robot.x = tx;
