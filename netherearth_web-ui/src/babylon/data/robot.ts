@@ -1,8 +1,11 @@
+import type { NavAlgo } from '../game/ai/nav-algo';
+
 export interface RobotConfig {
     chassis: string;
     weapon?: string;       // absent = no weapon, robot never fires
     nuclearModel?: string; // explicit model name so color matches team
     electronics: string;
+    navAlgo?: NavAlgo;     // navigation algorithm; defaults to BUG2 when absent
 }
 
 // How far a robot can see an enemy in its forward direction (cells), by electronics type.

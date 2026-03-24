@@ -1,3 +1,10 @@
+/**
+ * Shared navigation primitives used by all AI algorithms.
+ *
+ * Provides direction helpers (dirDelta, rightOf, leftOf, backOf),
+ * passability checks (isPassable, tileAt), and goal-direction sorting
+ * (preferredDirs). All higher-level algorithms import from here.
+ */
 import { CW_DIRS } from '../warmap';
 import type { WarMap, MapObject, RobotObject, Direction } from '../warmap';
 

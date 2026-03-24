@@ -1,11 +1,24 @@
-import { RobotGoal, NavMode } from '../warmap';
+/**
+ * Dummy AI — main entry point for robot decision-making.
+ *
+ * Orchestrates combat (fight.ts) and navigation (bug2.ts / tremaux.ts).
+ * Selects the navigation algorithm based on robotConfig.navAlgo:
+ *   - NavAlgo.TREMAUX → Trémaux sliding-window algorithm
+ *   - default (BUG2 or absent) → Bug2 wall-follow
+ *
+ * Also owns target selection (findTarget) and capture-zone resolution (targetPos).
+ */
+import { RobotGoal } from '../warmap';
 import { CW_DIRS } from '../warmap';
 import type { WarMap, WarObject, RobotObject, Direction } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
-import { ActionType, type RobotAction, MOVE_STEP } from '../actions';
+import { ActionType, type RobotAction } from '../actions';
 import { CAPTURE_ZONES } from '../capture';
-import { dirDelta, rightOf, leftOf, backOf, isPassable, preferredDirs } from './nav';
+import { dirDelta, isPassable } from './nav';
 import { fightAction } from './fight';
+import { NavAlgo } from './nav-algo';
+import { bug2Dirs } from './bug2';
+import { recordCell, tremauxDirs } from './tremaux';
 
 function findTarget(robot: RobotObject, warMap: WarMap): WarObject | undefined {
     const candidates = warMap.objects.filter(o => {
@@ -32,81 +45,26 @@ function targetPos(target: WarObject): { x: number; y: number } {
     return { x: target.x, y: target.y };
 }
 
-// Bug2-style wall-follow: updates robot.navMode / stuckTicks; returns direction list for this tick.
-function wallFollowDirs(
-    robot: RobotObject,
-    warMap: WarMap,
-    occupancy: OccupancyMap,
-    tx: number,
-    ty: number,
-    distToGoal: number,
-): Direction[] {
-    const facing = robot.facing ?? 'N';
-    const [primaryDir] = preferredDirs(robot, tx, ty);
-    const { dx: pdx, dy: pdy } = dirDelta(primaryDir);
-
-    // Check if primary direction is blocked for the next full grid cell (4 steps)
-    let primaryBlocked = false;
-    for (let step = 1; step <= 4; step++) {
-        if (!isPassable(warMap, occupancy, robot, robot.x + pdx * step, robot.y + pdy * step)) {
-            primaryBlocked = true;
-            break;
-        }
-    }
-
-    const nav = robot.nav ??= {};
-
-    // Exit wall-follow when the primary direction is clear all the way to the goal
-    if (nav.navMode === NavMode.WALL_FOLLOW) {
-        const primaryGoalDist = primaryDir === 'E' ? tx - robot.x
-                              : primaryDir === 'W' ? robot.x - tx
-                              : primaryDir === 'S' ? ty - robot.y
-                              :                     robot.y - ty; // N
-        const exitSteps = Math.max(0, Math.ceil(primaryGoalDist / MOVE_STEP));
-        let clearToGoal = true;
-        for (let step = 1; step <= exitSteps; step++) {
-            if (!isPassable(warMap, occupancy, robot, robot.x + pdx * step, robot.y + pdy * step)) {
-                clearToGoal = false;
-                break;
-            }
-        }
-        if (clearToGoal) {
-            nav.navMode = NavMode.GOAL;
-            nav.stuckTicks = 0;
-        }
-    }
-
-    // Stuck detection in goal mode
-    if (nav.navMode !== NavMode.WALL_FOLLOW) {
-        if (primaryBlocked) {
-            nav.stuckTicks = (nav.stuckTicks ?? 0) + 1;
-            if (nav.stuckTicks >= 3) {
-                nav.navMode = NavMode.WALL_FOLLOW;
-                nav.wallFollowStartDist = distToGoal;
-            }
-        } else {
-            nav.stuckTicks = 0;
-        }
-    }
-
-    return nav.navMode === NavMode.WALL_FOLLOW
-        ? [facing, rightOf(facing), leftOf(facing), backOf(facing)]
-        : preferredDirs(robot, tx, ty);
-}
-
 export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: OccupancyMap): RobotAction {
     // 1. Combat: fire or advance toward a visible enemy
     const combat = fightAction(robot, warMap, occupancy);
     if (combat) return combat;
 
-    // 2. Goal navigation with Bug2 wall-follow
+    // 2. Goal navigation
     const target = findTarget(robot, warMap);
     if (!target) return { type: ActionType.IDLE };
 
     const { x: tx, y: ty } = targetPos(target);
-    const facing    = robot.facing ?? 'N';
-    const dirsToTry = wallFollowDirs(robot, warMap, occupancy, tx, ty,
-        Math.abs(robot.x - tx) + Math.abs(robot.y - ty));
+    const facing = robot.facing ?? 'N';
+
+    let dirsToTry: Direction[];
+    if (robot.robotConfig?.navAlgo === NavAlgo.TREMAUX) {
+        recordCell(robot);
+        dirsToTry = tremauxDirs(robot, warMap, occupancy, tx, ty);
+    } else {
+        dirsToTry = bug2Dirs(robot, warMap, occupancy, tx, ty,
+            Math.abs(robot.x - tx) + Math.abs(robot.y - ty));
+    }
 
     for (const dir of dirsToTry) {
         const { dx, dy } = dirDelta(dir);

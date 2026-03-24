@@ -1,3 +1,11 @@
+/**
+ * Combat logic for the dummy AI.
+ *
+ * Handles weapon firing (range check, cooldown, line-of-sight) and
+ * advancing toward a visible enemy when out of range.
+ * Returns a RobotAction if combat is appropriate this tick, or null
+ * to let the navigation layer decide.
+ */
 import type { WarMap, WarObject, RobotObject, Direction } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
 import { isOccupied, isLOSBlocked } from '../occupancy';
