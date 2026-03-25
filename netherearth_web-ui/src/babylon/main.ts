@@ -9,6 +9,7 @@ import { robotConfigs, calcHealth } from './data/robot';
 import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';
 import { startClock } from './game/clock';
+import { createOwnerResources } from './game/resources';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -56,7 +57,8 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   attachCameraControls(scene, camera);
   attachGameControls(scene, warMap, () => renderer.render(warMap));
-  startClock(warMap, () => renderer.render(warMap));
+  const ownerResources = createOwnerResources();
+  startClock(warMap, () => renderer.render(warMap), ownerResources);
 
   return scene;
 };

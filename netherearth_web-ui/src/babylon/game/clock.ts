@@ -4,6 +4,8 @@ import { applyAction, ActionType, type RobotAction } from './actions';
 import { dummyAI } from './ai/dummy';
 import { tickCapture } from './capture';
 import { advanceProjectiles, SUB_TICKS } from './projectile';
+import { tickResources, createOwnerResources, type OwnerResources } from './resources';
+import { tickBuild } from './build';
 
 export interface Clock {
     stop: () => void;
@@ -16,12 +18,13 @@ export interface Clock {
 export function startClock(
     warMap: WarMap,
     onTick: () => void,
+    ownerResources: OwnerResources = createOwnerResources(),
     subTickMs = 100,
 ): Clock {
     let subTick = 0;
     const id = setInterval(() => {
         if (subTick === 0) {
-            gameTick(warMap);
+            gameTick(warMap, ownerResources);
         }
         advanceProjectiles(warMap);
         onTick();
@@ -33,7 +36,7 @@ export function startClock(
 // Number of ticks for the death-blink animation (show/hide alternates each tick).
 const DEATH_BLINK_TICKS = 6; // 3 blinks: show@6, hide@5, show@4, hide@3, show@2, hide@1 → removed
 
-function gameTick(warMap: WarMap): void {
+function gameTick(warMap: WarMap, ownerResources: OwnerResources): void {
     warMap.tick = (warMap.tick ?? 0) + 1;
 
     // Step dying-robot countdown; remove those that have finished
@@ -65,4 +68,6 @@ function gameTick(warMap: WarMap): void {
     }
 
     tickCapture(warMap);
+    tickResources(warMap, ownerResources, warMap.tick ?? 0);
+    tickBuild(warMap, ownerResources);
 }

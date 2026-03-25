@@ -1,31 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { NullEngine, Scene, Vector3 } from '@babylonjs/core';
 import type { AbstractMesh } from '@babylonjs/core';
-import { placeRobot, robotConfigs } from '../../../view/map/robot';
+import { placeRobot } from '../../../view/map/robot';
 import { Owner } from '../../../game/owner';
+import { Chassis, Weapon, Electronics } from '../../../data/robot';
 import { makeEnv } from '../../test-utils';
 
-import type { RobotConfig } from '../../../view/map/robot';
-
-const configs = Object.values(robotConfigs) as RobotConfig[];
-
-describe('robotConfigs', () => {
-    it('each config has a chassis', () => {
-        configs.forEach(config => {
-            expect(config.chassis).toBeTruthy();
-        });
-    });
-
-    it('armed configs have a weapon', () => {
-        const armed = configs.filter(c => c.weapon);
-        expect(armed.length).toBeGreaterThan(0);
-        armed.forEach(config => expect(config.weapon).toBeTruthy());
-    });
-
-    it('has 4 configs', () => {
-        expect(configs).toHaveLength(4);
-    });
-});
+const cannon   = { chassis: Chassis.TRACKS,   weapon: Weapon.CANNON,   electronics: Electronics.STANDARD };
+const missiles = { chassis: Chassis.ANTIGRAV, weapon: Weapon.MISSILES, electronics: Electronics.STANDARD };
+const phasers  = { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS,  nuclear: true, electronics: Electronics.STANDARD };
+const scout    = { chassis: Chassis.ANTIGRAV };
 
 describe('placeRobot', () => {
     let engine: NullEngine;
@@ -44,38 +28,36 @@ describe('placeRobot', () => {
     });
 
     it('does not throw with a valid config', () => {
-        expect(() => placeRobot(models, mapBegin, 5, 5, robotConfigs['cannon'], Owner.RED, 0, STACK_GAP)).not.toThrow();
+        expect(() => placeRobot(models, mapBegin, 5, 5, cannon, Owner.RED, 0, STACK_GAP)).not.toThrow();
     });
 
     it('does not throw when chassis model is missing', () => {
         const partial = new Map(models);
-        partial.delete('h-tracks');
-        expect(() => placeRobot(partial, mapBegin, 5, 5, robotConfigs['cannon'], Owner.RED, 0, STACK_GAP)).not.toThrow();
+        partial.delete('e-tracks');
+        expect(() => placeRobot(partial, mapBegin, 5, 5, cannon, Owner.RED, 0, STACK_GAP)).not.toThrow();
     });
 
     it('does not throw when weapon model is missing', () => {
         const partial = new Map(models);
-        partial.delete('h-cannon');
-        expect(() => placeRobot(partial, mapBegin, 5, 5, robotConfigs['cannon'], Owner.RED, 0, STACK_GAP)).not.toThrow();
+        partial.delete('e-cannon');
+        expect(() => placeRobot(partial, mapBegin, 5, 5, cannon, Owner.RED, 0, STACK_GAP)).not.toThrow();
     });
 
     it('adds 3 transform nodes for an armed config without nuclear', () => {
-        const config = configs.find(c => c.weapon && !c.nuclear)!;
         const before = scene.transformNodes.length;
-        placeRobot(models, mapBegin, 0, 0, config, Owner.RED, 0, STACK_GAP);
+        placeRobot(models, mapBegin, 0, 0, cannon, Owner.RED, 0, STACK_GAP);
         expect(scene.transformNodes.length - before).toBe(3); // chassis + weapon + electronics
     });
 
     it('adds 4 transform nodes for a config with nuclear', () => {
-        const config = configs.find(c => c.nuclear)!;
         const before = scene.transformNodes.length;
-        placeRobot(models, mapBegin, 0, 0, config, Owner.RED, 0, STACK_GAP);
+        placeRobot(models, mapBegin, 0, 0, phasers, Owner.RED, 0, STACK_GAP);
         expect(scene.transformNodes.length - before).toBe(4); // chassis + weapon + nuclear + electronics
     });
 
     it('places chassis XZ at the requested tile coords', () => {
         const before = scene.transformNodes.length;
-        placeRobot(models, mapBegin, 3, 7, robotConfigs['cannon'], Owner.RED, 0, STACK_GAP);
+        placeRobot(models, mapBegin, 3, 7, cannon, Owner.RED, 0, STACK_GAP);
         const chassis = scene.transformNodes[before];
         expect(chassis.position.x).toBeCloseTo(3, 1);
         expect(chassis.position.z).toBeCloseTo(7, 1);
@@ -84,7 +66,7 @@ describe('placeRobot', () => {
     it('applies mapBegin offset to XZ position', () => {
         const begin = new Vector3(10, 0, 5);
         const before = scene.transformNodes.length;
-        placeRobot(models, begin, 3, 7, robotConfigs['cannon'], Owner.RED, 0, STACK_GAP);
+        placeRobot(models, begin, 3, 7, cannon, Owner.RED, 0, STACK_GAP);
         const chassis = scene.transformNodes[before];
         expect(chassis.position.x).toBeCloseTo(13, 1);
         expect(chassis.position.z).toBeCloseTo(12, 1);
@@ -92,7 +74,7 @@ describe('placeRobot', () => {
 
     it('applies rotation to all placed parts', () => {
         const before = scene.transformNodes.length;
-        placeRobot(models, mapBegin, 0, 0, robotConfigs['cannon'], Owner.RED, Math.PI / 2, STACK_GAP);
+        placeRobot(models, mapBegin, 0, 0, cannon, Owner.RED, Math.PI / 2, STACK_GAP);
         const newNodes = scene.transformNodes.slice(before);
         newNodes.forEach(node => {
             expect(node.rotation.y).toBeCloseTo(Math.PI / 2);
@@ -100,9 +82,8 @@ describe('placeRobot', () => {
     });
 
     it('stacks parts vertically: weapon above chassis, electronics above weapon', () => {
-        const config = configs.find(c => c.weapon && !c.nuclear && c.electronics)!;
         const before = scene.transformNodes.length;
-        placeRobot(models, mapBegin, 0, 0, config, Owner.RED, 0, STACK_GAP);
+        placeRobot(models, mapBegin, 0, 0, cannon, Owner.RED, 0, STACK_GAP);
         const [chassis, weapon, electronics] = scene.transformNodes.slice(before);
         expect(weapon.position.y).toBeGreaterThan(chassis.position.y);
         expect(electronics.position.y).toBeGreaterThan(weapon.position.y);
@@ -110,7 +91,7 @@ describe('placeRobot', () => {
 
     it('chassis bottom is grounded at y=1', () => {
         const before = scene.transformNodes.length;
-        placeRobot(models, mapBegin, 0, 0, robotConfigs['cannon'], Owner.RED, 0, STACK_GAP);
+        placeRobot(models, mapBegin, 0, 0, cannon, Owner.RED, 0, STACK_GAP);
         const chassis = scene.transformNodes[before];
         chassis.computeWorldMatrix(true);
         const childMeshes = chassis.getChildMeshes();
@@ -119,18 +100,25 @@ describe('placeRobot', () => {
         expect(minY).toBeCloseTo(1, 1);
     });
 
-    it('uses e- model prefix for BLUE owner', () => {
+    it('uses h- model prefix for BLUE owner', () => {
         const partial = new Map(models);
-        partial.delete('e-tracks');
-        // with e-tracks missing, chassis won't be placed → 0 transform nodes
+        partial.delete('h-tracks');
         const before = scene.transformNodes.length;
-        placeRobot(partial, mapBegin, 0, 0, robotConfigs['cannon'], Owner.BLUE, 0, STACK_GAP);
+        placeRobot(partial, mapBegin, 0, 0, cannon, Owner.BLUE, 0, STACK_GAP);
         expect(scene.transformNodes.length - before).toBe(0);
     });
 
-    it('all configs place robots without throwing', () => {
-        configs.forEach((config, i) => {
-            expect(() => placeRobot(models, mapBegin, i, 0, config, Owner.RED, 0, STACK_GAP)).not.toThrow();
+    it('uses e- model prefix for RED owner', () => {
+        const partial = new Map(models);
+        partial.delete('e-tracks');
+        const before = scene.transformNodes.length;
+        placeRobot(partial, mapBegin, 0, 0, cannon, Owner.RED, 0, STACK_GAP);
+        expect(scene.transformNodes.length - before).toBe(0);
+    });
+
+    it('all robot types render without throwing', () => {
+        [cannon, missiles, phasers, scout].forEach((robot, i) => {
+            expect(() => placeRobot(models, mapBegin, i, 0, robot, Owner.RED, 0, STACK_GAP)).not.toThrow();
         });
     });
 });

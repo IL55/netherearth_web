@@ -59,7 +59,7 @@ function runUntilCapture(
 // ─── Test 1: open field — no obstacles ───────────────────────────────────────
 
 describe('open field: no obstacles', () => {
-    it('antigrav robot reaches factory capture zone within 100 ticks', () => {
+    it('antigrav robot reaches factory capture zone within 200 ticks', () => {
         /**
          * Robot at (2,5) facing E, factory at (12,5).
          * Capture zone center = (13,6).  No walls, no terrain.
@@ -68,7 +68,7 @@ describe('open field: no obstacles', () => {
         const robot   = makeRobot({ id: 'r0', x: 2, y: 5 });
         const map: WarMap = { width: 20, height: 12, objects: [factory, robot], tick: 0 };
 
-        const tick = runUntilCapture(map, robot, factory, 100);
+        const tick = runUntilCapture(map, robot, factory, 200);
         expect(tick).toBeGreaterThanOrEqual(0);
     });
 });

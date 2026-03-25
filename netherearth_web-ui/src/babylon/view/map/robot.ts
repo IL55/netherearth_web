@@ -7,9 +7,9 @@ import { Owner } from '../../game/owner';
 export type { RobotConfig } from '../../data/robot';
 export { robotConfigs } from '../../data/robot';
 
-// Team prefix used in model file names: 'h-' for RED, 'e-' for BLUE (or neutral).
+// Team prefix used in model file names: 'h-' for BLUE, 'e-' for RED (or neutral).
 function teamPrefix(owner: Owner): string {
-    return owner === Owner.BLUE ? 'e-' : 'h-';
+    return owner === Owner.RED ? 'e-' : 'h-';
 }
 
 // Explicit mapping from enum value to model file name suffix.

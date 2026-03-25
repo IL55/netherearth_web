@@ -78,6 +78,8 @@ export interface RobotObject extends ObjectBase {
     ai?: RobotAI;
     health?: number;
     lastFiredAt?: number;
+    lastMovedAt?: number;
+    lastRotatedAt?: number;
     dyingTicks?: number;
     captureCounter?: number;
     nav?: NavState;

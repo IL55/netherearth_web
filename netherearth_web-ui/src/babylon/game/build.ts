@@ -1,0 +1,139 @@
+import { Chassis, Weapon, Electronics, calcHealth } from '../data/robot';
+import type { RobotConfig } from '../data/robot';
+import { Owner } from './owner';
+import type { WarMap, RobotObject } from './warmap';
+import { RobotGoal } from './warmap';
+import type { OwnerResources, Resources } from './resources';
+import { buildOccupancy, isOccupied } from './occupancy';
+import { CAPTURE_ZONES } from './capture';
+
+type Cost = Partial<Resources>;
+
+// ─── Part costs ───────────────────────────────────────────────────────────────
+
+export const CHASSIS_BUILD_COST: Record<Chassis, Cost> = {
+    [Chassis.TRACKS]:   { chassis: 1 },
+    [Chassis.ANTIGRAV]: { chassis: 2 },
+    [Chassis.BIPOD]:    { chassis: 3 },
+};
+
+export const WEAPON_BUILD_COST: Record<Weapon, Cost> = {
+    [Weapon.CANNON]:   { cannons: 1 },
+    [Weapon.MISSILES]: { missiles: 2 },
+    [Weapon.PHASERS]:  { phasers: 3 },
+};
+
+export const ELECTRONICS_BUILD_COST: Cost = { electronics: 1 };
+export const NUCLEAR_BUILD_COST:     Cost = { nuclear: 2 };
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function sumCosts(...costs: Cost[]): Cost {
+    const result: Cost = {};
+    for (const cost of costs) {
+        for (const [k, v] of Object.entries(cost) as [keyof Resources, number][]) {
+            result[k] = (result[k] ?? 0) + v;
+        }
+    }
+    return result;
+}
+
+export function canAfford(resources: Resources, cost: Cost): boolean {
+    return (Object.entries(cost) as [keyof Resources, number][]).every(
+        ([k, v]) => resources[k] >= v,
+    );
+}
+
+function deductCost(resources: Resources, cost: Cost): void {
+    for (const [k, v] of Object.entries(cost) as [keyof Resources, number][]) {
+        resources[k] -= v;
+    }
+}
+
+// ─── Build options ────────────────────────────────────────────────────────────
+
+interface BuildOption { config: RobotConfig; cost: Cost; }
+
+// Priority order: most powerful to least. AI picks the first it can afford.
+export const BUILD_OPTIONS: BuildOption[] = [
+    { config: { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS,  nuclear: true, electronics: Electronics.STANDARD },
+      cost: sumCosts(CHASSIS_BUILD_COST[Chassis.BIPOD], WEAPON_BUILD_COST[Weapon.PHASERS], NUCLEAR_BUILD_COST, ELECTRONICS_BUILD_COST) },
+    { config: { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS,  electronics: Electronics.STANDARD },
+      cost: sumCosts(CHASSIS_BUILD_COST[Chassis.BIPOD], WEAPON_BUILD_COST[Weapon.PHASERS], ELECTRONICS_BUILD_COST) },
+    { config: { chassis: Chassis.ANTIGRAV, weapon: Weapon.MISSILES, electronics: Electronics.STANDARD },
+      cost: sumCosts(CHASSIS_BUILD_COST[Chassis.ANTIGRAV], WEAPON_BUILD_COST[Weapon.MISSILES], ELECTRONICS_BUILD_COST) },
+    { config: { chassis: Chassis.TRACKS,   weapon: Weapon.CANNON,   electronics: Electronics.STANDARD },
+      cost: sumCosts(CHASSIS_BUILD_COST[Chassis.TRACKS], WEAPON_BUILD_COST[Weapon.CANNON], ELECTRONICS_BUILD_COST) },
+    { config: { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS },
+      cost: sumCosts(CHASSIS_BUILD_COST[Chassis.BIPOD], WEAPON_BUILD_COST[Weapon.PHASERS]) },
+    { config: { chassis: Chassis.ANTIGRAV, weapon: Weapon.MISSILES },
+      cost: sumCosts(CHASSIS_BUILD_COST[Chassis.ANTIGRAV], WEAPON_BUILD_COST[Weapon.MISSILES]) },
+    { config: { chassis: Chassis.TRACKS,   weapon: Weapon.CANNON },
+      cost: sumCosts(CHASSIS_BUILD_COST[Chassis.TRACKS], WEAPON_BUILD_COST[Weapon.CANNON]) },
+    { config: { chassis: Chassis.ANTIGRAV },
+      cost: CHASSIS_BUILD_COST[Chassis.ANTIGRAV] },
+    { config: { chassis: Chassis.TRACKS },
+      cost: CHASSIS_BUILD_COST[Chassis.TRACKS] },
+];
+
+// ─── Goal cycling ─────────────────────────────────────────────────────────────
+
+const BUILD_GOALS: RobotGoal[] = [
+    RobotGoal.ATTACK_ROBOTS,
+    RobotGoal.CAPTURE_FACTORY,
+    RobotGoal.CAPTURE_WARBASE,
+];
+
+let _builtCount = 0;
+
+/** Reset module state — call in tests that care about goal / ID sequencing. */
+export function _resetBuildState(): void { _builtCount = 0; }
+
+// ─── Main function ────────────────────────────────────────────────────────────
+
+/**
+ * Called each game tick. For every owned warbase whose spawn point is clear,
+ * builds the most powerful robot the team can afford, deducts its cost, and
+ * assigns it a goal from the round-robin cycle.
+ */
+export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void {
+    const zone = CAPTURE_ZONES['warbase'];
+    if (!zone) return;
+
+    const occupancy = buildOccupancy(warMap);
+
+    for (const obj of warMap.objects) {
+        if (obj.type !== 'warbase') continue;
+        if (obj.owner !== Owner.RED && obj.owner !== Owner.BLUE) continue;
+
+        const spawnX = obj.x + zone.dx;
+        const spawnY = obj.y + zone.dy;
+
+        // Block if any robot (enemy capturing or own robot) is at the spawn point.
+        if (isOccupied(occupancy, spawnX, spawnY)) continue;
+
+        const resources = ownerResources[obj.owner];
+        const option = BUILD_OPTIONS.find(o => canAfford(resources, o.cost));
+        if (!option) continue;
+
+        deductCost(resources, option.cost);
+
+        const robot: RobotObject = {
+            id: `robot_${_builtCount}`,
+            type: 'robot',
+            x: spawnX,
+            y: spawnY,
+            owner: obj.owner,
+            facing: 'N',
+            robotConfig: option.config,
+            health: calcHealth(option.config),
+            goal: BUILD_GOALS[_builtCount % BUILD_GOALS.length],
+            ai: 'dummy',
+        };
+        _builtCount++;
+
+        warMap.objects.push(robot);
+        // Register in occupancy so a second warbase on the same tick can't spawn at the same point.
+        occupancy.robots.push({ id: robot.id, x: robot.x, y: robot.y });
+    }
+}

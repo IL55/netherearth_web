@@ -105,7 +105,7 @@ export const robotConfigs = {
     cannon:   { chassis: Chassis.TRACKS,   weapon: Weapon.CANNON,   electronics: Electronics.STANDARD },
     missiles: { chassis: Chassis.ANTIGRAV, weapon: Weapon.MISSILES, electronics: Electronics.STANDARD },
     phasers:  { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS,  nuclear: true, electronics: Electronics.STANDARD },
-    scout:    { chassis: Chassis.ANTIGRAV },
+    scout:    { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
 } satisfies Record<string, RobotConfig>;
 
 export type RobotConfigName = keyof typeof robotConfigs;

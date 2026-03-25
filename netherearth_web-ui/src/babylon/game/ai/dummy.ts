@@ -13,7 +13,7 @@ import { CW_DIRS } from '../warmap';
 import type { WarMap, WarObject, RobotObject, Direction } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
 import { ActionType, RotateDir, type RobotAction } from '../actions';
-import { CAPTURE_ZONES } from '../capture';
+import { CAPTURE_ZONES, isInCaptureZone } from '../capture';
 import { dirDelta, isPassable } from './nav';
 import { fightAction } from './fight';
 import { NavAlgo } from './nav-algo';
@@ -53,6 +53,11 @@ export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: Occupancy
     // 2. Goal navigation
     const target = findTarget(robot, warMap);
     if (!target) return { type: ActionType.IDLE };
+
+    // Already in the capture zone — hold position to complete capture
+    if (CAPTURE_ZONES[target.type] && isInCaptureZone(robot, target)) {
+        return { type: ActionType.IDLE };
+    }
 
     const { x: tx, y: ty } = targetPos(target);
     const facing = robot.facing ?? 'N';

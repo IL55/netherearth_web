@@ -74,7 +74,7 @@ describe('nav basic: no position bounce', () => {
 //  existing 300-tick test) so a bouncing robot fails fast.
 
 describe('nav basic: clears single wall quickly', () => {
-    it('robot passes x=5 obstacle and reaches x≥7 within 40 ticks', () => {
+    it('robot passes x=5 obstacle and reaches x≥7 within 80 ticks', () => {
         const robot  = makeRobot(2, 5);
         const map: WarMap = {
             width: 15, height: 10,
@@ -82,7 +82,7 @@ describe('nav basic: clears single wall quickly', () => {
             tick: 0,
         };
 
-        const path = run(map, robot, 40);
+        const path = run(map, robot, 80);
         const maxX = Math.max(...path.map(p => p.x));
         expect(maxX).toBeGreaterThanOrEqual(7);
     });
@@ -101,7 +101,7 @@ describe('nav basic: clears single wall quickly', () => {
 //    y=6  . . . . . . .
 
 describe('nav basic: exits corner dead end', () => {
-    it('robot navigates around 2-wall corner and reaches x≥7 within 60 ticks', () => {
+    it('robot navigates around 2-wall corner and reaches x≥7 within 120 ticks', () => {
         const robot = makeRobot(2, 5);
         const map: WarMap = {
             width: 15, height: 10,
@@ -109,7 +109,7 @@ describe('nav basic: exits corner dead end', () => {
             tick: 0,
         };
 
-        const path = run(map, robot, 60);
+        const path = run(map, robot, 120);
         const maxX = Math.max(...path.map(p => p.x));
         expect(maxX).toBeGreaterThanOrEqual(7);
     });

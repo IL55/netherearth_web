@@ -148,11 +148,11 @@ describe('Trémaux basic: exits corner dead end', () => {
 // ─── Open field ───────────────────────────────────────────────────────────────
 
 describe('Trémaux: open field', () => {
-    it('reaches factory capture zone within 100 ticks', () => {
+    it('reaches factory capture zone within 200 ticks', () => {
         const factory = makeFactory(12, 5);
         const robot   = makeRobot('r0', 2, 5);
         const map: WarMap = { width: 20, height: 12, objects: [factory, robot], tick: 0 };
-        expect(runUntilCapture(map, robot, factory, 100)).toBeGreaterThanOrEqual(0);
+        expect(runUntilCapture(map, robot, factory, 200)).toBeGreaterThanOrEqual(0);
     });
 });
 
@@ -185,7 +185,7 @@ describe('Trémaux: bipod + mountain barrier', () => {
 // ─── U-shaped dead end (maze) ─────────────────────────────────────────────────
 
 describe('Trémaux: U-shaped dead end', () => {
-    it('escapes dead end and reaches factory within 600 ticks', () => {
+    it('escapes dead end and reaches factory within 1200 ticks', () => {
         const walls = [
             ...[5,6,7,8,9,10,11].map(x => makeWall(x, 2)),
             ...[3,4,5,6,7].map(y => makeWall(11, y)),
@@ -200,7 +200,7 @@ describe('Trémaux: U-shaped dead end', () => {
         const goalY = factory.y + zone.dy;
 
         let reached = false;
-        for (let tick = 0; tick < 600; tick++) {
+        for (let tick = 0; tick < 1200; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
             applyAction(robot, dummyAI(robot, map, occ), map, occ);
@@ -221,7 +221,7 @@ describe('Trémaux: factory capture', () => {
         const map: WarMap = { width: 20, height: 12, objects: [factory, robot], tick: 0 };
 
         let captured = false;
-        for (let tick = 0; tick < 500; tick++) {
+        for (let tick = 0; tick < 1000; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
             applyAction(robot, dummyAI(robot, map, occ), map, occ);

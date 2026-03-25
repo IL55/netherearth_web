@@ -1,4 +1,5 @@
 import type { WarMap, WarObject, RobotObject } from './warmap';
+import { DAY_TICKS } from './resources';
 
 interface CaptureZone {
     dx: number;    // offset from obj.x to zone center
@@ -7,11 +8,11 @@ interface CaptureZone {
     ticks: number; // consecutive ticks required to capture
 }
 
-// Factory: open slot at (xo=1, yo=1) in C-shaped layout, 4 ticks to capture.
-// Warbase: right-side gap between (xo=3,yo=1) and (xo=3,yo=3), 12 ticks (3× factory).
+// Factory: open slot at (xo=1, yo=1) in C-shaped layout, 1 day to capture.
+// Warbase: right-side gap between (xo=3,yo=1) and (xo=3,yo=3), 3 days to capture.
 export const CAPTURE_ZONES: Partial<Record<string, CaptureZone>> = {
-    factory: { dx: 1,   dy: 1,   radius: 0.5, ticks: 4  },
-    warbase: { dx: 3.5, dy: 2.0, radius: 0.5, ticks: 12 },
+    factory: { dx: 1,   dy: 1,   radius: 0.5, ticks: 1 * DAY_TICKS },
+    warbase: { dx: 3.5, dy: 2.0, radius: 0.5, ticks: 3 * DAY_TICKS },
 };
 
 export function isInCaptureZone(robot: RobotObject, structure: WarObject): boolean {
