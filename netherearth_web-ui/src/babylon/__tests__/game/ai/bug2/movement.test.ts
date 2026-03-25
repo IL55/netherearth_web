@@ -3,8 +3,9 @@ import { dummyAI } from '../../../../game/ai/dummy';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/occupancy';
 import { tickCapture, CAPTURE_ZONES } from '../../../../game/capture';
-import { RobotGoal } from '../../../../game/warmap';
+import { RobotGoal, Owner } from '../../../../game/warmap';
 import type { WarMap, WarObject, RobotObject } from '../../../../game/warmap';
+import { Chassis, Electronics } from '../../../../data/robot';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -12,9 +13,9 @@ function makeRobot(overrides: Partial<RobotObject> & { id: string; x: number; y:
     return {
         type: 'robot',
         facing: 'E',
-        owner: 1,
+        owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
-        robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' },
+        robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
         ...overrides,
     };
 }
@@ -122,7 +123,7 @@ describe('bipod + mountain barrier', () => {
         const factory   = makeFactory('f0', 14, 5);
         const robot     = makeRobot({
             id: 'r0', x: 2, y: 5,
-            robotConfig: { chassis: 'h-bipod', electronics: 'h-electronics' },
+            robotConfig: { chassis: Chassis.BIPOD, electronics: Electronics.STANDARD },
         });
         const map: WarMap = {
             width: 20, height: 12,
@@ -139,7 +140,7 @@ describe('bipod + mountain barrier', () => {
         const factory   = makeFactory('f0', 14, 5);
         const robot     = makeRobot({
             id: 'r0', x: 7, y: 5, // placed right next to mountain wall
-            robotConfig: { chassis: 'h-bipod', electronics: 'h-electronics' },
+            robotConfig: { chassis: Chassis.BIPOD, electronics: Electronics.STANDARD },
         });
         const map: WarMap = {
             width: 20, height: 12,
@@ -226,7 +227,7 @@ describe('boundary: robot stays within map bounds', () => {
         const walls = [2,3,4,5,6,7,8,9,10].map(x => makeWall(x, 3));
         const factory = makeFactory('f0', 6, 0);
         const robot   = makeRobot({ id: 'r0', x: 6, y: 8,
-            robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' } });
+            robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD } });
         const map: WarMap = { width: 15, height: 12,
             objects: [...walls, factory, robot], tick: 0 };
 
@@ -240,7 +241,7 @@ describe('boundary: robot stays within map bounds', () => {
         const walls = [2,3,4,5,6,7,8,9,10].map(x => makeWall(x, 7));
         const factory = makeFactory('f0', 6, 10);
         const robot   = makeRobot({ id: 'r0', x: 6, y: 3,
-            robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' } });
+            robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD } });
         const map: WarMap = { width: 15, height: 12,
             objects: [...walls, factory, robot], tick: 0 };
 
@@ -267,7 +268,7 @@ describe('factory capture: robot enters C-shaped slot', () => {
         const factory = makeFactory('f0', 10, 4);
         const robot   = makeRobot({
             id: 'r0', x: 2, y: 5,
-            robotConfig: { chassis: 'h-tracks', electronics: 'h-electronics' },
+            robotConfig: { chassis: Chassis.TRACKS, electronics: Electronics.STANDARD },
         });
         const map: WarMap = {
             width: 20, height: 12,
@@ -287,7 +288,7 @@ describe('factory capture: robot enters C-shaped slot', () => {
         const factory = makeFactory('f0', 10, 4);
         const robot   = makeRobot({
             id: 'r0', x: 2, y: 5,
-            robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' },
+            robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
         });
         const map: WarMap = {
             width: 20, height: 12,
@@ -307,6 +308,6 @@ describe('factory capture: robot enters C-shaped slot', () => {
         }
 
         expect(captured).toBe(true);
-        expect(factory.owner).toBe(1);
+        expect(factory.owner).toBe(Owner.RED);
     });
 });

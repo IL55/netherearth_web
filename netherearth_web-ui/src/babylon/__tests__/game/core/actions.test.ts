@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { applyAction, ActionType, MOVE_STEP } from '../../../game/actions';
+import { applyAction, ActionType, RotateDir, MOVE_STEP } from '../../../game/actions';
 import { rotationToDirection, directionToRotation } from '../../../view/map/rotation';
 import { buildOccupancy, isOccupied } from '../../../game/occupancy';
+import { Owner } from '../../../game/owner';
 import type { WarMap, WarObject, RobotObject } from '../../../game/warmap';
+import { Chassis, Electronics } from '../../../data/robot';
 
 function makeMap(objects: WarMap['objects'] = [], width = 20, height = 20): WarMap {
     return { width, height, objects };
@@ -10,7 +12,7 @@ function makeMap(objects: WarMap['objects'] = [], width = 20, height = 20): WarM
 
 function makeRobot(id: string, x: number, y: number, facing: 'N' | 'E' | 'S' | 'W' = 'E'): RobotObject {
     // antigrav: speedFactor=1 on all terrain — avoids terrain-slowdown interference in movement tests
-    return { id, type: 'robot', x, y, facing, robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' } };
+    return { id, type: 'robot', x, y, facing, owner: Owner.NEUTRAL, robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD } };
 }
 
 describe('rotationToDirection / directionToRotation round-trip', () => {
@@ -29,13 +31,13 @@ describe('rotationToDirection / directionToRotation round-trip', () => {
 describe('applyAction — rotate', () => {
     it('rotates right: E → S (clockwise)', () => {
         const robot = makeRobot('r', 5, 5, 'E');
-        applyAction(robot, { type: ActionType.ROTATE, direction: 'right' }, makeMap(), buildOccupancy(makeMap()));
+        applyAction(robot, { type: ActionType.ROTATE, direction: RotateDir.RIGHT }, makeMap(), buildOccupancy(makeMap()));
         expect(robot.facing).toBe('S');
     });
 
     it('rotates left: E → N (counter-clockwise)', () => {
         const robot = makeRobot('r', 5, 5, 'E');
-        applyAction(robot, { type: ActionType.ROTATE, direction: 'left' }, makeMap(), buildOccupancy(makeMap()));
+        applyAction(robot, { type: ActionType.ROTATE, direction: RotateDir.LEFT }, makeMap(), buildOccupancy(makeMap()));
         expect(robot.facing).toBe('N');
     });
 });

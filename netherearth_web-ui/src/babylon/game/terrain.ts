@@ -1,7 +1,8 @@
 // Chassis types and their terrain passability.
 // speedFactor: 1 = move every tick, 0.5 = move every 2nd tick, 0 = impassable.
 
-export type ChassisType = 'tracks' | 'antigrav' | 'bipod';
+import { Chassis } from '../data/robot';
+export { Chassis };
 
 interface TerrainRule {
     passable: boolean;
@@ -12,28 +13,21 @@ interface TerrainRule {
 //   tracks:   any terrain except holes; slower on sand and mountains
 //   antigrav: best — full speed on all terrain including holes (flies over)
 //   bipod:    grass and sand only, always at half speed
-const TERRAIN: Record<string, Partial<Record<ChassisType, TerrainRule>>> = {
-    G:  { tracks: { passable: true,  speedFactor: 0.75 }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: true,  speedFactor: 0.5 } },
-    S:  { tracks: { passable: true,  speedFactor: 0.5 }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: true,  speedFactor: 0.5 } },
-    S2: { tracks: { passable: true,  speedFactor: 0.5 }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: true,  speedFactor: 0.5 } },
-    M:  { tracks: { passable: true,  speedFactor: 0.5 }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
-    H1: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
-    H2: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
-    H3: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
-    H4: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
-    H5: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
-    H6: { tracks: { passable: false, speedFactor: 0   }, antigrav: { passable: true, speedFactor: 1 }, bipod: { passable: false, speedFactor: 0   } },
+const TERRAIN: Record<string, Partial<Record<Chassis, TerrainRule>>> = {
+    G:  { [Chassis.TRACKS]: { passable: true,  speedFactor: 0.75 }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: true,  speedFactor: 0.5 } },
+    S:  { [Chassis.TRACKS]: { passable: true,  speedFactor: 0.5  }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: true,  speedFactor: 0.5 } },
+    S2: { [Chassis.TRACKS]: { passable: true,  speedFactor: 0.5  }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: true,  speedFactor: 0.5 } },
+    M:  { [Chassis.TRACKS]: { passable: true,  speedFactor: 0.5  }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: false, speedFactor: 0   } },
+    H1: { [Chassis.TRACKS]: { passable: false, speedFactor: 0    }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: false, speedFactor: 0   } },
+    H2: { [Chassis.TRACKS]: { passable: false, speedFactor: 0    }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: false, speedFactor: 0   } },
+    H3: { [Chassis.TRACKS]: { passable: false, speedFactor: 0    }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: false, speedFactor: 0   } },
+    H4: { [Chassis.TRACKS]: { passable: false, speedFactor: 0    }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: false, speedFactor: 0   } },
+    H5: { [Chassis.TRACKS]: { passable: false, speedFactor: 0    }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: false, speedFactor: 0   } },
+    H6: { [Chassis.TRACKS]: { passable: false, speedFactor: 0    }, [Chassis.ANTIGRAV]: { passable: true, speedFactor: 1 }, [Chassis.BIPOD]: { passable: false, speedFactor: 0   } },
 };
 
 const DEFAULT_RULE: TerrainRule = { passable: true, speedFactor: 1 };
 
-export function getTerrainRule(tileSubtype: string, chassis: ChassisType): TerrainRule {
+export function getTerrainRule(tileSubtype: string, chassis: Chassis): TerrainRule {
     return TERRAIN[tileSubtype]?.[chassis] ?? DEFAULT_RULE;
-}
-
-// Derive chassis type from a chassis model name (e.g. 'h-tracks' → 'tracks')
-export function chassisTypeOf(chassisModel: string): ChassisType {
-    if (chassisModel.includes('antigrav')) return 'antigrav';
-    if (chassisModel.includes('bipod'))    return 'bipod';
-    return 'tracks';
 }

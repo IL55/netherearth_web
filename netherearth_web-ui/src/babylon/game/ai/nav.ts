@@ -12,7 +12,7 @@ export { CW_DIRS };
 import type { OccupancyMap } from '../occupancy';
 import { isOccupied } from '../occupancy';
 import { MOVE_STEP } from '../actions';
-import { getTerrainRule, chassisTypeOf } from '../terrain';
+import { getTerrainRule, Chassis } from '../terrain';
 
 
 export function dirDelta(dir: Direction): { dx: number; dy: number } {
@@ -41,7 +41,7 @@ export function isPassable(
     y: number,
 ): boolean {
     if (x < 0 || y < 0 || x > warMap.width - 1 || y > warMap.height - 1) return false;
-    const chassis = chassisTypeOf(robot.robotConfig?.chassis ?? 'tracks');
+    const chassis = robot.robotConfig?.chassis ?? Chassis.TRACKS;
     if (!getTerrainRule(tileAt(warMap, x, y), chassis).passable) return false;
     if (isOccupied(occupancy, x, y, robot.id)) return false;
     return true;

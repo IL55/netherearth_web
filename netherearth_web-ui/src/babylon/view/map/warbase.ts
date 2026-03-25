@@ -1,5 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
+import { Owner } from '../../game/owner';
 
 const WARBASE_PARTS = [
     { model: 'highwall1', xo: 0.5, yo: 0 }, { model: 'highwall2', xo: 1.5, yo: 0 },
@@ -20,7 +21,7 @@ export const addWarbase = (
     mapBegin: BABYLON.Vector3,
     x: number,
     y: number,
-    owner?: number,
+    owner?: Owner,
 ) => {
     WARBASE_PARTS.forEach(part => {
         const model = models.get(part.model);
@@ -31,7 +32,7 @@ export const addWarbase = (
         instance.position = new BABYLON.Vector3(mapBegin.x + x + part.xo, 1, mapBegin.z + y + part.yo);
         setVisibleAll(instance, true);
 
-        if (part.model === 'warbase' && owner === 2 && OWNER_TEXTURE[1]) {
+        if (part.model === 'warbase' && owner === Owner.BLUE && OWNER_TEXTURE[Owner.RED]) {
             const decalMaterial = new BABYLON.StandardMaterial(`decalMat_${owner}`, scene);
             decalMaterial.diffuseTexture = new BABYLON.Texture(`/models/textures/${OWNER_TEXTURE[1]}`, scene);
             decalMaterial.specularColor = new BABYLON.Color3(0, 0, 0);

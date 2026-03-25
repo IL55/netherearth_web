@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { NullEngine, Scene, KeyboardInfo, KeyboardEventTypes } from '@babylonjs/core';
 import { attachGameControls } from '../../controls/game';
+import { Owner } from '../../game/owner';
 import type { WarMap } from '../../game/warmap';
 
 function makeEnv() {
@@ -45,8 +46,8 @@ describe('attachGameControls - t key cycles owner', () => {
         pressKey(scene, 't');
         const factory = warMap.objects.find(o => o.id === 'factory_0')!;
         const warbase = warMap.objects.find(o => o.id === 'warbase_0')!;
-        expect(factory.owner).toBe(1);
-        expect(warbase.owner).toBe(1);
+        expect(factory.owner).toBe(Owner.RED);
+        expect(warbase.owner).toBe(Owner.RED);
     });
 
     it('second press sets owner to 2', () => {
@@ -54,8 +55,8 @@ describe('attachGameControls - t key cycles owner', () => {
         pressKey(scene, 't');
         const factory = warMap.objects.find(o => o.id === 'factory_0')!;
         const warbase = warMap.objects.find(o => o.id === 'warbase_0')!;
-        expect(factory.owner).toBe(2);
-        expect(warbase.owner).toBe(2);
+        expect(factory.owner).toBe(Owner.BLUE);
+        expect(warbase.owner).toBe(Owner.BLUE);
     });
 
     it('third press clears owner back to neutral', () => {
@@ -64,14 +65,14 @@ describe('attachGameControls - t key cycles owner', () => {
         pressKey(scene, 't');
         const factory = warMap.objects.find(o => o.id === 'factory_0')!;
         const warbase = warMap.objects.find(o => o.id === 'warbase_0')!;
-        expect(factory.owner).toBeUndefined();
-        expect(warbase.owner).toBeUndefined();
+        expect(factory.owner).toBe(Owner.NEUTRAL);
+        expect(warbase.owner).toBe(Owner.NEUTRAL);
     });
 
     it('calls onUpdate on every press', () => {
         pressKey(scene, 't');
         pressKey(scene, 't');
-        expect(updateCount).toBe(2);
+        expect(updateCount).toBe(Owner.BLUE);
     });
 
     it('does not affect tiles', () => {

@@ -1,8 +1,9 @@
 import { CW_DIRS } from './warmap';
 import type { WarMap, RobotObject, MapObject, Direction } from './warmap';
 import type { OccupancyMap } from './occupancy';
+import { RotateDir } from './rotate-dir';
 import { isOccupied, updateRobotPosition } from './occupancy';
-import { getTerrainRule, chassisTypeOf } from './terrain';
+import { getTerrainRule, Chassis } from './terrain';
 import { WEAPON_DAMAGE, WEAPON_RANGE, calcDamageFalloff } from '../data/robot';
 import { spawnProjectile } from './projectile';
 
@@ -19,9 +20,11 @@ export enum ActionType {
     IDLE   = 'idle',
 }
 
+export { RotateDir };
+
 export type RobotAction =
     | { type: ActionType.MOVE;   direction: Direction }
-    | { type: ActionType.ROTATE; direction: 'left' | 'right' }
+    | { type: ActionType.ROTATE; direction: RotateDir }
     | { type: ActionType.FIRE;   targetId: string }
     | { type: ActionType.IDLE };
 
@@ -67,7 +70,7 @@ export function applyAction(
 
     if (action.type === ActionType.ROTATE) {
         const idx = CW_DIRS.indexOf(robot.facing ?? 'N');
-        robot.facing = CW_DIRS[(idx + (action.direction === 'right' ? 1 : 3)) % 4];
+        robot.facing = CW_DIRS[(idx + (action.direction === RotateDir.RIGHT ? 1 : 3)) % 4];
         return true;
     }
 
@@ -94,7 +97,7 @@ export function applyAction(
     // move — robot must be facing the requested direction
     if ((robot.facing ?? 'N') !== action.direction) return false;
 
-    const chassis = chassisTypeOf(robot.robotConfig?.chassis ?? 'tracks');
+    const chassis = robot.robotConfig?.chassis ?? Chassis.TRACKS;
     const { dx, dy } = DIR_DELTA[action.direction];
     const tx = robot.x + dx;
     const ty = robot.y + dy;

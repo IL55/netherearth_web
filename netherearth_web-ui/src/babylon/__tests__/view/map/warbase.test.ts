@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { Owner } from '../../../game/owner';
 import { addWarbase } from '../../../view/map/warbase';
 import { makeEnv } from '../../test-utils';
 
@@ -12,7 +13,7 @@ describe('addWarbase', () => {
     });
 
     it('does not throw with any owner', () => {
-        [1, 2].forEach(owner => {
+        [Owner.RED, Owner.BLUE].forEach(owner => {
             const { engine, scene, models, mapBegin } = makeEnv();
             expect(() => addWarbase(models, scene, mapBegin, 0, 0, owner)).not.toThrow();
             scene.dispose(); engine.dispose();
@@ -20,7 +21,7 @@ describe('addWarbase', () => {
     });
 
     it('creates 15 part instances regardless of owner', () => {
-        [undefined, 1, 2].forEach(owner => {
+        [undefined, Owner.RED, Owner.BLUE].forEach(owner => {
             const { engine, scene, models, mapBegin } = makeEnv();
             const before = scene.transformNodes.length;
             addWarbase(models, scene, mapBegin, 0, 0, owner);
@@ -44,7 +45,7 @@ describe('addWarbase', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 3, oy = 4;
-        addWarbase(models, scene, mapBegin, ox, oy, 1);
+        addWarbase(models, scene, mapBegin, ox, oy, Owner.RED);
         const flag = scene.transformNodes[before + WARBASE_PART_COUNT];
         expect(flag.position.x).toBeCloseTo(ox + 1.5, 5);
         expect(flag.position.y).toBeCloseTo(2, 5);
@@ -56,7 +57,7 @@ describe('addWarbase', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 3, oy = 4;
-        addWarbase(models, scene, mapBegin, ox, oy, 2);
+        addWarbase(models, scene, mapBegin, ox, oy, Owner.BLUE);
         const flag = scene.transformNodes[before + WARBASE_PART_COUNT];
         expect(flag.position.x).toBeCloseTo(ox + 1.5, 5);
         expect(flag.position.y).toBeCloseTo(2, 5);
@@ -88,13 +89,13 @@ describe('addWarbase', () => {
     it('owner=2 adds exactly 1 extra mesh (decal plane) compared to owner=1', () => {
         const env1 = makeEnv();
         const before1 = env1.scene.meshes.length;
-        addWarbase(env1.models, env1.scene, env1.mapBegin, 0, 0, 1);
+        addWarbase(env1.models, env1.scene, env1.mapBegin, 0, 0, Owner.RED);
         const meshCount1 = env1.scene.meshes.length - before1;
         env1.scene.dispose(); env1.engine.dispose();
 
         const env2 = makeEnv();
         const before2 = env2.scene.meshes.length;
-        addWarbase(env2.models, env2.scene, env2.mapBegin, 0, 0, 2);
+        addWarbase(env2.models, env2.scene, env2.mapBegin, 0, 0, Owner.BLUE);
         const meshCount2 = env2.scene.meshes.length - before2;
         env2.scene.dispose(); env2.engine.dispose();
 

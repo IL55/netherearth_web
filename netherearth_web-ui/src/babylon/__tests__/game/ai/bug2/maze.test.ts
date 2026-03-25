@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/occupancy';
-import { RobotGoal } from '../../../../game/warmap';
+import { RobotGoal, Owner } from '../../../../game/warmap';
 import type { WarMap, WarObject, RobotObject } from '../../../../game/warmap';
+import { Chassis, Electronics } from '../../../../data/robot';
 
 /**
  * Maze layout (each cell = 1 unit, walls are 'wall3' objects)
@@ -60,9 +61,9 @@ function makeMap(): WarMap {
         type: 'robot',
         x: 2, y: 5,
         facing: 'E',
-        owner: 1,
+        owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
-        robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' },
+        robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
     };
 
     return {

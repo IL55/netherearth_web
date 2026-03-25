@@ -1,66 +1,88 @@
 import type { NavAlgo } from '../game/ai/nav-algo';
 
-export interface RobotConfig {
-    chassis: string;
-    weapon?: string;       // absent = no weapon, robot never fires
-    nuclearModel?: string; // explicit model name so color matches team
-    electronics: string;
-    navAlgo?: NavAlgo;     // navigation algorithm; defaults to BUG2 when absent
+// ─── Part enums ───────────────────────────────────────────────────────────────
+
+/** Chassis type — determines terrain passability and movement speed. */
+export enum Chassis {
+    TRACKS   = 'tracks',
+    ANTIGRAV = 'antigrav',
+    BIPOD    = 'bipod',
 }
 
-// How far a robot can see an enemy in its forward direction (cells), by electronics type.
-export const SIGHT_RANGE: Record<string, number> = {
-    'h-electronics': 4,
-    'e-electronics': 2,
+/** Weapon type — determines range, cooldown, and damage. */
+export enum Weapon {
+    CANNON   = 'cannon',
+    MISSILES = 'missiles',
+    PHASERS  = 'phasers',
+}
+
+/**
+ * Electronics type — determines sight range and targeting.
+ * Optional on a robot; absent means no sensor module and the robot never fires.
+ * One tier for now; add more values (and matching model files) for balance later.
+ */
+export enum Electronics {
+    STANDARD = 'electronics',  // enum value = model name suffix: h-electronics / e-electronics
+}
+
+// ─── Config ───────────────────────────────────────────────────────────────────
+
+export interface RobotConfig {
+    chassis:      Chassis;
+    weapon?:      Weapon;
+    nuclear?:     boolean;       // true → place the team-coloured nuclear model
+    electronics?: Electronics;   // absent → no sensor, robot never fires
+    navAlgo?:     NavAlgo;
+}
+
+// ─── Stat tables (keyed by enum — no h-/e- duplication) ──────────────────────
+
+// How far a robot can see an enemy in its forward direction (cells).
+export const SIGHT_RANGE: Record<Electronics, number> = {
+    [Electronics.STANDARD]: 4,
 };
 
-// Maximum fire range per weapon (cells). Absent key = weapon unknown, treat as 0.
-export const WEAPON_RANGE: Record<string, number> = {
-    'h-cannon':   3, 'e-cannon':   3,
-    'h-missiles': 4, 'e-missiles': 4,
-    'h-phasers':  5, 'e-phasers':  5,
+// Maximum fire range per weapon (cells).
+export const WEAPON_RANGE: Record<Weapon, number> = {
+    [Weapon.CANNON]:   3,
+    [Weapon.MISSILES]: 4,
+    [Weapon.PHASERS]:  5,
 };
 
 // Minimum game ticks between shots (firing cooldown per weapon type).
-// Phasers fire fastest; missiles slowest.
-export const WEAPON_COOLDOWN: Record<string, number> = {
-    'h-phasers':  2, 'e-phasers':  2,
-    'h-cannon':   3, 'e-cannon':   3,
-    'h-missiles': 5, 'e-missiles': 5,
+export const WEAPON_COOLDOWN: Record<Weapon, number> = {
+    [Weapon.PHASERS]:  2,
+    [Weapon.CANNON]:   3,
+    [Weapon.MISSILES]: 5,
 };
 
 // HP dealt to target per shot.
-export const WEAPON_DAMAGE: Record<string, number> = {
-    'h-cannon':   8,  'e-cannon':   8,
-    'h-missiles': 14, 'e-missiles': 14,
-    'h-phasers':  20, 'e-phasers':  20,
+export const WEAPON_DAMAGE: Record<Weapon, number> = {
+    [Weapon.CANNON]:   8,
+    [Weapon.MISSILES]: 14,
+    [Weapon.PHASERS]:  20,
 };
 
-// Damage contribution per part name (1–100 scale).
-// Weapon is the dominant factor; chassis affects mobility vs. firepower tradeoff;
-// electronics add targeting precision; nuclearModel is a large bonus for having a nuke.
-const PART_DAMAGE: Record<string, number> = {
-    // chassis
-    'h-tracks':   15,  // heavy ground, durable
-    'h-antigrav': 10,  // light, fast — less raw power
-    'h-bipod':    12,  // balanced
-    'e-tracks':   15,
-    'e-antigrav': 10,
-    'e-bipod':    12,
-    // weapon
-    'h-cannon':   30,  // reliable ballistic
-    'h-missiles': 42,  // explosive, area damage
-    'h-phasers':  25,  // energy — precise but lighter
-    'e-cannon':   30,
-    'e-missiles': 42,
-    'e-phasers':  25,
-    // electronics
-    'h-electronics': 5,
-    'e-electronics': 5,
-    // nuclear payload (optional) — large damage multiplier part
-    'h-nuclear': 18,
-    'e-nuclear': 18,
+// Damage contribution per part (1–100 scale) used by calcHealth.
+const CHASSIS_HP: Record<Chassis, number> = {
+    [Chassis.TRACKS]:   15,
+    [Chassis.ANTIGRAV]: 10,
+    [Chassis.BIPOD]:    12,
 };
+
+const WEAPON_HP: Record<Weapon, number> = {
+    [Weapon.CANNON]:   30,
+    [Weapon.MISSILES]: 42,
+    [Weapon.PHASERS]:  25,
+};
+
+const ELECTRONICS_HP: Record<Electronics, number> = {
+    [Electronics.STANDARD]: 5,
+};
+
+const NUCLEAR_HP = 18;
+
+// ─── Damage falloff & health ──────────────────────────────────────────────────
 
 // Damage multiplier based on shot distance (linear from 100% at dist=1 to 40% at maxRange).
 export function calcDamageFalloff(dist: number, maxRange: number): number {
@@ -70,21 +92,20 @@ export function calcDamageFalloff(dist: number, maxRange: number): number {
 
 // Sum health from all parts present in the config; clamp to [1, 100].
 export function calcHealth(config: RobotConfig): number {
-    const parts = [config.chassis, config.weapon, config.electronics, config.nuclearModel];
-    let total = 0;
-    for (const p of parts) if (p) total += PART_DAMAGE[p] ?? 0;
+    let total = CHASSIS_HP[config.chassis] ?? 0;
+    if (config.weapon)      total += WEAPON_HP[config.weapon];
+    if (config.electronics) total += ELECTRONICS_HP[config.electronics];
+    if (config.nuclear)     total += NUCLEAR_HP;
     return Math.max(1, Math.min(100, total));
 }
 
+// ─── Preset configs ───────────────────────────────────────────────────────────
+
 export const robotConfigs = {
-    'h-cannon':   { chassis: 'h-tracks',   weapon: 'h-cannon',                              electronics: 'h-electronics' },
-    'h-missiles': { chassis: 'h-antigrav', weapon: 'h-missiles',                            electronics: 'h-electronics' },
-    'h-phasers':  { chassis: 'h-bipod',    weapon: 'h-phasers',  nuclearModel: 'h-nuclear', electronics: 'h-electronics' },
-    'e-cannon':   { chassis: 'e-tracks',   weapon: 'e-cannon',                              electronics: 'e-electronics' },
-    'e-missiles': { chassis: 'e-antigrav', weapon: 'e-missiles',  nuclearModel: 'e-nuclear', electronics: 'e-electronics' },
-    'e-phasers':  { chassis: 'e-bipod',    weapon: 'e-phasers',                             electronics: 'e-electronics' },
-    // Scout: no weapon — used for testing and future factory-born unarmed robots
-    'scout':      { chassis: 'h-antigrav',                                                  electronics: 'h-electronics' },
+    cannon:   { chassis: Chassis.TRACKS,   weapon: Weapon.CANNON,   electronics: Electronics.STANDARD },
+    missiles: { chassis: Chassis.ANTIGRAV, weapon: Weapon.MISSILES, electronics: Electronics.STANDARD },
+    phasers:  { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS,  nuclear: true, electronics: Electronics.STANDARD },
+    scout:    { chassis: Chassis.ANTIGRAV },
 } satisfies Record<string, RobotConfig>;
 
 export type RobotConfigName = keyof typeof robotConfigs;

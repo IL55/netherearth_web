@@ -1,5 +1,6 @@
 import type { MapData } from '../data/map';
 import type { RobotConfig } from '../data/robot';
+import { Owner } from './owner';
 
 export type Direction = 'N' | 'E' | 'S' | 'W';
 // Clockwise order — used for rotation index math and direction iteration.
@@ -52,8 +53,8 @@ export interface NavState {
     stuckCheckDist?: number;
     navMode?: NavMode;
     wallFollowStartDist?: number;
-    // Trémaux state (h-tremaux electronics)
-    recentCells?: string[];   // visited positions at 0.25-cell resolution, sliding window
+    // Trémaux state
+    visitCounts?: Map<string, number>; // visit count per position key (0.25-cell resolution, permanent)
 }
 
 // All non-robot map objects (tiles, structures, walls)
@@ -65,10 +66,12 @@ export type StructureType =
 
 interface ObjectBase { id: string; x: number; y: number; }
 
+export { Owner };
+
 // Mobile unit — robot-specific fields
 export interface RobotObject extends ObjectBase {
     type: 'robot';
-    owner?: number;
+    owner: Owner;
     facing?: Direction;
     robotConfig?: RobotConfig;
     goal?: RobotGoal;
@@ -83,7 +86,7 @@ export interface RobotObject extends ObjectBase {
 // Static map object (tile, factory, warbase, wall, fence)
 export interface MapObject extends ObjectBase {
     type: StructureType;
-    owner?: number;
+    owner?: Owner;
     subtype?: string;
     captureCounter?: number;
 }
@@ -116,7 +119,7 @@ export function createWarMap(mapData: MapData): WarMap {
             type: obj.type as StructureType,
             x: obj.x,
             y: obj.y,
-            ...(obj.owner !== undefined ? { owner: obj.owner } : {}),
+            owner: obj.owner !== undefined ? obj.owner : Owner.NEUTRAL,
             ...(obj.subtype ? { subtype: obj.subtype } : {}),
         });
     });
@@ -132,9 +135,9 @@ export function findLastByType(warMap: WarMap, type: string): WarObject | undefi
     return [...warMap.objects].reverse().find(o => o.type === type);
 }
 
-// Cycles owner: undefined → 1 → 2 → undefined
+// Cycles owner: NEUTRAL → RED → BLUE → NEUTRAL (undefined is treated as NEUTRAL)
 export function cycleOwner(obj: WarObject): void {
-    if (obj.owner === undefined) obj.owner = 1;
-    else if (obj.owner === 1)    obj.owner = 2;
-    else                         obj.owner = undefined;
+    if (!obj.owner)                    obj.owner = Owner.RED;
+    else if (obj.owner === Owner.RED)  obj.owner = Owner.BLUE;
+    else                               obj.owner = Owner.NEUTRAL;
 }

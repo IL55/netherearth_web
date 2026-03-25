@@ -12,7 +12,7 @@ import { RobotGoal } from '../warmap';
 import { CW_DIRS } from '../warmap';
 import type { WarMap, WarObject, RobotObject, Direction } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
-import { ActionType, type RobotAction } from '../actions';
+import { ActionType, RotateDir, type RobotAction } from '../actions';
 import { CAPTURE_ZONES } from '../capture';
 import { dirDelta, isPassable } from './nav';
 import { fightAction } from './fight';
@@ -24,11 +24,11 @@ function findTarget(robot: RobotObject, warMap: WarMap): WarObject | undefined {
     const candidates = warMap.objects.filter(o => {
         if (robot.goal === RobotGoal.ATTACK_ROBOTS)           return o.type === 'robot'   && o.owner !== robot.owner;
         if (robot.goal === RobotGoal.CAPTURE_FACTORY)         return o.type === 'factory' && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_ENEMY_FACTORY)   return o.type === 'factory' && o.owner !== undefined && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_FACTORY) return o.type === 'factory' && o.owner === undefined;
+        if (robot.goal === RobotGoal.CAPTURE_ENEMY_FACTORY)   return o.type === 'factory' && !!o.owner && o.owner !== robot.owner;
+        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_FACTORY) return o.type === 'factory' && !o.owner;
         if (robot.goal === RobotGoal.CAPTURE_WARBASE)         return o.type === 'warbase' && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_ENEMY_WARBASE)   return o.type === 'warbase' && o.owner !== undefined && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_WARBASE) return o.type === 'warbase' && o.owner === undefined;
+        if (robot.goal === RobotGoal.CAPTURE_ENEMY_WARBASE)   return o.type === 'warbase' && !!o.owner && o.owner !== robot.owner;
+        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_WARBASE) return o.type === 'warbase' && !o.owner;
         return false;
     });
     if (candidates.length === 0) return undefined;
@@ -72,7 +72,7 @@ export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: Occupancy
 
         if (facing === dir) return { type: ActionType.MOVE, direction: dir };
         const steps = (CW_DIRS.indexOf(dir) - CW_DIRS.indexOf(facing) + 4) % 4;
-        return { type: ActionType.ROTATE, direction: steps <= 2 ? 'right' : 'left' };
+        return { type: ActionType.ROTATE, direction: steps <= 2 ? RotateDir.RIGHT : RotateDir.LEFT };
     }
 
     return { type: ActionType.IDLE };

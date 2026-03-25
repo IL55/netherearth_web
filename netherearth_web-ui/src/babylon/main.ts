@@ -4,8 +4,7 @@ import { loadModels } from './view/shared/models';
 import { loadMap } from './data/map';
 import { debugLoadMap } from './view/map/map';
 import { Renderer } from './view/map/renderer';
-import { createWarMap } from './game/warmap';
-import { RobotGoal } from './game/warmap';
+import { createWarMap, Owner, RobotGoal } from './game/warmap';
 import { robotConfigs, calcHealth } from './data/robot';
 import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';
@@ -27,7 +26,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   debugLoadMap(mapData, scene, mapBegin);
 
   const warMap = createWarMap(mapData);
-  warMap.objects.filter(o => o.type === 'factory').forEach(o => { o.owner = 2; });
+  warMap.objects.filter(o => o.type === 'factory').forEach(o => { o.owner = Owner.BLUE; });
 
   const goals: RobotGoal[] = [RobotGoal.ATTACK_ROBOTS, RobotGoal.CAPTURE_FACTORY, RobotGoal.CAPTURE_WARBASE, RobotGoal.DEFEND];
   const configValues = Object.values(robotConfigs);
@@ -37,7 +36,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       type: 'robot',
       x,
       y: 14,
-      owner: x % 2 === 0 ? 1 : 2,
+      owner: x % 2 === 0 ? Owner.RED : Owner.BLUE,
       robotConfig: configValues[x % configValues.length],
       health: calcHealth(configValues[x % configValues.length]),
       facing: 'W',

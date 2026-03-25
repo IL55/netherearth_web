@@ -56,7 +56,7 @@ export function fightAction(
     occupancy: OccupancyMap,
 ): RobotAction | undefined {
     const weapon     = robot.robotConfig?.weapon;
-    const sightRange = SIGHT_RANGE[robot.robotConfig?.electronics ?? ''] ?? 0;
+    const sightRange = robot.robotConfig?.electronics ? SIGHT_RANGE[robot.robotConfig.electronics] : 0;
     if (!weapon || sightRange <= 0) return undefined;
 
     const facing = robot.facing ?? 'N';

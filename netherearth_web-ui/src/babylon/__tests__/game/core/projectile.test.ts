@@ -1,14 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { spawnProjectile, advanceProjectiles, SUB_TICKS } from '../../../game/projectile';
-import type { WarMap, WarObject } from '../../../game/warmap';
+import { Owner } from '../../../game/owner';
+import type { WarMap, RobotObject } from '../../../game/warmap';
 
 function makeMap(): WarMap {
     return { width: 20, height: 20, objects: [] };
 }
 
-function makeRobot(id: string, x: number, y: number, weapon?: string): WarObject {
+function makeRobot(id: string, x: number, y: number, weapon?: string): RobotObject {
     return {
-        id, type: 'robot', x, y,
+        id, type: 'robot', x, y, owner: Owner.NEUTRAL,
         ...(weapon ? { robotConfig: { chassis: 'h-tracks', weapon, electronics: 'h-electronics' } } : {}),
     };
 }

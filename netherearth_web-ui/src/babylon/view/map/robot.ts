@@ -1,9 +1,34 @@
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
+import { Chassis, Weapon, Electronics } from '../../data/robot';
 import type { RobotConfig } from '../../data/robot';
+import { Owner } from '../../game/owner';
 
 export type { RobotConfig } from '../../data/robot';
 export { robotConfigs } from '../../data/robot';
+
+// Team prefix used in model file names: 'h-' for RED, 'e-' for BLUE (or neutral).
+function teamPrefix(owner: Owner): string {
+    return owner === Owner.BLUE ? 'e-' : 'h-';
+}
+
+// Explicit mapping from enum value to model file name suffix.
+// Decoupled from enum string value so the two can diverge independently.
+const CHASSIS_MODEL: Record<Chassis, string> = {
+    [Chassis.TRACKS]:   'tracks',
+    [Chassis.ANTIGRAV]: 'antigrav',
+    [Chassis.BIPOD]:    'bipod',
+};
+
+const WEAPON_MODEL: Record<Weapon, string> = {
+    [Weapon.CANNON]:   'cannon',
+    [Weapon.MISSILES]: 'missiles',
+    [Weapon.PHASERS]:  'phasers',
+};
+
+const ELECTRONICS_MODEL: Record<Electronics, string> = {
+    [Electronics.STANDARD]: 'electronics',
+};
 
 // Places one model part at groundY, centers it on XZ, returns the top Y for the next part.
 // stackGap is subtracted from the returned topY to account for bounding box padding above visible geometry.
@@ -44,25 +69,31 @@ export const placeRobot = (
     x: number,
     y: number,
     config: RobotConfig,
+    owner: Owner,
     rotation = 0,
     stackGap = 0.15,
 ) => {
+    const prefix = teamPrefix(owner);
     const tx = mapBegin.x + x;
     const tz = mapBegin.z + y;
 
-    const chassis = models.get(config.chassis);
+    const chassis = models.get(prefix + CHASSIS_MODEL[config.chassis]);
     if (!chassis) return;
     let topY = placePart(chassis, tx, 1, tz, rotation);
 
-    const weapon = config.weapon ? models.get(config.weapon) : undefined;
-    if (weapon) topY = placePart(weapon, tx, topY, tz, rotation);
-
-    if (config.nuclearModel) {
-        const nuclearModel = models.get(config.nuclearModel);
-        if (nuclearModel) topY = placePart(nuclearModel, tx, topY, tz, rotation);
+    if (config.weapon) {
+        const weapon = models.get(prefix + WEAPON_MODEL[config.weapon]);
+        if (weapon) topY = placePart(weapon, tx, topY, tz, rotation);
     }
 
-    // stackGap only applied before electronics to close the bounding-box padding gap
-    const elec = models.get(config.electronics);
-    if (elec) placePart(elec, tx, topY - stackGap, tz, rotation);
+    if (config.nuclear) {
+        const nuclear = models.get(prefix + 'nuclear');
+        if (nuclear) topY = placePart(nuclear, tx, topY, tz, rotation);
+    }
+
+    if (config.electronics) {
+        // stackGap only applied before electronics to close the bounding-box padding gap
+        const elec = models.get(prefix + ELECTRONICS_MODEL[config.electronics]);
+        if (elec) placePart(elec, tx, topY - stackGap, tz, rotation);
+    }
 };

@@ -1,5 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
+import type { Owner } from '../../game/owner';
 
 const FACTORY_PARTS = [
     { model: 'highwall1', xo: 0, yo: 0 },
@@ -40,7 +41,7 @@ export const addFactory = (
     x: number,
     y: number,
     subtype: string,
-    owner?: number,
+    owner?: Owner,
 ) => {
     FACTORY_PARTS.forEach(part => {
         const model = models.get(part.model);

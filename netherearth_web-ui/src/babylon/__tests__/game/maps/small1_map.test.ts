@@ -22,17 +22,18 @@ import { applyAction } from '../../../game/actions';
 import { buildOccupancy } from '../../../game/occupancy';
 import { CAPTURE_ZONES } from '../../../game/capture';
 import type { WarMap, WarObject, RobotObject } from '../../../game/warmap';
-import { isRobot, RobotGoal } from '../../../game/warmap';
+import { isRobot, RobotGoal, Owner } from '../../../game/warmap';
+import { Chassis, Electronics } from '../../../data/robot';
 
 const MAP_W = 8, MAP_H = 64;
 
 function fence(x: number, y: number): WarObject {
     return { id: `fence_${x}_${y}`, type: 'fence', x, y };
 }
-function factory(x: number, y: number, subtype: string, owner: number): WarObject {
+function factory(x: number, y: number, subtype: string, owner: Owner): WarObject {
     return { id: `f_${x}_${y}`, type: 'factory', x, y, subtype, owner };
 }
-function warbase(x: number, y: number, owner: number): WarObject {
+function warbase(x: number, y: number, owner: Owner): WarObject {
     return { id: `wb_${x}_${y}`, type: 'warbase', x, y, owner };
 }
 
@@ -43,32 +44,32 @@ function makeSmall1Map(): WarMap {
         ...[0,1,2,3,4,5,6,7].map(x => fence(x, 63)),
 
         // Factories — all owner=2 as in main.ts
-        factory(0, 10, 'electronics', 2),
-        factory(4, 10, 'chassis',     2),
-        factory(0, 15, 'missiles',    2),
-        factory(4, 15, 'cannons',     2),
-        factory(0, 20, 'phasers',     2),
-        factory(4, 20, 'nuclear',     2),
+        factory(0, 10, 'electronics', Owner.BLUE),
+        factory(4, 10, 'chassis',     Owner.BLUE),
+        factory(0, 15, 'missiles',    Owner.BLUE),
+        factory(4, 15, 'cannons',     Owner.BLUE),
+        factory(0, 20, 'phasers',     Owner.BLUE),
+        factory(4, 20, 'nuclear',     Owner.BLUE),
 
         // Warbases
-        warbase(0.5, 4,  1),
-        warbase(0,   57, 2),
+        warbase(0.5, 4,  Owner.RED),
+        warbase(0,   57, Owner.BLUE),
     ];
 
     // Robots exactly as in main.ts: x=0..7, y=14, alternating owner, goals cycling
     const goals = [RobotGoal.ATTACK_ROBOTS, RobotGoal.CAPTURE_FACTORY, RobotGoal.CAPTURE_WARBASE, RobotGoal.DEFEND];
-    const chassis = ['h-antigrav', 'h-tracks', 'h-bipod', 'h-wheel',
-                     'h-antigrav', 'h-tracks', 'h-bipod', 'h-wheel'];
+    const chassis = [Chassis.ANTIGRAV, Chassis.TRACKS, Chassis.BIPOD, Chassis.TRACKS,
+                     Chassis.ANTIGRAV, Chassis.TRACKS, Chassis.BIPOD, Chassis.TRACKS];
     for (let x = 0; x < MAP_W; x++) {
         objects.push({
             id: `robot_${x}`,
             type: 'robot',
             x,
             y: 14,
-            owner: x % 2 === 0 ? 1 : 2,
+            owner: x % 2 === 0 ? Owner.RED : Owner.BLUE,
             facing: 'S',
             goal: goals[x % goals.length],
-            robotConfig: { chassis: chassis[x], electronics: 'h-electronics' },
+            robotConfig: { chassis: chassis[x], electronics: Electronics.STANDARD },
         } as WarObject);
     }
 
@@ -104,19 +105,19 @@ describe('small1.map full setup', () => {
             objects: [
                 ...[0,1,2,3,4,5,6,7].map(x => fence(x, 0)),
                 ...[0,1,2,3,4,5,6,7].map(x => fence(x, 63)),
-                factory(0, 10, 'electronics', 2),
-                factory(4, 10, 'chassis',     2),
-                factory(0, 15, 'missiles',    2),
-                factory(4, 15, 'cannons',     2),
-                factory(0, 20, 'phasers',     2),
-                factory(4, 20, 'nuclear',     2),
+                factory(0, 10, 'electronics', Owner.BLUE),
+                factory(4, 10, 'chassis',     Owner.BLUE),
+                factory(0, 15, 'missiles',    Owner.BLUE),
+                factory(4, 15, 'cannons',     Owner.BLUE),
+                factory(0, 20, 'phasers',     Owner.BLUE),
+                factory(4, 20, 'nuclear',     Owner.BLUE),
                 {
                     id: 'r0', type: 'robot',
                     x: 0.5, y: 14,
-                    owner: 1,
+                    owner: Owner.RED,
                     facing: 'S',
                     goal: RobotGoal.CAPTURE_FACTORY,
-                    robotConfig: { chassis: 'h-antigrav', electronics: 'h-electronics' },
+                    robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
                 } as RobotObject,
             ],
             tick: 0,

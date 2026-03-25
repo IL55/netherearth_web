@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { Owner } from '../../../game/owner';
 import { addFactory } from '../../../view/map/factory';
 import { makeEnv } from '../../test-utils';
 
@@ -55,7 +56,7 @@ describe('addFactory', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 2, oy = 3;
-        addFactory(models, mapBegin, ox, oy, 'cannons', 2);
+        addFactory(models, mapBegin, ox, oy, 'cannons', Owner.BLUE);
         expect(scene.transformNodes.length - before).toBe(FACTORY_WALL_COUNT + 1 + 1); // + flag
         const flag = scene.transformNodes[before + FACTORY_WALL_COUNT + 1];
         expect(flag.position.x).toBeCloseTo(ox + 0, 5);
@@ -68,7 +69,7 @@ describe('addFactory', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 2, oy = 3;
-        addFactory(models, mapBegin, ox, oy, 'cannons', 1);
+        addFactory(models, mapBegin, ox, oy, 'cannons', Owner.RED);
         expect(scene.transformNodes.length - before).toBe(FACTORY_WALL_COUNT + 1 + 1); // + flag
         const flag = scene.transformNodes[before + FACTORY_WALL_COUNT + 1];
         expect(flag.position.x).toBeCloseTo(ox + 0, 5);
