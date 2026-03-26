@@ -1,8 +1,16 @@
 import type { WarMap, RobotObject, WeaponType } from './warmap';
 
-// How much progress advances per sub-tick (5 sub-ticks = full travel).
+// How much progress advances per sub-tick (5 sub-ticks = full travel at normal speed).
 export const SUB_TICKS = 5;
-const PROGRESS_STEP = 1 / SUB_TICKS;
+const STEP_NORMAL = 1 / SUB_TICKS;
+const STEP_SLOW   = STEP_NORMAL / 4; // missiles travel at quarter speed (20 sub-ticks)
+const STEP_MED    = STEP_NORMAL / 2; // cannon travels at half speed (10 sub-ticks)
+
+const WEAPON_STEP: Partial<Record<WeaponType, number>> = {
+    missile: STEP_SLOW,
+    phaser:  STEP_SLOW,
+    cannon:  STEP_MED,
+};
 
 let nextId = 0;
 
@@ -19,6 +27,7 @@ export function spawnProjectile(warMap: WarMap, shooter: RobotObject, target: Ro
         fromX: shooter.x, fromY: shooter.y,
         toX:   target.x,  toY:   target.y,
         progress:   0,
+        step:       WEAPON_STEP[weaponType] ?? STEP_NORMAL,
         ownerId:    shooter.id,
     });
 }
@@ -27,7 +36,7 @@ export function spawnProjectile(warMap: WarMap, shooter: RobotObject, target: Ro
 export function advanceProjectiles(warMap: WarMap): void {
     if (!warMap.projectiles?.length) return;
     for (const p of warMap.projectiles) {
-        p.progress = Math.min(1, p.progress + PROGRESS_STEP);
+        p.progress = Math.min(1, p.progress + p.step);
     }
     warMap.projectiles = warMap.projectiles.filter(p => p.progress < 1);
 }

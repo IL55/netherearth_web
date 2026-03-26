@@ -4,6 +4,7 @@ import { loadModels } from './view/shared/models';
 import { loadMap } from './data/map';
 import { debugLoadMap } from './view/map/map';
 import { Renderer } from './view/map/renderer';
+import { ProjectileRenderer } from './view/map/projectile-renderer';
 import { createWarMap, Owner, RobotGoal } from './game/warmap';
 import { robotConfigs, calcHealth } from './data/robot';
 import { attachCameraControls } from './controls/camera';
@@ -47,18 +48,21 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   }
 
   const renderer = new Renderer(models, scene, mapBegin);
+  const projectileRenderer = new ProjectileRenderer(models, mapBegin);
   renderer.render(warMap);
 
   const mapCenter = new BABYLON.Vector3(mapBegin.x + mapData.width / 4, 2, mapBegin.z + mapData.height / 4);
 
-  // ArcRotateCamera, rotated and looking at map center
-  const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI /3, Math.PI / 4, 8, mapCenter, scene);
+  const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 3, Math.PI / 4, 8, mapCenter, scene);
   camera.attachControl(canvas, true);
 
   attachCameraControls(scene, camera);
   attachGameControls(scene, warMap, () => renderer.render(warMap));
   const ownerResources = createOwnerResources();
-  startClock(warMap, () => renderer.render(warMap), ownerResources);
+  startClock(warMap, () => {
+    renderer.render(warMap);
+    projectileRenderer.render(warMap);
+  }, ownerResources);
 
   return scene;
 };

@@ -39,13 +39,13 @@ export interface RobotConfig {
 
 // How far a robot can see an enemy in its forward direction (cells).
 export const SIGHT_RANGE: Record<Electronics, number> = {
-    [Electronics.STANDARD]: 4,
+    [Electronics.STANDARD]: 8,
 };
 
 // Maximum fire range per weapon (cells).
 export const WEAPON_RANGE: Record<Weapon, number> = {
-    [Weapon.CANNON]:   3,
-    [Weapon.MISSILES]: 4,
+    [Weapon.CANNON]:   5,
+    [Weapon.MISSILES]: 7,
     [Weapon.PHASERS]:  5,
 };
 

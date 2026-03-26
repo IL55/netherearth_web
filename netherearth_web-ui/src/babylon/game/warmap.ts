@@ -13,7 +13,8 @@ export interface Projectile {
     weaponType: WeaponType;
     fromX: number; fromY: number;
     toX:   number; toY:   number;
-    progress: number; // 0.0 → 1.0; advances each sub-tick by 1/SUB_TICKS
+    progress: number; // 0.0 → 1.0
+    step:     number; // progress added per sub-tick
     ownerId: string;
 }
 

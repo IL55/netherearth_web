@@ -48,6 +48,7 @@ function targetPos(target: WarObject): { x: number; y: number } {
 export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: OccupancyMap): RobotAction {
     // 1. Combat: fire or advance toward a visible enemy
     const combat = fightAction(robot, warMap, occupancy);
+
     if (combat) return combat;
 
     // 2. Goal navigation
