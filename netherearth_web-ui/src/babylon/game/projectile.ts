@@ -1,4 +1,7 @@
-import type { WarMap, RobotObject, WeaponType } from './warmap';
+
+
+import { WeaponType } from "./warmap";
+import type { WarMap, RobotObject } from './warmap';
 
 // How much progress advances per sub-tick (5 sub-ticks = full travel at normal speed).
 export const SUB_TICKS = 5;
@@ -17,8 +20,8 @@ let nextId = 0;
 export function spawnProjectile(warMap: WarMap, shooter: RobotObject, target: RobotObject): void {
     const w = shooter.robotConfig?.weapon ?? '';
     const weaponType: WeaponType =
-        w.includes('phaser')  ? 'phaser'  :
-        w.includes('missile') ? 'missile' : 'cannon';
+        w.includes(WeaponType.PHASER)  ? WeaponType.PHASER  :
+        w.includes(WeaponType.MISSILE) ? WeaponType.MISSILE : WeaponType.CANNON;
 
     warMap.projectiles ??= [];
     warMap.projectiles.push({

@@ -1,3 +1,5 @@
+import { WeaponType } from "../../../game/warmap";
+
 import { ObjectType } from '../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { spawnProjectile, advanceProjectiles, SUB_TICKS } from '../../../game/projectile';
@@ -43,19 +45,19 @@ describe('spawnProjectile', () => {
     it('sets weaponType=cannon for cannon weapon', () => {
         const map = makeMap();
         spawnProjectile(map, makeRobot('s', 0, 0, 'h-cannon'), makeRobot('t', 3, 0));
-        expect(map.projectiles![0].weaponType).toBe('cannon');
+        expect(map.projectiles![0].weaponType).toBe(WeaponType.CANNON);
     });
 
     it('sets weaponType=missile for missiles weapon', () => {
         const map = makeMap();
         spawnProjectile(map, makeRobot('s', 0, 0, 'h-missiles'), makeRobot('t', 4, 0));
-        expect(map.projectiles![0].weaponType).toBe('missile');
+        expect(map.projectiles![0].weaponType).toBe(WeaponType.MISSILE);
     });
 
     it('sets weaponType=phaser for phasers weapon', () => {
         const map = makeMap();
         spawnProjectile(map, makeRobot('s', 0, 0, 'h-phasers'), makeRobot('t', 5, 0));
-        expect(map.projectiles![0].weaponType).toBe('phaser');
+        expect(map.projectiles![0].weaponType).toBe(WeaponType.PHASER);
     });
 
     it('records ownerId', () => {

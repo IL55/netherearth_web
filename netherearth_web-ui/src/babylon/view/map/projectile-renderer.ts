@@ -1,6 +1,9 @@
+
+
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
-import type { WarMap, Projectile, WeaponType } from '../../game/warmap';
+import type { WarMap, Projectile } from "../../game/warmap";
+import { WeaponType } from '../../game/warmap';
 
 const BULLET_MODEL: Record<WeaponType, string> = {
     cannon:  'bullet1',
@@ -84,19 +87,19 @@ export class ProjectileRenderer {
 
         const rotY = travelRotationY(p.fromX, p.fromY, p.toX, p.toY);
 
-        if (p.weaponType === 'missile') {
+        if (p.weaponType === WeaponType.MISSILE) {
             // Two parallel missiles, tilted π/2 around X to lay flat, flipped π to face forward.
             const a = spawnInstance(model, rotY + Math.PI, Math.PI / 2);
             const b = spawnInstance(model, rotY + Math.PI, Math.PI / 2);
             return [a, b].filter((n): n is BABYLON.TransformNode => n !== null);
         }
 
-        if (p.weaponType === 'phaser') {
+        if (p.weaponType === WeaponType.PHASER) {
             const inst = spawnInstance(model, rotY + Math.PI / 2, 0);
             return inst ? [inst] : [];
         }
 
-        if (p.weaponType === 'cannon') {
+        if (p.weaponType === WeaponType.CANNON) {
             // Two parallel cannon balls.
             const a = spawnInstance(model, rotY, 0);
             const b = spawnInstance(model, rotY, 0);
