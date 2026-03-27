@@ -10,7 +10,8 @@
  */
 import { RobotGoal } from '../warmap';
 import { CW_DIRS } from '../warmap';
-import type { WarMap, WarObject, RobotObject, Direction } from '../warmap';
+import { Direction } from '../warmap';
+import type { WarMap, WarObject, RobotObject } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
 import { ActionType, RotateDir, type RobotAction } from '../actions';
 import { CAPTURE_ZONES, isInCaptureZone } from '../capture';
@@ -61,7 +62,7 @@ export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: Occupancy
     }
 
     const { x: tx, y: ty } = targetPos(target);
-    const facing = robot.facing ?? 'N';
+    const facing = robot.facing ?? Direction.N;
 
     let dirsToTry: Direction[];
     if (robot.robotConfig?.navAlgo === NavAlgo.TREMAUX) {

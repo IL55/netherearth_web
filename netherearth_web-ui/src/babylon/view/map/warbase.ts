@@ -10,11 +10,11 @@ const WARBASE_PARTS = [
     { model: 'highwall1', xo: 0.5, yo: 4 }, { model: 'highwall2', xo: 1.5, yo: 4 },
 ];
 
-// owner: 1=red (flag right = high Z), 2=blue (flag left = low Z); xo=1.5 is center of structure
+// owner: 1=red (flag left = low Z), 2=blue (flag right = high Z); xo=1.5 is center of structure
 // Note: the flag GLB model origin is not at 0,0,0 — offsets are tuned visually to compensate
 const FLAG_OFFSET: Record<number, { xo: number; zo: number }> = {
-    1: { xo: 3.5, zo: 2 },  // RED:  right wall (high-X, xo=3+), center Z
-    2: { xo: -0.5, zo: 2 }, // BLUE: left wall  (low-X,  xo=0-), center Z
+    1: { xo: 0.5, zo: 0.1 },  // RED:  back wall, left side
+    2: { xo: 0.5, zo: 4.1 },  // BLUE: back wall, right side
 };
 const OWNER_TEXTURE: Record<number, string> = { 1: 'warbaser1.bmp' };
 

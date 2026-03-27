@@ -1,3 +1,4 @@
+import { Direction } from '../../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
 import { applyAction } from '../../../../game/actions';
@@ -12,7 +13,7 @@ import { Chassis, Electronics } from '../../../../data/robot';
 function makeRobot(overrides: Partial<RobotObject> & { id: string; x: number; y: number }): RobotObject {
     return {
         type: 'robot',
-        facing: 'E',
+        facing: Direction.E,
         owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
         robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },

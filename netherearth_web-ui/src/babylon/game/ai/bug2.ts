@@ -8,7 +8,8 @@
  * to try this tick, updating robot.nav state as a side-effect.
  */
 import { NavMode } from '../warmap';
-import type { WarMap, RobotObject, Direction } from '../warmap';
+import { Direction } from '../warmap';
+import type { WarMap, RobotObject } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
 import { MOVE_STEP } from '../actions';
 import { dirDelta, rightOf, leftOf, backOf, isPassable, preferredDirs } from './nav';
@@ -22,7 +23,7 @@ export function bug2Dirs(
     ty: number,
     distToGoal: number,
 ): Direction[] {
-    const facing = robot.facing ?? 'N';
+    const facing = robot.facing ?? Direction.N;
     const [primaryDir] = preferredDirs(robot, tx, ty);
     const { dx: pdx, dy: pdy } = dirDelta(primaryDir);
 
@@ -39,9 +40,9 @@ export function bug2Dirs(
 
     // Exit wall-follow when the primary direction is clear all the way to the goal
     if (nav.navMode === NavMode.WALL_FOLLOW) {
-        const primaryGoalDist = primaryDir === 'E' ? tx - robot.x
-                              : primaryDir === 'W' ? robot.x - tx
-                              : primaryDir === 'S' ? ty - robot.y
+        const primaryGoalDist = primaryDir === Direction.E ? tx - robot.x
+                              : primaryDir === Direction.W ? robot.x - tx
+                              : primaryDir === Direction.S ? ty - robot.y
                               :                     robot.y - ty; // N
         const exitSteps = Math.max(0, Math.ceil(primaryGoalDist / MOVE_STEP));
         let clearToGoal = true;

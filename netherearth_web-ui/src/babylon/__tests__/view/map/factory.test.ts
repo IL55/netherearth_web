@@ -52,7 +52,7 @@ describe('addFactory', () => {
         scene.dispose(); engine.dispose();
     });
 
-    it('places flag on left when owner is 2 (blue)', () => {
+    it('places flag on right when owner is 2 (blue)', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 2, oy = 3;
@@ -61,11 +61,11 @@ describe('addFactory', () => {
         const flag = scene.transformNodes[before + FACTORY_WALL_COUNT + 1];
         expect(flag.position.x).toBeCloseTo(ox + 0, 5);
         expect(flag.position.y).toBeCloseTo(2, 5);
-        expect(flag.position.z).toBeCloseTo(oy + 0.1, 5);
+        expect(flag.position.z).toBeCloseTo(oy + 2.1, 5);
         scene.dispose(); engine.dispose();
     });
 
-    it('places flag on right when owner is 1 (red)', () => {
+    it('places flag on left when owner is 1 (red)', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 2, oy = 3;
@@ -74,7 +74,7 @@ describe('addFactory', () => {
         const flag = scene.transformNodes[before + FACTORY_WALL_COUNT + 1];
         expect(flag.position.x).toBeCloseTo(ox + 0, 5);
         expect(flag.position.y).toBeCloseTo(2, 5);
-        expect(flag.position.z).toBeCloseTo(oy + 2.1, 5);
+        expect(flag.position.z).toBeCloseTo(oy + 0.1, 5);
         scene.dispose(); engine.dispose();
     });
 

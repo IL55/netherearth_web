@@ -1,4 +1,4 @@
-import type { Direction } from '../../game/warmap';
+import { Direction } from '../../game/warmap';
 
 // View-only utilities: convert between Direction and Babylon rotation (radians).
 // Game logic uses Direction strings exclusively; radians are only needed for mesh placement.
@@ -12,5 +12,5 @@ export function directionToRotation(dir: Direction): number {
 export function rotationToDirection(rotation: number): Direction {
     const normalized = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
     const idx = Math.round(normalized / (Math.PI / 2)) % 4;
-    return (['E', 'N', 'W', 'S'] as Direction[])[idx];
+    return ([Direction.E, Direction.N, Direction.W, Direction.S] as Direction[])[idx];
 }

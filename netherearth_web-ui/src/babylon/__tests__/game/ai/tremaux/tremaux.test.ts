@@ -6,6 +6,7 @@
  * more generous than Bug2 where needed, since Trémaux explores more
  * broadly before converging.
  */
+import { Direction } from '../../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
 import { applyAction } from '../../../../game/actions';
@@ -26,7 +27,7 @@ function makeRobot(
 ): RobotObject {
     return {
         id, type: 'robot', x, y,
-        facing: 'E', owner: Owner.RED,
+        facing: Direction.E, owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
         robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD, navAlgo: NavAlgo.TREMAUX },
         ...overrides,

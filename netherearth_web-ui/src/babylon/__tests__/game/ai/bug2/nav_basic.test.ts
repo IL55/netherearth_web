@@ -1,3 +1,4 @@
+import { Direction } from '../../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
 import { applyAction } from '../../../../game/actions';
@@ -8,7 +9,7 @@ import { Chassis, Electronics } from '../../../../data/robot';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-function makeRobot(x: number, y: number, facing: 'N'|'S'|'E'|'W' = 'E'): RobotObject {
+function makeRobot(x: number, y: number, facing: Direction.N|Direction.S|Direction.E|Direction.W = Direction.E): RobotObject {
     return {
         id: 'r0', type: 'robot', x, y, facing, owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,

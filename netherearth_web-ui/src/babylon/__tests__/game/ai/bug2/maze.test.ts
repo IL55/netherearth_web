@@ -1,3 +1,4 @@
+import { Direction } from '../../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
 import { applyAction } from '../../../../game/actions';
@@ -60,7 +61,7 @@ function makeMap(): WarMap {
         id: 'robot_0',
         type: 'robot',
         x: 2, y: 5,
-        facing: 'E',
+        facing: Direction.E,
         owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
         robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },

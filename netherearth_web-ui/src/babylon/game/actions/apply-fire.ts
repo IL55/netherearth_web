@@ -1,12 +1,13 @@
-import type { WarMap, RobotObject, Direction } from '../warmap';
+import { Direction } from '../warmap';
+import type { WarMap, RobotObject } from '../warmap';
 import { WEAPON_DAMAGE, WEAPON_RANGE, calcDamageFalloff } from '../../data/robot';
 import { spawnProjectile } from '../projectile';
 
 function directionToward(fromX: number, fromY: number, toX: number, toY: number): Direction {
     const dx = toX - fromX;
     const dy = toY - fromY;
-    if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? 'E' : 'W';
-    return dy > 0 ? 'S' : 'N';
+    if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? Direction.E: Direction.W;
+    return dy > 0 ? Direction.S: Direction.N;
 }
 
 export function applyFire(

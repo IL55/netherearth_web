@@ -1,3 +1,5 @@
+import { Direction } from "./warmap";
+
 import { Chassis, Weapon, Electronics, calcHealth } from '../data/robot';
 import type { RobotConfig } from '../data/robot';
 import { Owner } from './owner';
@@ -124,7 +126,7 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
             x: spawnX,
             y: spawnY,
             owner: obj.owner,
-            facing: 'N',
+            facing: Direction.N,
             robotConfig: option.config,
             health: calcHealth(option.config),
             goal: BUILD_GOALS[_builtCount % BUILD_GOALS.length],

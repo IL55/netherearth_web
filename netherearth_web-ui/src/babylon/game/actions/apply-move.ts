@@ -1,4 +1,5 @@
-import type { WarMap, RobotObject, MapObject, Direction } from '../warmap';
+import { Direction } from "../warmap";
+import type { WarMap, RobotObject, MapObject } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
 import { isOccupied, updateRobotPosition } from '../occupancy';
 import { getTerrainRule, Chassis } from '../terrain';
@@ -30,7 +31,7 @@ export function applyMove(
     occupancy: OccupancyMap,
     tick: number,
 ): boolean {
-    if ((robot.facing ?? 'N') !== direction) return false;
+    if ((robot.facing ?? Direction.N) !== direction) return false;
     if (tick - (robot.lastMovedAt ?? tick - MOVE_COOLDOWN) < MOVE_COOLDOWN) return false;
 
     const chassis = robot.robotConfig?.chassis ?? Chassis.TRACKS;

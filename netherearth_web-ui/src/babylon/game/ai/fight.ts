@@ -6,7 +6,8 @@
  * Returns a RobotAction if combat is appropriate this tick, or null
  * to let the navigation layer decide.
  */
-import type { WarMap, WarObject, RobotObject, Direction } from '../warmap';
+import { Direction } from '../warmap';
+import type { WarMap, WarObject, RobotObject } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
 import { isOccupied, isLOSBlocked } from '../occupancy';
 import { ActionType, type RobotAction } from '../actions';
@@ -29,9 +30,9 @@ function scanForwardEnemy(
         const dx = e.x - robot.x;
         const dy = e.y - robot.y;
         let along: number, perp: number;
-        if      (dir === 'E') { along =  dx; perp = Math.abs(dy); }
-        else if (dir === 'W') { along = -dx; perp = Math.abs(dy); }
-        else if (dir === 'S') { along =  dy; perp = Math.abs(dx); }
+        if      (dir === Direction.E) { along =  dx; perp = Math.abs(dy); }
+        else if (dir === Direction.W) { along = -dx; perp = Math.abs(dy); }
+        else if (dir === Direction.S) { along =  dy; perp = Math.abs(dx); }
         else                  { along = -dy; perp = Math.abs(dx); } // N
         return along > 0 && along <= sightRange && perp < 0.5;
     });
@@ -59,7 +60,7 @@ export function fightAction(
     const sightRange = robot.robotConfig?.electronics ? SIGHT_RANGE[robot.robotConfig.electronics] : 0;
     if (!weapon || sightRange <= 0) return undefined;
 
-    const facing = robot.facing ?? 'N';
+    const facing = robot.facing ?? Direction.N;
     const enemy  = scanForwardEnemy(robot, facing, sightRange, warMap, occupancy);
     if (!enemy) return undefined;
 

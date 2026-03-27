@@ -28,11 +28,11 @@ const CENTRAL_PIECE_OFFSET: Record<string, { x: number; y: number; z: number }> 
     cannons:     { x: 2.4, y: 2.1, z: -3.9 },
 };
 
-// owner: 1=red (flag right), 2=blue (flag left), absent=neutral (no flag)
+// owner: 1=red (flag left), 2=blue (flag right), absent=neutral (no flag)
 // Note: flag GLB model origin is not at 0,0,0 — tune xo/yo/zo per side to compensate
 const FLAG_OFFSET: Record<number, { xo: number; yo: number; zo: number }> = {
-    1: { xo: 0,   yo: 2, zo: 2.1 },  // red:  right wall
-    2: { xo: 0,   yo: 2, zo: 0.1 },  // blue: left wall
+    1: { xo: 0,   yo: 2, zo: 0.1 },  // red:  left wall
+    2: { xo: 0,   yo: 2, zo: 2.1 },  // blue: right wall
 };
 
 export const addFactory = (

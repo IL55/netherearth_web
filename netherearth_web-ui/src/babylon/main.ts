@@ -1,3 +1,5 @@
+import { Direction } from "./game/warmap";
+
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { loadModels } from './view/shared/models';
@@ -41,7 +43,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       owner: x % 2 === 0 ? Owner.RED : Owner.BLUE,
       robotConfig: configValues[x % configValues.length],
       health: calcHealth(configValues[x % configValues.length]),
-      facing: 'W',
+      facing: Direction.W,
       goal: goals[x % goals.length],
       ai: 'dummy',
     });

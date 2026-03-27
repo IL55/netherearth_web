@@ -41,27 +41,27 @@ describe('addWarbase', () => {
         scene.dispose(); engine.dispose();
     });
 
-    it('flag for owner 1 (red) is placed on the right wall (xo=3.5, zo=2)', () => {
+    it('flag for owner 1 (red) is placed on the left side (zo=0.1)', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 3, oy = 4;
         addWarbase(models, scene, mapBegin, ox, oy, Owner.RED);
         const flag = scene.transformNodes[before + WARBASE_PART_COUNT];
-        expect(flag.position.x).toBeCloseTo(ox + 3.5, 5);
+        expect(flag.position.x).toBeCloseTo(ox + 0.5, 5);
         expect(flag.position.y).toBeCloseTo(2, 5);
-        expect(flag.position.z).toBeCloseTo(oy + 2, 5);
+        expect(flag.position.z).toBeCloseTo(oy + 0.1, 5);
         scene.dispose(); engine.dispose();
     });
 
-    it('flag for owner 2 (blue) is placed on the left wall (xo=-0.5, zo=2)', () => {
+    it('flag for owner 2 (blue) is placed on the right side (zo=4.1)', () => {
         const { engine, scene, models, mapBegin } = makeEnv();
         const before = scene.transformNodes.length;
         const ox = 3, oy = 4;
         addWarbase(models, scene, mapBegin, ox, oy, Owner.BLUE);
         const flag = scene.transformNodes[before + WARBASE_PART_COUNT];
-        expect(flag.position.x).toBeCloseTo(ox - 0.5, 5);
+        expect(flag.position.x).toBeCloseTo(ox + 0.5, 5);
         expect(flag.position.y).toBeCloseTo(2, 5);
-        expect(flag.position.z).toBeCloseTo(oy + 2, 5);
+        expect(flag.position.z).toBeCloseTo(oy + 4.1, 5);
         scene.dispose(); engine.dispose();
     });
 

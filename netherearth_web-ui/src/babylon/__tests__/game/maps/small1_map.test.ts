@@ -16,6 +16,7 @@
  * with goal=capture_factory actually reaches the nearest factory
  * capture zone within a reasonable tick budget.
  */
+import { Direction } from '../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../game/ai/dummy';
 import { applyAction } from '../../../game/actions';
@@ -67,7 +68,7 @@ function makeSmall1Map(): WarMap {
             x,
             y: 14,
             owner: x % 2 === 0 ? Owner.RED : Owner.BLUE,
-            facing: 'S',
+            facing: Direction.S,
             goal: goals[x % goals.length],
             robotConfig: { chassis: chassis[x], electronics: Electronics.STANDARD },
         } as WarObject);
@@ -115,7 +116,7 @@ describe('small1.map full setup', () => {
                     id: 'r0', type: 'robot',
                     x: 0.5, y: 14,
                     owner: Owner.RED,
-                    facing: 'S',
+                    facing: Direction.S,
                     goal: RobotGoal.CAPTURE_FACTORY,
                     robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
                 } as RobotObject,
@@ -136,7 +137,7 @@ describe('small1.map full setup', () => {
             const action = dummyAI(robot, map, occ);
             applyAction(robot, action, map, occ);
 
-            trace.push(`t=${String(tick).padStart(3)} (${robot.x.toFixed(2)},${robot.y.toFixed(2)}) f=${robot.facing??'N'} ${robot.nav?.navMode??'goal'}`);
+            trace.push(`t=${String(tick).padStart(3)} (${robot.x.toFixed(2)},${robot.y.toFixed(2)}) f=${robot.facing??Direction.N} ${robot.nav?.navMode??'goal'}`);
 
             const inZone = factories.some(fac => {
                 const gx = fac.x + zone.dx, gy = fac.y + zone.dy;

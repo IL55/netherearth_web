@@ -2,9 +2,14 @@ import type { MapData } from '../data/map';
 import type { RobotConfig } from '../data/robot';
 import { Owner } from './owner';
 
-export type Direction = 'N' | 'E' | 'S' | 'W';
+export enum Direction {
+    N = 'N',
+    E = 'E',
+    S = 'S',
+    W = 'W',
+}
 // Clockwise order — used for rotation index math and direction iteration.
-export const CW_DIRS: Direction[] = ['N', 'E', 'S', 'W'];
+export const CW_DIRS: Direction[] = [Direction.N, Direction.E, Direction.S, Direction.W];
 
 export type WeaponType = 'cannon' | 'missile' | 'phaser';
 
