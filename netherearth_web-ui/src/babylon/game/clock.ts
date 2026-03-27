@@ -1,3 +1,5 @@
+import { RobotAI } from "./warmap";
+
 import { ObjectType } from '../game/warmap';
 import type { WarMap } from './warmap';
 import { buildOccupancy } from './occupancy';
@@ -57,7 +59,7 @@ function gameTick(warMap: WarMap, ownerResources: OwnerResources): void {
         if (obj.type !== ObjectType.ROBOT || obj.dyingTicks !== undefined) continue;
 
         const ai = obj.ai ?? 'dummy';
-        const action: RobotAction = ai === 'dummy' ? dummyAI(obj, warMap, occupancy) : { type: ActionType.IDLE };
+        const action: RobotAction = ai === RobotAI.DUMMY ? dummyAI(obj, warMap, occupancy) : { type: ActionType.IDLE };
         applyAction(obj, action, warMap, occupancy);
     }
 

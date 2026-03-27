@@ -5,6 +5,9 @@ import { ObjectType } from './object-type';
 import { RobotGoal } from './robot-goal';
 import { NavMode } from './nav-mode';
 import { WeaponType } from './weapon-type';
+import { RobotAI } from './robot-ai';
+import type { Projectile } from './projectile-type';
+import type { NavState } from './nav-state';
 import {
     isRobot,
     isMapObj,
@@ -21,6 +24,7 @@ export {
     RobotGoal,
     NavMode,
     WeaponType,
+    RobotAI,
     isRobot,
     isMapObj,
     createWarMap,
@@ -29,30 +33,7 @@ export {
     cycleOwner,
 };
 
-export interface Projectile {
-    id: string;
-    weaponType: WeaponType;
-    fromX: number; fromY: number;
-    toX:   number; toY:   number;
-    progress: number; // 0.0 → 1.0
-    step:     number; // progress added per sub-tick
-    ownerId: string;
-}
-
-export type RobotAI = 'dummy' | 'advanced';
-
-/** Runtime navigation + movement state — kept in one sub-object so it is easy to inspect or reset. */
-export interface NavState {
-    // terrain speed accumulator (all chassis types)
-    slowCounter?: number;
-    // Bug2 wall-follow state (h-electronics / e-electronics)
-    stuckTicks?: number;
-    stuckCheckDist?: number;
-    navMode?: NavMode;
-    wallFollowStartDist?: number;
-    // Trémaux state
-    visitCounts?: Map<string, number>; // visit count per position key (0.25-cell resolution, permanent)
-}
+export type { Projectile, NavState };
 
 // All non-robot map objects (tiles, structures, walls)
 export type StructureType = Exclude<ObjectType, ObjectType.ROBOT>;

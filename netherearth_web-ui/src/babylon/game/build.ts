@@ -1,5 +1,5 @@
 import { ObjectType } from '../game/warmap';
-import { Direction } from "./warmap";
+import { Direction, RobotAI } from "./warmap";
 
 import { Chassis, Weapon, Electronics, calcHealth } from '../data/robot';
 import type { RobotConfig } from '../data/robot';
@@ -131,7 +131,7 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
             robotConfig: option.config,
             health: calcHealth(option.config),
             goal: BUILD_GOALS[_builtCount % BUILD_GOALS.length],
-            ai: 'dummy',
+            ai: RobotAI.DUMMY,
         };
         _builtCount++;
 

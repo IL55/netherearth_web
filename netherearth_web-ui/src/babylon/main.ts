@@ -1,5 +1,5 @@
 import { ObjectType } from './game/warmap';
-import { Direction } from "./game/warmap";
+import { Direction, RobotAI } from "./game/warmap";
 
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
@@ -46,7 +46,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       health: calcHealth(configValues[x % configValues.length]),
       facing: Direction.W,
       goal: goals[x % goals.length],
-      ai: 'dummy',
+      ai: RobotAI.DUMMY,
     });
   }
 
