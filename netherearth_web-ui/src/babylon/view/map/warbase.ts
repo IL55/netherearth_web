@@ -12,7 +12,10 @@ const WARBASE_PARTS = [
 
 // owner: 1=red (flag right = high Z), 2=blue (flag left = low Z); xo=1.5 is center of structure
 // Note: the flag GLB model origin is not at 0,0,0 — offsets are tuned visually to compensate
-const FLAG_Z_OFFSET: Record<number, number> = { 1: 4.1, 2: 0.1 };
+const FLAG_OFFSET: Record<number, { xo: number; zo: number }> = {
+    1: { xo: 3.5, zo: 2 },  // RED:  right wall (high-X, xo=3+), center Z
+    2: { xo: -0.5, zo: 2 }, // BLUE: left wall  (low-X,  xo=0-), center Z
+};
 const OWNER_TEXTURE: Record<number, string> = { 1: 'warbaser1.bmp' };
 
 export const addWarbase = (
@@ -32,7 +35,7 @@ export const addWarbase = (
         instance.position = new BABYLON.Vector3(mapBegin.x + x + part.xo, 1, mapBegin.z + y + part.yo);
         setVisibleAll(instance, true);
 
-        if (part.model === 'warbase' && owner === Owner.BLUE && OWNER_TEXTURE[Owner.RED]) {
+        if (part.model === 'warbase' && owner === Owner.RED && OWNER_TEXTURE[Owner.RED]) {
             const decalMaterial = new BABYLON.StandardMaterial(`decalMat_${owner}`, scene);
             decalMaterial.diffuseTexture = new BABYLON.Texture(`/models/textures/${OWNER_TEXTURE[1]}`, scene);
             decalMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -46,12 +49,13 @@ export const addWarbase = (
         }
     });
 
-    if (owner !== undefined && FLAG_Z_OFFSET[owner] !== undefined) {
+    if (owner !== undefined && FLAG_OFFSET[owner] !== undefined) {
         const flagModel = models.get('flag');
         if (flagModel) {
             const instance = flagModel.instantiateHierarchy();
             if (instance) {
-                instance.position = new BABYLON.Vector3(mapBegin.x + x + 1.5, 2, mapBegin.z + y + FLAG_Z_OFFSET[owner]);
+                const { xo, zo } = FLAG_OFFSET[owner];
+                instance.position = new BABYLON.Vector3(mapBegin.x + x + xo, 2, mapBegin.z + y + zo);
                 setVisibleAll(instance, true);
             }
         }

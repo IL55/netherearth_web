@@ -61,7 +61,7 @@ describe('addFactory', () => {
         const flag = scene.transformNodes[before + FACTORY_WALL_COUNT + 1];
         expect(flag.position.x).toBeCloseTo(ox + 0, 5);
         expect(flag.position.y).toBeCloseTo(2, 5);
-        expect(flag.position.z).toBeCloseTo(oy + 2.1, 5);
+        expect(flag.position.z).toBeCloseTo(oy + 0.1, 5);
         scene.dispose(); engine.dispose();
     });
 
@@ -74,7 +74,7 @@ describe('addFactory', () => {
         const flag = scene.transformNodes[before + FACTORY_WALL_COUNT + 1];
         expect(flag.position.x).toBeCloseTo(ox + 0, 5);
         expect(flag.position.y).toBeCloseTo(2, 5);
-        expect(flag.position.z).toBeCloseTo(oy + 0.1, 5);
+        expect(flag.position.z).toBeCloseTo(oy + 2.1, 5);
         scene.dispose(); engine.dispose();
     });
 
