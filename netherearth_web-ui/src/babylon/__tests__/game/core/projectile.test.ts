@@ -66,17 +66,17 @@ describe('spawnProjectile', () => {
 });
 
 describe('advanceProjectiles', () => {
-    it('advances progress by 1/SUB_TICKS each call', () => {
+    it('advances cannon progress by 1/(SUB_TICKS*2) each call (half speed)', () => {
         const map = makeMap();
         spawnProjectile(map, makeRobot('s', 0, 0, 'h-cannon'), makeRobot('t', 3, 0));
         advanceProjectiles(map);
-        expect(map.projectiles![0].progress).toBeCloseTo(1 / SUB_TICKS, 5);
+        expect(map.projectiles![0].progress).toBeCloseTo(1 / (SUB_TICKS * 2), 5);
     });
 
-    it('removes projectile when progress reaches 1 after SUB_TICKS advances', () => {
+    it('removes cannon projectile when progress reaches 1 after SUB_TICKS*2 advances', () => {
         const map = makeMap();
         spawnProjectile(map, makeRobot('s', 0, 0, 'h-cannon'), makeRobot('t', 3, 0));
-        for (let i = 0; i < SUB_TICKS; i++) advanceProjectiles(map);
+        for (let i = 0; i < SUB_TICKS * 2; i++) advanceProjectiles(map);
         expect(map.projectiles ?? []).toHaveLength(0);
     });
 
@@ -85,12 +85,14 @@ describe('advanceProjectiles', () => {
         expect(() => advanceProjectiles(map)).not.toThrow();
     });
 
-    it('multiple projectiles advance independently', () => {
+    it('multiple projectiles advance independently at their own speed', () => {
         const map = makeMap();
         spawnProjectile(map, makeRobot('s1', 0, 0, 'h-cannon'),   makeRobot('t1', 3, 0));
         spawnProjectile(map, makeRobot('s2', 0, 0, 'h-missiles'), makeRobot('t2', 4, 0));
         advanceProjectiles(map);
         expect(map.projectiles).toHaveLength(2);
-        map.projectiles!.forEach(p => expect(p.progress).toBeCloseTo(1 / SUB_TICKS, 5));
+        const [cannon, missile] = map.projectiles!;
+        expect(cannon.progress).toBeCloseTo(1 / (SUB_TICKS * 2), 5);
+        expect(missile.progress).toBeCloseTo(1 / (SUB_TICKS * 4), 5);
     });
 });

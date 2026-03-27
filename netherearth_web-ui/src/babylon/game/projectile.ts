@@ -36,7 +36,8 @@ export function spawnProjectile(warMap: WarMap, shooter: RobotObject, target: Ro
 export function advanceProjectiles(warMap: WarMap): void {
     if (!warMap.projectiles?.length) return;
     for (const p of warMap.projectiles) {
-        p.progress = Math.min(1, p.progress + p.step);
+        p.progress += p.step;
+        if (p.progress >= 1 - 1e-9) p.progress = 1;
     }
     warMap.projectiles = warMap.projectiles.filter(p => p.progress < 1);
 }
