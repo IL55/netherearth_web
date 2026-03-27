@@ -1,3 +1,4 @@
+import { ObjectType } from './game/warmap';
 import { Direction } from "./game/warmap";
 
 import * as BABYLON from '@babylonjs/core';
@@ -30,14 +31,14 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   debugLoadMap(mapData, scene, mapBegin);
 
   const warMap = createWarMap(mapData);
-  warMap.objects.filter(o => o.type === 'factory').forEach(o => { o.owner = Owner.BLUE; });
+  warMap.objects.filter(o => o.type === ObjectType.FACTORY).forEach(o => { o.owner = Owner.BLUE; });
 
   const goals: RobotGoal[] = [RobotGoal.ATTACK_ROBOTS, RobotGoal.CAPTURE_FACTORY, RobotGoal.CAPTURE_WARBASE, RobotGoal.DEFEND];
   const configValues = Object.values(robotConfigs);
   for (let x = 0; x < mapData.width; x++) {
     warMap.objects.push({
       id: `robot_${x}`,
-      type: 'robot',
+      type: ObjectType.ROBOT,
       x,
       y: 14,
       owner: x % 2 === 0 ? Owner.RED : Owner.BLUE,

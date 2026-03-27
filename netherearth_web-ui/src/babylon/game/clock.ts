@@ -1,3 +1,4 @@
+import { ObjectType } from '../game/warmap';
 import type { WarMap } from './warmap';
 import { buildOccupancy } from './occupancy';
 import { applyAction, ActionType, type RobotAction } from './actions';
@@ -41,19 +42,19 @@ function gameTick(warMap: WarMap, ownerResources: OwnerResources): void {
 
     // Step dying-robot countdown; remove those that have finished
     for (const obj of warMap.objects) {
-        if (obj.type === 'robot' && obj.dyingTicks !== undefined) {
+        if (obj.type === ObjectType.ROBOT && obj.dyingTicks !== undefined) {
             obj.dyingTicks--;
         }
     }
     warMap.objects = warMap.objects.filter(
-        o => o.type !== 'robot' || o.dyingTicks === undefined || o.dyingTicks > 0,
+        o => o.type !== ObjectType.ROBOT || o.dyingTicks === undefined || o.dyingTicks > 0,
     );
 
     const occupancy = buildOccupancy(warMap);
 
     // Run AI only for live (non-dying) robots
     for (const obj of [...warMap.objects]) {
-        if (obj.type !== 'robot' || obj.dyingTicks !== undefined) continue;
+        if (obj.type !== ObjectType.ROBOT || obj.dyingTicks !== undefined) continue;
 
         const ai = obj.ai ?? 'dummy';
         const action: RobotAction = ai === 'dummy' ? dummyAI(obj, warMap, occupancy) : { type: ActionType.IDLE };
@@ -62,7 +63,7 @@ function gameTick(warMap: WarMap, ownerResources: OwnerResources): void {
 
     // Start death animation for robots that just reached 0 health
     for (const obj of warMap.objects) {
-        if (obj.type === 'robot' && (obj.health ?? 1) <= 0 && obj.dyingTicks === undefined) {
+        if (obj.type === ObjectType.ROBOT && (obj.health ?? 1) <= 0 && obj.dyingTicks === undefined) {
             obj.dyingTicks = DEATH_BLINK_TICKS;
         }
     }

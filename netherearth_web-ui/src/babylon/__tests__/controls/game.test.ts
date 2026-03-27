@@ -1,3 +1,4 @@
+import { ObjectType } from '../../game/warmap';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { NullEngine, Scene, KeyboardInfo, KeyboardEventTypes } from '@babylonjs/core';
 import { attachGameControls } from '../../controls/game';
@@ -11,9 +12,9 @@ function makeEnv() {
         width: 1,
         height: 1,
         objects: [
-            { id: 'tile_0_0',  type: 'tile',     x: 0, y: 0 },
-            { id: 'factory_0', type: 'factory',  x: 1, y: 0, subtype: 'cannons' },
-            { id: 'warbase_0', type: 'warbase',  x: 2, y: 0 },
+            { id: 'tile_0_0',  type: ObjectType.TILE,     x: 0, y: 0 },
+            { id: 'factory_0', type: ObjectType.FACTORY,  x: 1, y: 0, subtype: 'cannons' },
+            { id: 'warbase_0', type: ObjectType.WARBASE,  x: 2, y: 0 },
         ],
     };
     return { engine, scene, warMap };

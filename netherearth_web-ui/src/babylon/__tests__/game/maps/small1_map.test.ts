@@ -16,6 +16,7 @@
  * with goal=capture_factory actually reaches the nearest factory
  * capture zone within a reasonable tick budget.
  */
+import { ObjectType } from '../../../game/warmap';
 import { Direction } from '../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../game/ai/dummy';
@@ -29,13 +30,13 @@ import { Chassis, Electronics } from '../../../data/robot';
 const MAP_W = 8, MAP_H = 64;
 
 function fence(x: number, y: number): WarObject {
-    return { id: `fence_${x}_${y}`, type: 'fence', x, y };
+    return { id: `fence_${x}_${y}`, type: ObjectType.FENCE, x, y };
 }
 function factory(x: number, y: number, subtype: string, owner: Owner): WarObject {
-    return { id: `f_${x}_${y}`, type: 'factory', x, y, subtype, owner };
+    return { id: `f_${x}_${y}`, type: ObjectType.FACTORY, x, y, subtype, owner };
 }
 function warbase(x: number, y: number, owner: Owner): WarObject {
-    return { id: `wb_${x}_${y}`, type: 'warbase', x, y, owner };
+    return { id: `wb_${x}_${y}`, type: ObjectType.WARBASE, x, y, owner };
 }
 
 function makeSmall1Map(): WarMap {
@@ -64,7 +65,7 @@ function makeSmall1Map(): WarMap {
     for (let x = 0; x < MAP_W; x++) {
         objects.push({
             id: `robot_${x}`,
-            type: 'robot',
+            type: ObjectType.ROBOT,
             x,
             y: 14,
             owner: x % 2 === 0 ? Owner.RED : Owner.BLUE,
@@ -113,7 +114,7 @@ describe('small1.map full setup', () => {
                 factory(0, 20, 'phasers',     Owner.BLUE),
                 factory(4, 20, 'nuclear',     Owner.BLUE),
                 {
-                    id: 'r0', type: 'robot',
+                    id: 'r0', type: ObjectType.ROBOT,
                     x: 0.5, y: 14,
                     owner: Owner.RED,
                     facing: Direction.S,
@@ -126,7 +127,7 @@ describe('small1.map full setup', () => {
 
         const robot = map.objects.find(o => o.id === 'r0')! as RobotObject;
         const zone  = CAPTURE_ZONES['factory']!;
-        const factories = map.objects.filter(o => o.type === 'factory');
+        const factories = map.objects.filter(o => o.type === ObjectType.FACTORY);
 
         const trace: string[] = [];
         let reached = false;

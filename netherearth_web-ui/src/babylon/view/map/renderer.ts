@@ -1,3 +1,4 @@
+import { ObjectType } from '../../game/warmap';
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
 import { addFactory } from './factory';
@@ -71,7 +72,7 @@ export class Renderer {
     }
 
     private drawObject(obj: WarObject): void {
-        if (obj.type === 'tile') {
+        if (obj.type === ObjectType.TILE) {
             const modelName = TILE_MODELS[obj.subtype ?? ''];
             const model = modelName ? this.models.get(modelName) : undefined;
             if (model) {
@@ -81,11 +82,11 @@ export class Renderer {
                     setVisibleAll(instance, true);
                 }
             }
-        } else if (obj.type === 'factory') {
+        } else if (obj.type === ObjectType.FACTORY) {
             addFactory(this.models, this.mapBegin, obj.x, obj.y, obj.subtype!, obj.owner);
-        } else if (obj.type === 'warbase') {
+        } else if (obj.type === ObjectType.WARBASE) {
             addWarbase(this.models, this.scene, this.mapBegin, obj.x, obj.y, obj.owner);
-        } else if (obj.type === 'robot') {
+        } else if (obj.type === ObjectType.ROBOT) {
             // Death blink: hide on odd ticks, show on even ticks
             if (obj.dyingTicks !== undefined && obj.dyingTicks % 2 === 1) return;
             if (obj.robotConfig) {

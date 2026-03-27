@@ -1,3 +1,4 @@
+import { ObjectType } from '../game/warmap';
 import { Owner } from '../game/owner';
 
 export interface MapData {
@@ -24,13 +25,13 @@ export const loadMap = async (url: string): Promise<MapData> => {
     for (let i = height + 2; i < lines.length; i++) {
         const parts = lines[i].split(' ');
         const type = parts[0];
-        if (type === 'fence' || type.startsWith('wall')) {
+        if (type === ObjectType.FENCE || type.startsWith('wall')) {
             objects.push({ type, x: parseFloat(parts[1]), y: parseFloat(parts[2]) });
-        } else if (type === 'factory') {
+        } else if (type === ObjectType.FACTORY) {
             const ownerNum = parts[4] ? parseInt(parts[4]) : undefined;
             const owner = ownerNum !== undefined && !isNaN(ownerNum) ? ownerNum as Owner : Owner.NEUTRAL;
             objects.push({ type, x: parseFloat(parts[1]), y: parseFloat(parts[2]), subtype: parts[3], owner });
-        } else if (type === 'warbase') {
+        } else if (type === ObjectType.WARBASE) {
             objects.push({ type, x: parseFloat(parts[1]), y: parseFloat(parts[2]), owner: parseInt(parts[3]) as Owner });
         }
     }

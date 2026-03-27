@@ -1,3 +1,4 @@
+import { ObjectType } from '../../game/warmap';
 import { Direction } from "../warmap";
 import type { WarMap, RobotObject, MapObject } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
@@ -19,7 +20,7 @@ const DIR_DELTA: Record<Direction, { dx: number; dy: number }> = {
 
 function getTileSubtype(warMap: WarMap, x: number, y: number): string {
     const tile = warMap.objects.find(
-        (o): o is MapObject => o.type === 'tile' && o.x === Math.floor(x) && o.y === Math.floor(y),
+        (o): o is MapObject => o.type === ObjectType.TILE && o.x === Math.floor(x) && o.y === Math.floor(y),
     );
     return tile?.subtype ?? 'G';
 }

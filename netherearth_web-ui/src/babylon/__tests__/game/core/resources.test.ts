@@ -1,3 +1,4 @@
+import { ObjectType } from '../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { DAY_TICKS, createOwnerResources, tickResources } from '../../../game/resources';
 import { Owner } from '../../../game/owner';
@@ -8,11 +9,11 @@ function makeMap(objects: WarMap['objects']): WarMap {
 }
 
 function warbase(owner: Owner, id = 'wb'): WarMap['objects'][0] {
-    return { id, type: 'warbase', x: 0, y: 0, owner };
+    return { id, type: ObjectType.WARBASE, x: 0, y: 0, owner };
 }
 
 function factory(subtype: string, owner: Owner, id = 'f'): WarMap['objects'][0] {
-    return { id, type: 'factory', x: 0, y: 0, subtype, owner };
+    return { id, type: ObjectType.FACTORY, x: 0, y: 0, subtype, owner };
 }
 
 describe('DAY_TICKS', () => {

@@ -3,10 +3,12 @@
  *
  * Provides direction helpers (dirDelta, rightOf, leftOf, backOf),
  * passability checks (isPassable, tileAt), and goal-direction sorting
- * (preferredDirs). All higher-level algorithms import from here.
+ * (preferredDirs). All higher-level algorithms import { ObjectType } from '../../game/warmap';
+import from here.
  */
 import { CW_DIRS } from '../warmap';
 import { Direction } from '../warmap';
+import { ObjectType } from "../warmap";
 import type { WarMap, MapObject, RobotObject } from '../warmap';
 
 export { CW_DIRS };
@@ -29,7 +31,7 @@ export function backOf (d: Direction): Direction { return ({ N:Direction.S, S:Di
 
 export function tileAt(warMap: WarMap, x: number, y: number): string {
     return (warMap.objects.find(
-        (o): o is MapObject => o.type === 'tile' && o.x === Math.floor(x) && o.y === Math.floor(y),
+        (o): o is MapObject => o.type === ObjectType.TILE && o.x === Math.floor(x) && o.y === Math.floor(y),
     ))?.subtype ?? 'G';
 }
 

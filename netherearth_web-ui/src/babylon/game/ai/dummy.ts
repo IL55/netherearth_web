@@ -8,6 +8,7 @@
  *
  * Also owns target selection (findTarget) and capture-zone resolution (targetPos).
  */
+import { ObjectType } from '../../game/warmap';
 import { RobotGoal } from '../warmap';
 import { CW_DIRS } from '../warmap';
 import { Direction } from '../warmap';
@@ -23,13 +24,13 @@ import { recordCell, tremauxDirs } from './tremaux';
 
 function findTarget(robot: RobotObject, warMap: WarMap): WarObject | undefined {
     const candidates = warMap.objects.filter(o => {
-        if (robot.goal === RobotGoal.ATTACK_ROBOTS)           return o.type === 'robot'   && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_FACTORY)         return o.type === 'factory' && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_ENEMY_FACTORY)   return o.type === 'factory' && !!o.owner && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_FACTORY) return o.type === 'factory' && !o.owner;
-        if (robot.goal === RobotGoal.CAPTURE_WARBASE)         return o.type === 'warbase' && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_ENEMY_WARBASE)   return o.type === 'warbase' && !!o.owner && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_WARBASE) return o.type === 'warbase' && !o.owner;
+        if (robot.goal === RobotGoal.ATTACK_ROBOTS)           return o.type === ObjectType.ROBOT   && o.owner !== robot.owner;
+        if (robot.goal === RobotGoal.CAPTURE_FACTORY)         return o.type === ObjectType.FACTORY && o.owner !== robot.owner;
+        if (robot.goal === RobotGoal.CAPTURE_ENEMY_FACTORY)   return o.type === ObjectType.FACTORY && !!o.owner && o.owner !== robot.owner;
+        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_FACTORY) return o.type === ObjectType.FACTORY && !o.owner;
+        if (robot.goal === RobotGoal.CAPTURE_WARBASE)         return o.type === ObjectType.WARBASE && o.owner !== robot.owner;
+        if (robot.goal === RobotGoal.CAPTURE_ENEMY_WARBASE)   return o.type === ObjectType.WARBASE && !!o.owner && o.owner !== robot.owner;
+        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_WARBASE) return o.type === ObjectType.WARBASE && !o.owner;
         return false;
     });
     if (candidates.length === 0) return undefined;

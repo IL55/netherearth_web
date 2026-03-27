@@ -6,6 +6,7 @@
  * more generous than Bug2 where needed, since Trémaux explores more
  * broadly before converging.
  */
+import { ObjectType } from '../../../../game/warmap';
 import { Direction } from '../../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
@@ -26,7 +27,7 @@ function makeRobot(
     overrides: Partial<RobotObject> = {},
 ): RobotObject {
     return {
-        id, type: 'robot', x, y,
+        id, type: ObjectType.ROBOT, x, y,
         facing: Direction.E, owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
         robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD, navAlgo: NavAlgo.TREMAUX },
@@ -35,15 +36,15 @@ function makeRobot(
 }
 
 function makeFactory(x: number, y: number): WarObject {
-    return { id: `f_${x}_${y}`, type: 'factory', x, y, subtype: 'cannons' };
+    return { id: `f_${x}_${y}`, type: ObjectType.FACTORY, x, y, subtype: 'cannons' };
 }
 
 function makeWall(x: number, y: number): WarObject {
-    return { id: `w_${x}_${y}`, type: 'wall3', x, y };
+    return { id: `w_${x}_${y}`, type: ObjectType.WALL3, x, y };
 }
 
 function makeTile(x: number, y: number, subtype: string): WarObject {
-    return { id: `tile_${x}_${y}`, type: 'tile', x, y, subtype };
+    return { id: `tile_${x}_${y}`, type: ObjectType.TILE, x, y, subtype };
 }
 
 function runUntilCapture(map: WarMap, robot: RobotObject, factory: WarObject, maxTicks: number): number {

@@ -1,3 +1,4 @@
+import { ObjectType } from '../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { spawnProjectile, advanceProjectiles, SUB_TICKS } from '../../../game/projectile';
 import { Owner } from '../../../game/owner';
@@ -9,7 +10,7 @@ function makeMap(): WarMap {
 
 function makeRobot(id: string, x: number, y: number, weapon?: string): RobotObject {
     return {
-        id, type: 'robot', x, y, owner: Owner.NEUTRAL,
+        id, type: ObjectType.ROBOT, x, y, owner: Owner.NEUTRAL,
         ...(weapon ? { robotConfig: { chassis: 'h-tracks', weapon, electronics: 'h-electronics' } } : {}),
     };
 }

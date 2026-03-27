@@ -1,3 +1,4 @@
+import { ObjectType } from '../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { isInCaptureZone, tickCapture, CAPTURE_ZONES } from '../../../game/capture';
 import { DAY_TICKS } from '../../../game/resources';
@@ -11,13 +12,13 @@ function makeMap(objects: WarObject[]): WarMap {
 // Factory at (5,7): zone center = (6, 8), radius=0.5
 // Warbase at (2,5): zone center = (5.5, 7), radius=0.5
 function makeFactory(x = 5, y = 7, owner: Owner = Owner.NEUTRAL): WarObject {
-    return { id: 'f1', type: 'factory', x, y, subtype: 'cannons', owner };
+    return { id: 'f1', type: ObjectType.FACTORY, x, y, subtype: 'cannons', owner };
 }
 function makeWarbase(x = 2, y = 5, owner: Owner = Owner.NEUTRAL): WarObject {
-    return { id: 'wb', type: 'warbase', x, y, owner };
+    return { id: 'wb', type: ObjectType.WARBASE, x, y, owner };
 }
 function makeRobot(id: string, x: number, y: number, owner: Owner): RobotObject {
-    return { id, type: 'robot', x, y, owner };
+    return { id, type: ObjectType.ROBOT, x, y, owner };
 }
 
 describe('CAPTURE_ZONES', () => {
@@ -31,7 +32,7 @@ describe('CAPTURE_ZONES', () => {
 
 describe('isInCaptureZone', () => {
     it('returns false for a type with no zone (e.g. wall)', () => {
-        const wall: WarObject = { id: 'w', type: 'wall3', x: 0, y: 0 };
+        const wall: WarObject = { id: 'w', type: ObjectType.WALL3, x: 0, y: 0 };
         const robot = makeRobot('r', 0, 0, Owner.RED);
         expect(isInCaptureZone(robot, wall)).toBe(false);
     });

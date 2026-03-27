@@ -1,3 +1,4 @@
+import { ObjectType } from '../game/warmap';
 import type { WarMap } from './warmap';
 
 interface AABBDef { dx0: number; dy0: number; dx1: number; dy1: number; }
@@ -54,7 +55,7 @@ export function buildOccupancy(warMap: WarMap): OccupancyMap {
     const robots: RobotPos[] = [];
     const structures: StructureAABB[] = [];
     for (const obj of warMap.objects) {
-        if (obj.type === 'robot') {
+        if (obj.type === ObjectType.ROBOT) {
             robots.push({ id: obj.id, x: obj.x, y: obj.y });
         } else {
             const parts = STRUCTURE_PARTS[obj.type];

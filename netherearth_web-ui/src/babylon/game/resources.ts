@@ -1,3 +1,4 @@
+import { ObjectType } from '../game/warmap';
 import { Owner } from './owner';
 import type { WarMap } from './warmap';
 
@@ -49,9 +50,9 @@ export function tickResources(warMap: WarMap, ownerResources: OwnerResources, ti
         if (obj.owner !== Owner.RED && obj.owner !== Owner.BLUE) continue;
         const res = ownerResources[obj.owner];
 
-        if (obj.type === 'warbase') {
+        if (obj.type === ObjectType.WARBASE) {
             res.common += 4;
-        } else if (obj.type === 'factory' && obj.subtype && FACTORY_RESOURCE_SET.has(obj.subtype)) {
+        } else if (obj.type === ObjectType.FACTORY && obj.subtype && FACTORY_RESOURCE_SET.has(obj.subtype)) {
             res[obj.subtype as FactoryResource] += 2;
         }
     }

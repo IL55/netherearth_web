@@ -1,3 +1,4 @@
+import { ObjectType } from '../../../game/warmap';
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
     tickBuild, canAfford, BUILD_OPTIONS,
@@ -15,7 +16,7 @@ function makeMap(objects: WarMap['objects']): WarMap {
 }
 
 function warbase(owner: Owner, x = 0, y = 0): WarObject {
-    return { id: `wb_${x}_${y}`, type: 'warbase', x, y, owner };
+    return { id: `wb_${x}_${y}`, type: ObjectType.WARBASE, x, y, owner };
 }
 
 beforeEach(() => _resetBuildState());
@@ -70,7 +71,7 @@ describe('tickBuild — no resources', () => {
         const map = makeMap([warbase(Owner.RED)]);
         const res = createOwnerResources();
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === 'robot')).toHaveLength(0);
+        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(0);
     });
 
     it('does not build for NEUTRAL warbase', () => {
@@ -78,7 +79,7 @@ describe('tickBuild — no resources', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 10;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === 'robot')).toHaveLength(0);
+        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(0);
     });
 });
 
@@ -90,7 +91,7 @@ describe('tickBuild — builds cheapest affordable robot', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const robots = map.objects.filter(o => o.type === 'robot') as RobotObject[];
+        const robots = map.objects.filter(o => o.type === ObjectType.ROBOT) as RobotObject[];
         expect(robots).toHaveLength(1);
         expect(robots[0].robotConfig?.chassis).toBe(Chassis.TRACKS);
         expect(robots[0].owner).toBe(Owner.RED);
@@ -111,7 +112,7 @@ describe('tickBuild — builds cheapest affordable robot', () => {
         res[Owner.RED].cannons = 1;
         res[Owner.RED].electronics = 1;
         tickBuild(map, res);
-        const robots = map.objects.filter(o => o.type === 'robot') as RobotObject[];
+        const robots = map.objects.filter(o => o.type === ObjectType.ROBOT) as RobotObject[];
         expect(robots[0].robotConfig?.weapon).toBe(Weapon.CANNON);
         expect(robots[0].robotConfig?.electronics).toBe(Electronics.STANDARD);
     });
@@ -121,7 +122,7 @@ describe('tickBuild — builds cheapest affordable robot', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const robot = map.objects.find(o => o.type === 'robot') as RobotObject;
+        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
         expect(robot.x).toBe(2 + 3.5); // warbase.x + zone.dx
         expect(robot.y).toBe(3 + 2.0); // warbase.y + zone.dy
     });
@@ -132,7 +133,7 @@ describe('tickBuild — builds cheapest affordable robot', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const robot = map.objects.find(o => o.type === 'robot') as RobotObject;
+        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
         expect(validGoals).toContain(robot.goal);
     });
 
@@ -141,7 +142,7 @@ describe('tickBuild — builds cheapest affordable robot', () => {
         const res = createOwnerResources();
         res[Owner.BLUE].chassis = 1;
         tickBuild(map, res);
-        const robot = map.objects.find(o => o.type === 'robot') as RobotObject;
+        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
         expect(robot.owner).toBe(Owner.BLUE);
         expect(robot.ai).toBe('dummy');
     });
@@ -151,7 +152,7 @@ describe('tickBuild — builds cheapest affordable robot', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const robot = map.objects.find(o => o.type === 'robot') as RobotObject;
+        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
         expect(robot.health).toBeGreaterThan(0);
     });
 });
@@ -161,22 +162,22 @@ describe('tickBuild — builds cheapest affordable robot', () => {
 describe('tickBuild — spawn blocked', () => {
     it('does not build when an own robot occupies the spawn point', () => {
         const wb = warbase(Owner.RED, 0, 0);
-        const blocker: RobotObject = { id: 'r1', type: 'robot', x: 3.5, y: 2.0, owner: Owner.RED };
+        const blocker: RobotObject = { id: 'r1', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.RED };
         const map = makeMap([wb, blocker]);
         const res = createOwnerResources();
         res[Owner.RED].chassis = 5;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === 'robot')).toHaveLength(1); // only the original
+        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1); // only the original
     });
 
     it('does not build when an enemy robot occupies the spawn point (capturing)', () => {
         const wb = warbase(Owner.RED, 0, 0);
-        const enemy: RobotObject = { id: 'r1', type: 'robot', x: 3.5, y: 2.0, owner: Owner.BLUE };
+        const enemy: RobotObject = { id: 'r1', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.BLUE };
         const map = makeMap([wb, enemy]);
         const res = createOwnerResources();
         res[Owner.RED].chassis = 5;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === 'robot')).toHaveLength(1);
+        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1);
     });
 });
 
@@ -190,7 +191,7 @@ describe('tickBuild — multiple warbases', () => {
         res[Owner.RED].chassis = 2;
         res[Owner.RED].cannons = 2;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === 'robot')).toHaveLength(2);
+        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(2);
         expect(res[Owner.RED].chassis).toBe(0);
         expect(res[Owner.RED].cannons).toBe(0);
     });
@@ -205,7 +206,7 @@ describe('tickBuild — multiple warbases', () => {
         // tracks (cheapest) costs chassis:1 each
         res[Owner.RED].chassis = 3;
         tickBuild(map, res);
-        const robots = map.objects.filter(o => o.type === 'robot') as RobotObject[];
+        const robots = map.objects.filter(o => o.type === ObjectType.ROBOT) as RobotObject[];
         // With chassis:3 total, first warbase builds antigrav (cost 2), second builds tracks (cost 1).
         // Third warbase cannot afford → 2 robots, 2 different goals.
         expect(robots.length).toBeGreaterThanOrEqual(2);

@@ -1,3 +1,4 @@
+import { ObjectType } from '../../../../game/warmap';
 import { Direction } from '../../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
@@ -12,7 +13,7 @@ import { Chassis, Electronics } from '../../../../data/robot';
 
 function makeRobot(overrides: Partial<RobotObject> & { id: string; x: number; y: number }): RobotObject {
     return {
-        type: 'robot',
+        type: ObjectType.ROBOT,
         facing: Direction.E,
         owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
@@ -22,15 +23,15 @@ function makeRobot(overrides: Partial<RobotObject> & { id: string; x: number; y:
 }
 
 function makeFactory(id: string, x: number, y: number): WarObject {
-    return { id, type: 'factory', x, y, subtype: 'cannons' /* no owner = neutral */ };
+    return { id, type: ObjectType.FACTORY, x, y, subtype: 'cannons' /* no owner = neutral */ };
 }
 
 function makeWall(x: number, y: number): WarObject {
-    return { id: `wall_${x}_${y}`, type: 'wall3', x, y };
+    return { id: `wall_${x}_${y}`, type: ObjectType.WALL3, x, y };
 }
 
 function makeTile(x: number, y: number, subtype: string): WarObject {
-    return { id: `tile_${x}_${y}`, type: 'tile', x, y, subtype };
+    return { id: `tile_${x}_${y}`, type: ObjectType.TILE, x, y, subtype };
 }
 
 /** Run up to maxTicks; return the tick on which the robot entered the factory
@@ -107,7 +108,7 @@ describe('bipod + mountain barrier', () => {
     /**
      * Mountain tiles ('M') at x=8, y=2..8.  Bipod cannot cross mountains.
      * Gaps at y=0..1 (above) and y=9..10 (below) — robot must go around.
-     * Terrain tiles are stored as WarObjects with type='tile'; absent tiles default to 'G'.
+     * Terrain tiles are stored as WarObjects with type = ObjectType.TILE; absent tiles default to 'G'.
      *
      *   y=0 . . . . . . . . G  ← passable gap
      *   y=1 . . . . . . . . G  ← passable gap

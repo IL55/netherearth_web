@@ -6,6 +6,7 @@
  * Returns a RobotAction if combat is appropriate this tick, or null
  * to let the navigation layer decide.
  */
+import { ObjectType } from '../../game/warmap';
 import { Direction } from '../warmap';
 import type { WarMap, WarObject, RobotObject } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
@@ -23,7 +24,7 @@ function scanForwardEnemy(
     occupancy: OccupancyMap,
 ): WarObject | undefined {
     const enemies = warMap.objects.filter(
-        o => o.type === 'robot' && o.owner !== robot.owner && o.dyingTicks === undefined,
+        o => o.type === ObjectType.ROBOT && o.owner !== robot.owner && o.dyingTicks === undefined,
     );
 
     const inSight = enemies.filter(e => {

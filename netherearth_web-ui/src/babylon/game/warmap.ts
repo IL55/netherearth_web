@@ -63,12 +63,22 @@ export interface NavState {
     visitCounts?: Map<string, number>; // visit count per position key (0.25-cell resolution, permanent)
 }
 
+export enum ObjectType {
+    ROBOT   = 'robot',
+    TILE    = 'tile',
+    FACTORY = 'factory',
+    WARBASE = 'warbase',
+    WALL1   = 'wall1',
+    WALL2   = 'wall2',
+    WALL3   = 'wall3',
+    WALL4   = 'wall4',
+    WALL5   = 'wall5',
+    WALL6   = 'wall6',
+    FENCE   = 'fence',
+}
+
 // All non-robot map objects (tiles, structures, walls)
-export type StructureType =
-    | 'tile'
-    | 'factory' | 'warbase'
-    | 'wall1' | 'wall2' | 'wall3' | 'wall4' | 'wall5' | 'wall6'
-    | 'fence';
+export type StructureType = Exclude<ObjectType, ObjectType.ROBOT>;
 
 interface ObjectBase { id: string; x: number; y: number; }
 
@@ -76,7 +86,7 @@ export { Owner };
 
 // Mobile unit — robot-specific fields
 export interface RobotObject extends ObjectBase {
-    type: 'robot';
+    type: ObjectType.ROBOT;
     owner: Owner;
     facing?: Direction;
     robotConfig?: RobotConfig;
@@ -101,8 +111,8 @@ export interface MapObject extends ObjectBase {
 
 export type WarObject = RobotObject | MapObject;
 
-export function isRobot(obj: WarObject): obj is RobotObject { return obj.type === 'robot'; }
-export function isMapObj(obj: WarObject): obj is MapObject  { return obj.type !== 'robot'; }
+export function isRobot(obj: WarObject): obj is RobotObject { return obj.type === ObjectType.ROBOT; }
+export function isMapObj(obj: WarObject): obj is MapObject  { return obj.type !== ObjectType.ROBOT; }
 
 export interface WarMap {
     width: number;
@@ -117,7 +127,7 @@ export function createWarMap(mapData: MapData): WarMap {
 
     for (let y = 0; y < mapData.height; y++) {
         for (let x = 0; x < mapData.width; x++) {
-            objects.push({ id: `tile_${x}_${y}`, type: 'tile', x, y, subtype: mapData.tiles[y][x] });
+            objects.push({ id: `tile_${x}_${y}`, type: ObjectType.TILE, x, y, subtype: mapData.tiles[y][x] });
         }
     }
 

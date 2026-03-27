@@ -1,3 +1,4 @@
+import { ObjectType } from '../../../../game/warmap';
 import { Direction } from '../../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
@@ -11,18 +12,18 @@ import { Chassis, Electronics } from '../../../../data/robot';
 
 function makeRobot(x: number, y: number, facing: Direction.N|Direction.S|Direction.E|Direction.W = Direction.E): RobotObject {
     return {
-        id: 'r0', type: 'robot', x, y, facing, owner: Owner.RED,
+        id: 'r0', type: ObjectType.ROBOT, x, y, facing, owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
         robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
     };
 }
 
 function makeFactory(x: number, y: number): WarObject {
-    return { id: 'f0', type: 'factory', x, y, subtype: 'cannons' };
+    return { id: 'f0', type: ObjectType.FACTORY, x, y, subtype: 'cannons' };
 }
 
 function makeWall(x: number, y: number): WarObject {
-    return { id: `w_${x}_${y}`, type: 'wall3', x, y };
+    return { id: `w_${x}_${y}`, type: ObjectType.WALL3, x, y };
 }
 
 function run(map: WarMap, robot: RobotObject, ticks: number): { x: number; y: number }[] {

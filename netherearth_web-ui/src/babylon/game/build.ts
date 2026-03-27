@@ -1,3 +1,4 @@
+import { ObjectType } from '../game/warmap';
 import { Direction } from "./warmap";
 
 import { Chassis, Weapon, Electronics, calcHealth } from '../data/robot';
@@ -105,7 +106,7 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
     const occupancy = buildOccupancy(warMap);
 
     for (const obj of warMap.objects) {
-        if (obj.type !== 'warbase') continue;
+        if (obj.type !== ObjectType.WARBASE) continue;
         if (obj.owner !== Owner.RED && obj.owner !== Owner.BLUE) continue;
 
         const spawnX = obj.x + zone.dx;
@@ -122,7 +123,7 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
 
         const robot: RobotObject = {
             id: `robot_${_builtCount}`,
-            type: 'robot',
+            type: ObjectType.ROBOT,
             x: spawnX,
             y: spawnY,
             owner: obj.owner,

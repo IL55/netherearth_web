@@ -1,3 +1,4 @@
+import { ObjectType } from '../game/warmap';
 import type { WarMap, WarObject, RobotObject } from './warmap';
 import { DAY_TICKS } from './resources';
 
@@ -34,7 +35,7 @@ export function tickCapture(warMap: WarMap): void {
         if (!CAPTURE_ZONES[obj.type]) continue;
 
         const captor = warMap.objects.find(
-            r => r.type === 'robot' && r.owner !== obj.owner && isInCaptureZone(r, obj),
+            r => r.type === ObjectType.ROBOT && r.owner !== obj.owner && isInCaptureZone(r, obj),
         );
 
         if (captor) {

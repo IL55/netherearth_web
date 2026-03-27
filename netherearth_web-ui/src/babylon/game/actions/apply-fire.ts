@@ -1,3 +1,4 @@
+import { ObjectType } from '../../game/warmap';
 import { Direction } from '../warmap';
 import type { WarMap, RobotObject } from '../warmap';
 import { WEAPON_DAMAGE, WEAPON_RANGE, calcDamageFalloff } from '../../data/robot';
@@ -17,7 +18,7 @@ export function applyFire(
 ): boolean {
     robot.lastFiredAt = warMap.tick ?? 0;
     const target = warMap.objects.find(
-        (o): o is RobotObject => o.id === targetId && o.type === 'robot',
+        (o): o is RobotObject => o.id === targetId && o.type === ObjectType.ROBOT,
     );
     if (target) {
         const weapon = robot.robotConfig?.weapon;

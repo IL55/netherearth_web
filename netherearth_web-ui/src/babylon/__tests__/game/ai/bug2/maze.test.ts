@@ -1,3 +1,4 @@
+import { ObjectType } from '../../../../game/warmap';
 import { Direction } from '../../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
@@ -36,7 +37,7 @@ import { Chassis, Electronics } from '../../../../data/robot';
  */
 
 function makeWall(x: number, y: number): WarObject {
-    return { id: `wall_${x}_${y}`, type: 'wall3', x, y };
+    return { id: `wall_${x}_${y}`, type: ObjectType.WALL3, x, y };
 }
 
 function makeMap(): WarMap {
@@ -51,7 +52,7 @@ function makeMap(): WarMap {
 
     const factory: WarObject = {
         id: 'factory_0',
-        type: 'factory',
+        type: ObjectType.FACTORY,
         x: 16, y: 5,
         subtype: 'cannons',
         // no owner → neutral
@@ -59,7 +60,7 @@ function makeMap(): WarMap {
 
     const robot: RobotObject = {
         id: 'robot_0',
-        type: 'robot',
+        type: ObjectType.ROBOT,
         x: 2, y: 5,
         facing: Direction.E,
         owner: Owner.RED,

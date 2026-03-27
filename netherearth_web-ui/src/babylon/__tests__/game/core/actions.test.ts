@@ -1,3 +1,4 @@
+import { ObjectType } from '../../../game/warmap';
 import { Direction } from '../../../game/warmap';
 import { describe, it, expect } from 'vitest';
 import { applyAction, ActionType, RotateDir, MOVE_STEP } from '../../../game/actions';
@@ -13,7 +14,7 @@ function makeMap(objects: WarMap['objects'] = [], width = 20, height = 20): WarM
 
 function makeRobot(id: string, x: number, y: number, facing: Direction.N | Direction.E | Direction.S | Direction.W = Direction.E): RobotObject {
     // antigrav: speedFactor=1 on all terrain — avoids terrain-slowdown interference in movement tests
-    return { id, type: 'robot', x, y, facing, owner: Owner.NEUTRAL, robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD } };
+    return { id, type: ObjectType.ROBOT, x, y, facing, owner: Owner.NEUTRAL, robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD } };
 }
 
 describe('rotationToDirection / directionToRotation round-trip', () => {
@@ -91,7 +92,7 @@ describe('applyAction — move', () => {
 
     it('blocks move when target cell has a structure', () => {
         const robot:   RobotObject = makeRobot('r', 1.75, 5, Direction.E);
-        const factory: WarObject = { id: 'f1', type: 'factory', x: 2, y: 5, subtype: 'cannons' };
+        const factory: WarObject = { id: 'f1', type: ObjectType.FACTORY, x: 2, y: 5, subtype: 'cannons' };
         const map = makeMap([robot, factory]);
         expect(applyAction(robot, { type: ActionType.MOVE, direction: Direction.E }, map, buildOccupancy(map))).toBe(false);
     });
