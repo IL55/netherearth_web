@@ -8,6 +8,7 @@ import { loadMap } from './data/map';
 import { debugLoadMap } from './view/map/map';
 import { Renderer } from './view/map/renderer';
 import { ProjectileRenderer } from './view/map/projectile-renderer';
+import { GameHud } from './hud/hud';
 import { createWarMap, Owner, RobotGoal } from './game/core/warmap';
 import { robotConfigs, calcHealth } from './data/robot';
 import { attachCameraControls } from './controls/camera';
@@ -52,6 +53,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const renderer = new Renderer(models, scene, mapBegin);
   const projectileRenderer = new ProjectileRenderer(models, mapBegin);
+  const hud = new GameHud(canvas);
   renderer.render(warMap);
 
   const mapCenter = new BABYLON.Vector3(mapBegin.x + mapData.width / 4, 2, mapBegin.z + mapData.height / 4);
@@ -65,6 +67,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   startClock(warMap, () => {
     renderer.render(warMap);
     projectileRenderer.render(warMap);
+    hud.update(warMap);
   }, ownerResources);
 
   return scene;
