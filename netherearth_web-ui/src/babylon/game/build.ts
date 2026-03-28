@@ -121,7 +121,27 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
 
         deductCost(resources, option.cost);
 
-        const outFacing = Direction.E; // Front of the warbase faces East.
+        // Find enemy warbase to determine the general move-out direction
+        const enemyWarbase = warMap.objects.find(
+            o => o.type === ObjectType.WARBASE && o.owner && o.owner !== obj.owner
+        );
+        let outFacing = Direction.E;
+        let tx = spawnX + 4;
+        let ty = spawnY;
+
+        if (enemyWarbase) {
+            const dx = enemyWarbase.x - spawnX;
+            const dy = enemyWarbase.y - spawnY;
+            if (Math.abs(dy) > Math.abs(dx)) {
+                outFacing = dy > 0 ? Direction.S : Direction.N;
+                tx = spawnX;
+                ty = spawnY + (dy > 0 ? 4 : -4);
+            } else {
+                outFacing = dx > 0 ? Direction.E : Direction.W;
+                tx = spawnX + (dx > 0 ? 4 : -4);
+                ty = spawnY;
+            }
+        }
 
         const robot: RobotObject = {
             id: `robot_${_builtCount}`,
@@ -135,7 +155,7 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
             goal: BUILD_GOALS[_builtCount % BUILD_GOALS.length],
             ai: RobotAI.DUMMY,
             nav: {
-                moveOutTarget: { x: spawnX + 4, y: spawnY }
+                moveOutTarget: { x: tx, y: ty }
             }
         };
         _builtCount++;
