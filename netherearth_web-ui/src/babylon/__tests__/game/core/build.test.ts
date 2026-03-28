@@ -1,3 +1,5 @@
+import { RobotAI, Direction } from "../../../game/warmap";
+
 import { ObjectType } from '../../../game/warmap';
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
@@ -144,7 +146,18 @@ describe('tickBuild — builds cheapest affordable robot', () => {
         tickBuild(map, res);
         const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
         expect(robot.owner).toBe(Owner.BLUE);
-        expect(robot.ai).toBe('dummy');
+        expect(robot.ai).toBe(RobotAI.DUMMY);
+    });
+
+    it('new robot is assigned a moveOutTarget 4 cells East of spawn point to unblock the base', () => {
+        const map = makeMap([warbase(Owner.RED, 2, 3)]); // capture point is 2+3.5=5.5, 3+2.0=5.0
+        const res = createOwnerResources();
+        res[Owner.RED].chassis = 1;
+        tickBuild(map, res);
+
+        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
+        expect(robot.facing).toBe(Direction.E);
+        expect(robot.nav?.moveOutTarget).toEqual({ x: 5.5 + 4, y: 5.0 });
     });
 
     it('new robot has positive health', () => {

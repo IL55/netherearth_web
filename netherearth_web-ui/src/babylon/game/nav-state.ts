@@ -14,4 +14,6 @@ export interface NavState {
     wallFollowStartDist?: number;
     /** Trémaux state: visit count per position key (0.25-cell resolution, permanent) */
     visitCounts?: Map<string, number>;
+    /** Temporary target coordinate given when the robot is built to move away from the spawn point */
+    moveOutTarget?: { x: number; y: number };
 }

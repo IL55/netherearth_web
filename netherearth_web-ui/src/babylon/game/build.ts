@@ -121,17 +121,22 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
 
         deductCost(resources, option.cost);
 
+        const outFacing = Direction.E; // Front of the warbase faces East.
+
         const robot: RobotObject = {
             id: `robot_${_builtCount}`,
             type: ObjectType.ROBOT,
             x: spawnX,
             y: spawnY,
             owner: obj.owner,
-            facing: Direction.N,
+            facing: outFacing,
             robotConfig: option.config,
             health: calcHealth(option.config),
             goal: BUILD_GOALS[_builtCount % BUILD_GOALS.length],
             ai: RobotAI.DUMMY,
+            nav: {
+                moveOutTarget: { x: spawnX + 4, y: spawnY }
+            }
         };
         _builtCount++;
 

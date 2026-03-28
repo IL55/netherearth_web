@@ -11,9 +11,40 @@ import { Direction } from '../warmap';
 import type { WarMap, WarObject, RobotObject } from '../warmap';
 import type { OccupancyMap } from '../occupancy';
 import { isOccupied, isLOSBlocked } from '../occupancy';
-import { ActionType, type RobotAction } from '../actions';
+import { ActionType, RotateDir, type RobotAction } from '../actions';
 import { SIGHT_RANGE, WEAPON_RANGE, WEAPON_COOLDOWN } from '../../data/robot';
-import { dirDelta } from './nav';
+import { dirDelta, CW_DIRS } from './nav';
+
+// Nearest living enemy robot adjacent (within ~1.5 units) with unblocked LOS.
+function scanAdjacentEnemy(
+    robot: RobotObject,
+    warMap: WarMap,
+    occupancy: OccupancyMap,
+): WarObject | undefined {
+    const enemies = warMap.objects.filter(
+        o => o.type === ObjectType.ROBOT && o.owner !== robot.owner && o.dyingTicks === undefined,
+    );
+
+    const adjacent = enemies.filter(e => {
+        const dx = Math.abs(e.x - robot.x);
+        const dy = Math.abs(e.y - robot.y);
+        // Using Chebyshev-like distance to allow diagonal neighbors, or just Manhattan. 
+        // Manhattan distance <= 1.5 allows adjacent cardinal cells.
+        return dx + dy > 0 && dx + dy <= 1.5;
+    });
+
+    if (adjacent.length === 0) return undefined;
+
+    const closest = adjacent.reduce((best, e) => {
+        const d  = Math.abs(e.x - robot.x) + Math.abs(e.y - robot.y);
+        const db = Math.abs(best.x - robot.x) + Math.abs(best.y - robot.y);
+        return d < db ? e : best;
+    });
+
+    return isLOSBlocked(occupancy, robot.x, robot.y, closest.x, closest.y)
+        ? undefined
+        : closest;
+}
 
 // Nearest living enemy robot ahead within sight range and unblocked LOS.
 function scanForwardEnemy(
@@ -62,7 +93,27 @@ export function fightAction(
     if (!weapon || sightRange <= 0) return undefined;
 
     const facing = robot.facing ?? Direction.N;
-    const enemy  = scanForwardEnemy(robot, facing, sightRange, warMap, occupancy);
+    
+    // 1. Check for adjacent enemies first (they override forward-only scanning)
+    let enemy = scanAdjacentEnemy(robot, warMap, occupancy);
+    if (enemy) {
+        // If there's an adjacent enemy, ensure we face it.
+        const dx = enemy.x - robot.x;
+        const dy = enemy.y - robot.y;
+        const targetDir = Math.abs(dx) > Math.abs(dy)
+            ? (dx > 0 ? Direction.E : Direction.W)
+            : (dy > 0 ? Direction.S : Direction.N);
+            
+        if (facing !== targetDir) {
+            const steps = (CW_DIRS.indexOf(targetDir) - CW_DIRS.indexOf(facing) + 4) % 4;
+            return { type: ActionType.ROTATE, direction: steps <= 2 ? RotateDir.RIGHT : RotateDir.LEFT };
+        }
+        // If facing the adjacent enemy, we proceed to fire.
+    } else {
+        // 2. Otherwise, check for enemies ahead
+        enemy = scanForwardEnemy(robot, facing, sightRange, warMap, occupancy);
+    }
+
     if (!enemy) return undefined;
 
     const dist      = Math.abs(enemy.x - robot.x) + Math.abs(enemy.y - robot.y);

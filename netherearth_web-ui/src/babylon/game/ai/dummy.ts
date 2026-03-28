@@ -54,19 +54,41 @@ export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: Occupancy
     if (combat) return combat;
 
     // 2. Goal navigation
-    const target = findTarget(robot, warMap);
-    if (!target) return { type: ActionType.IDLE };
+    let tx = robot.x, ty = robot.y;
+    let isMoveOut = false;
 
-    // Already in the capture zone — hold position to complete capture
-    if (CAPTURE_ZONES[target.type] && isInCaptureZone(robot, target)) {
-        return { type: ActionType.IDLE };
+    if (robot.nav?.moveOutTarget) {
+        tx = robot.nav.moveOutTarget.x;
+        ty = robot.nav.moveOutTarget.y;
+        isMoveOut = true;
+        // If we reached the target or very close to it, clear it.
+        if (Math.abs(robot.x - tx) + Math.abs(robot.y - ty) < 0.1) {
+            delete robot.nav.moveOutTarget;
+            isMoveOut = false;
+        }
     }
 
-    const { x: tx, y: ty } = targetPos(target);
+    if (!isMoveOut) {
+        const target = findTarget(robot, warMap);
+        if (!target) return { type: ActionType.IDLE };
+
+        // Already in the capture zone — hold position to complete capture
+        if (CAPTURE_ZONES[target.type] && isInCaptureZone(robot, target)) {
+            return { type: ActionType.IDLE };
+        }
+
+        const pos = targetPos(target);
+        tx = pos.x;
+        ty = pos.y;
+    }
+
     const facing = robot.facing ?? Direction.N;
 
     let dirsToTry: Direction[];
-    if (robot.robotConfig?.navAlgo === NavAlgo.TREMAUX) {
+    if (isMoveOut) {
+        // Just use greedy directions for the initial move out
+        dirsToTry = bug2Dirs(robot, warMap, occupancy, tx, ty, Math.abs(robot.x - tx) + Math.abs(robot.y - ty));
+    } else if (robot.robotConfig?.navAlgo === NavAlgo.TREMAUX) {
         recordCell(robot);
         dirsToTry = tremauxDirs(robot, warMap, occupancy, tx, ty);
     } else {
