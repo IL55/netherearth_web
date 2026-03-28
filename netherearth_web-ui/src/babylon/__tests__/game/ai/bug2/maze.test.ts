@@ -11,29 +11,25 @@ import { Chassis, Electronics } from '../../../../data/robot';
 /**
  * Maze layout (each cell = 1 unit, walls are 'wall3' objects)
  *
- *   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
- * 0 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
- * 1 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
- * 2 .  .  .  .  .  W  W  W  W  W  W  W  .  .  .  .  .  .  .  .  ← top of U-trap
- * 3 .  .  .  .  .  .  .  .  .  .  .  W  .  .  .  .  .  .  .  .  ← right wall
- * 4 .  .  .  .  .  .  .  .  .  .  .  W  .  .  .  .  .  .  .  .
- * 5 .  .  R  .  .  .  .  .  .  .  .  W  .  .  .  .  F  .  .  .  ← robot R, factory F
- * 6 .  .  .  .  .  .  .  .  .  .  .  W  .  .  .  .  .  .  .  .
- * 7 .  .  .  .  .  .  .  .  .  .  .  W  .  .  .  .  .  .  .  .
- * 8 .  .  .  .  .  W  W  W  W  W  W  W  .  .  .  .  .  .  .  .  ← bottom of U-trap
- * 9 .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
+ *   0  1  2  3  4  5  6  7  8  9
+ * 0 .  .  .  .  .  .  .  .  .  .
+ * 1 .  .  .  .  .  .  .  .  .  .
+ * 2 .  .  W  W  W  .  .  .  .  .  ← top of U-trap (y=2, x=2..4)
+ * 3 .  R  .  .  W  .  .  F  .  .  ← robot R at (1, 3), right wall at x=4, factory F at (7, 3)
+ * 4 .  .  W  W  W  .  .  .  .  .  ← bottom of U-trap (y=4, x=2..4)
+ * 5 .  .  .  .  .  .  .  .  .  .
  *
  * Wall AABB = ±0.75 (inflated).
- * Top wall at y=2: blocks y=[1.25, 2.75].  Path above: robot at y=1 is free (1 < 1.25).
- * Bottom wall at y=8: blocks y=[7.25, 8.75]. Path below: robot at y=9 is free.
- * Right wall at x=11: blocks x=[10.25, 11.75]. Dead end at x≈10.
+ * Top wall at y=2: blocks y=[1.25, 2.75]. Path above: robot at y=1 is free.
+ * Bottom wall at y=4: blocks y=[3.25, 4.75]. Path below: robot at y=5 is free.
+ * Right wall at x=4: blocks x=[3.25, 4.75]. Dead end at x≈3.
  *
- * Robot starts at (2, 5) facing East, goal = capture neutral factory at (16, 5).
+ * Robot starts at (1, 3) facing East, goal = capture neutral factory at (7, 3).
  * Direct path East is blocked by the U-trap — robot must detect the dead end,
  * back out, go around (above or below), and reach the factory capture zone.
  *
- * Factory capture zone center = factory.x+1, factory.y+1 = (17, 6).
- * Test passes when robot comes within 1.5 units of (17, 6).
+ * Factory capture zone center = factory.x+1, factory.y+1 = (8, 4).
+ * Test passes when robot comes within 1.5 units of (8, 4).
  */
 
 function makeWall(x: number, y: number): WarObject {
@@ -42,18 +38,18 @@ function makeWall(x: number, y: number): WarObject {
 
 function makeMap(): WarMap {
     const walls: WarObject[] = [
-        // Top of U-trap: y=2, x=5..11
-        ...([5, 6, 7, 8, 9, 10, 11].map(x => makeWall(x, 2))),
-        // Right wall: x=11, y=3..7
-        ...([3, 4, 5, 6, 7].map(y => makeWall(11, y))),
-        // Bottom of U-trap: y=8, x=5..11
-        ...([5, 6, 7, 8, 9, 10, 11].map(x => makeWall(x, 8))),
+        // Top of U-trap: y=2, x=2..4
+        ...([2, 3, 4].map(x => makeWall(x, 2))),
+        // Right wall: x=4, y=3
+        ...([3].map(y => makeWall(4, y))),
+        // Bottom of U-trap: y=4, x=2..4
+        ...([2, 3, 4].map(x => makeWall(x, 4))),
     ];
 
     const factory: WarObject = {
         id: 'factory_0',
         type: ObjectType.FACTORY,
-        x: 16, y: 5,
+        x: 7, y: 3,
         subtype: 'cannons',
         // no owner → neutral
     };
@@ -61,7 +57,7 @@ function makeMap(): WarMap {
     const robot: RobotObject = {
         id: 'robot_0',
         type: ObjectType.ROBOT,
-        x: 2, y: 5,
+        x: 1, y: 3,
         facing: Direction.E,
         owner: Owner.RED,
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
@@ -69,7 +65,7 @@ function makeMap(): WarMap {
     };
 
     return {
-        width: 20, height: 10,
+        width: 10, height: 6,
         objects: [...walls, factory, robot],
         tick: 0,
     };
@@ -81,7 +77,7 @@ describe('anti-maze: robot escapes U-shaped dead end and reaches factory', () =>
         const robot = map.objects.find(o => o.id === 'robot_0')! as RobotObject;
 
         // Factory capture zone center
-        const goalX = 17, goalY = 6;
+        const goalX = 8, goalY = 4;
         const maxTicks = 500;
 
         let reached = false;
