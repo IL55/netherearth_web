@@ -1,8 +1,8 @@
-import { ObjectType } from '../../../game/warmap';
+import { ObjectType } from '../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
 import { DAY_TICKS, createOwnerResources, tickResources } from '../../../game/resources';
-import { Owner } from '../../../game/owner';
-import type { WarMap } from '../../../game/warmap';
+import { Owner } from '../../../game/types/owner';
+import type { WarMap } from '../../../game/core/warmap';
 
 function makeMap(objects: WarMap['objects']): WarMap {
     return { width: 10, height: 10, objects, tick: 0 };

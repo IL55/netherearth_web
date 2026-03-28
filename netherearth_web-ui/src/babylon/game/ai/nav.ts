@@ -6,16 +6,16 @@
  * (preferredDirs). All higher-level algorithms import { ObjectType } from '../../game/warmap';
 import from here.
  */
-import { CW_DIRS } from '../warmap';
-import { Direction } from '../warmap';
-import { ObjectType } from "../warmap";
-import type { WarMap, MapObject, RobotObject } from '../warmap';
+import { CW_DIRS } from '../core/warmap';
+import { Direction } from '../core/warmap';
+import { ObjectType } from "../core/warmap";
+import type { WarMap, MapObject, RobotObject } from '../core/warmap';
 
 export { CW_DIRS };
-import type { OccupancyMap } from '../occupancy';
-import { isOccupied } from '../occupancy';
+import type { OccupancyMap } from '../core/occupancy';
+import { isOccupied } from '../core/occupancy';
 import { MOVE_STEP } from '../actions';
-import { getTerrainRule, Chassis } from '../terrain';
+import { getTerrainRule, Chassis } from '../core/terrain';
 
 
 export function dirDelta(dir: Direction): { dx: number; dy: number } {

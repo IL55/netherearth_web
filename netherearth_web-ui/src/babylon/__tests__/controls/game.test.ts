@@ -1,9 +1,9 @@
-import { ObjectType } from '../../game/warmap';
+import { ObjectType } from '../../game/core/warmap';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { NullEngine, Scene, KeyboardInfo, KeyboardEventTypes } from '@babylonjs/core';
 import { attachGameControls } from '../../controls/game';
-import { Owner } from '../../game/owner';
-import type { WarMap } from '../../game/warmap';
+import { Owner } from '../../game/types/owner';
+import type { WarMap } from '../../game/core/warmap';
 
 function makeEnv() {
     const engine = new NullEngine();

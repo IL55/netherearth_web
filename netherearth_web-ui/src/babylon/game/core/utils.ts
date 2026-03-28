@@ -1,6 +1,6 @@
-import type { MapData } from '../data/map';
-import { Owner } from './owner';
-import { ObjectType } from './object-type';
+import type { MapData } from '../../data/map';
+import { Owner } from '../types/owner';
+import { ObjectType } from '../types/object-type';
 import type { WarMap, WarObject, RobotObject, MapObject, StructureType } from './warmap';
 
 /**

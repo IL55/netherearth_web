@@ -1,5 +1,5 @@
-import { RotateDir } from '../rotate-dir';
-import type { Direction } from '../warmap';
+import { RotateDir } from '../types/rotate-dir';
+import type { Direction } from '../core/warmap';
 
 export type { Direction };
 export { RotateDir };

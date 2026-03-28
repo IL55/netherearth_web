@@ -1,6 +1,6 @@
-import { CW_DIRS, Direction } from '../warmap';
-import type { RobotObject } from '../warmap';
-import { RotateDir } from '../rotate-dir';
+import { CW_DIRS, Direction } from '../core/warmap';
+import type { RobotObject } from '../core/warmap';
+import { RotateDir } from '../types/rotate-dir';
 import { ROTATE_COOLDOWN } from './types';
 
 export function applyRotate(

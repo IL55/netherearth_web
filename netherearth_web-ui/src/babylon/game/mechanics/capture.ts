@@ -1,6 +1,6 @@
-import { ObjectType } from '../game/warmap';
-import type { WarMap, WarObject, RobotObject } from './warmap';
-import { DAY_TICKS } from './resources';
+import { ObjectType } from '../core/warmap';
+import type { WarMap, WarObject, RobotObject } from '../core/warmap';
+import { DAY_TICKS } from '../resources';
 
 interface CaptureZone {
     dx: number;    // offset from obj.x to zone center

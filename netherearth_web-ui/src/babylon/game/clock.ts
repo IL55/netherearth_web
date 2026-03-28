@@ -1,14 +1,14 @@
-import { RobotAI } from "./warmap";
+import { RobotAI } from "./core/warmap";
 
-import { ObjectType } from '../game/warmap';
-import type { WarMap } from './warmap';
-import { buildOccupancy } from './occupancy';
+import { ObjectType } from './core/warmap';
+import type { WarMap } from './core/warmap';
+import { buildOccupancy } from './core/occupancy';
 import { applyAction, ActionType, type RobotAction } from './actions';
 import { dummyAI } from './ai/dummy';
-import { tickCapture } from './capture';
-import { advanceProjectiles, SUB_TICKS } from './projectile';
+import { tickCapture } from './mechanics/capture';
+import { advanceProjectiles, SUB_TICKS } from './mechanics/projectile';
 import { tickResources, createOwnerResources, type OwnerResources } from './resources';
-import { tickBuild } from './build';
+import { tickBuild } from './mechanics/build';
 
 export interface Clock {
     stop: () => void;

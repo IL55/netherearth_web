@@ -1,10 +1,10 @@
-import { WeaponType } from "../../../game/warmap";
+import { WeaponType } from "../../../game/core/warmap";
 
-import { ObjectType } from '../../../game/warmap';
+import { ObjectType } from '../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { spawnProjectile, advanceProjectiles, SUB_TICKS } from '../../../game/projectile';
-import { Owner } from '../../../game/owner';
-import type { WarMap, RobotObject } from '../../../game/warmap';
+import { spawnProjectile, advanceProjectiles, SUB_TICKS } from '../../../game/mechanics/projectile';
+import { Owner } from '../../../game/types/owner';
+import type { WarMap, RobotObject } from '../../../game/core/warmap';
 
 function makeMap(): WarMap {
     return { width: 20, height: 20, objects: [] };

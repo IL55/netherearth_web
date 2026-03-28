@@ -1,4 +1,4 @@
-import { Direction } from '../../game/warmap';
+import { Direction } from '../../game/core/warmap';
 
 // View-only utilities: convert between Direction and Babylon rotation (radians).
 // Game logic uses Direction strings exclusively; radians are only needed for mesh placement.

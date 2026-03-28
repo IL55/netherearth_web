@@ -1,9 +1,9 @@
-import { ObjectType } from '../../../game/warmap';
+import { ObjectType } from '../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { isInCaptureZone, tickCapture, CAPTURE_ZONES } from '../../../game/capture';
+import { isInCaptureZone, tickCapture, CAPTURE_ZONES } from '../../../game/mechanics/capture';
 import { DAY_TICKS } from '../../../game/resources';
-import { Owner } from '../../../game/owner';
-import type { WarMap, WarObject, RobotObject } from '../../../game/warmap';
+import { Owner } from '../../../game/types/owner';
+import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
 
 function makeMap(objects: WarObject[]): WarMap {
     return { width: 20, height: 20, objects };

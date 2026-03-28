@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Owner } from '../../../game/owner';
+import { Owner } from '../../../game/types/owner';
 import { addWarbase } from '../../../view/map/warbase';
 import { makeEnv } from '../../test-utils';
 

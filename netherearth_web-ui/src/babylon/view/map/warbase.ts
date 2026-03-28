@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
-import { Owner } from '../../game/owner';
+import { Owner } from '../../game/types/owner';
 
 const WARBASE_PARTS = [
     { model: 'highwall1', xo: 0.5, yo: 0 }, { model: 'highwall2', xo: 1.5, yo: 0 },

@@ -11,9 +11,9 @@
  *   recordCell  — call once per tick to increment robot.nav.visitCounts
  *   tremauxDirs — returns directions sorted by visit count (least visited first)
  */
-import { CW_DIRS } from '../warmap';
-import type { WarMap, RobotObject, Direction } from '../warmap';
-import type { OccupancyMap } from '../occupancy';
+import { CW_DIRS } from '../core/warmap';
+import type { WarMap, RobotObject, Direction } from '../core/warmap';
+import type { OccupancyMap } from '../core/occupancy';
 import { dirDelta, isPassable } from './nav';
 
 // Position key at 0.25-cell resolution — distinguishes sub-cell positions so

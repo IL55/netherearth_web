@@ -1,13 +1,13 @@
-import type { RobotConfig } from '../data/robot';
-import { Owner } from './owner';
-import { Direction, CW_DIRS } from './direction';
-import { ObjectType } from './object-type';
-import { RobotGoal } from './robot-goal';
-import { NavMode } from './nav-mode';
-import { WeaponType } from './weapon-type';
-import { RobotAI } from './robot-ai';
-import type { Projectile } from './projectile-type';
-import type { NavState } from './nav-state';
+import type { RobotConfig } from '../../data/robot';
+import { Owner } from '../types/owner';
+import { Direction, CW_DIRS } from '../types/direction';
+import { ObjectType } from '../types/object-type';
+import { RobotGoal } from '../types/robot-goal';
+import { NavMode } from '../types/nav-mode';
+import { WeaponType } from '../types/weapon-type';
+import { RobotAI } from '../types/robot-ai';
+import type { Projectile } from '../types/projectile-type';
+import type { NavState } from '../types/nav-state';
 import {
     isRobot,
     isMapObj,

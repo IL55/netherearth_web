@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { NullEngine, Scene, Vector3 } from '@babylonjs/core';
 import type { AbstractMesh } from '@babylonjs/core';
 import { placeRobot } from '../../../view/map/robot';
-import { Owner } from '../../../game/owner';
+import { Owner } from '../../../game/types/owner';
 import { Chassis, Weapon, Electronics } from '../../../data/robot';
 import { makeEnv } from '../../test-utils';
 

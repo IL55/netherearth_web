@@ -1,9 +1,9 @@
-import { ObjectType } from '../../game/warmap';
-import { Direction } from "../warmap";
-import type { WarMap, RobotObject, MapObject } from '../warmap';
-import type { OccupancyMap } from '../occupancy';
-import { isOccupied, updateRobotPosition } from '../occupancy';
-import { getTerrainRule, Chassis } from '../terrain';
+import { ObjectType } from '../core/warmap';
+import { Direction } from "../core/warmap";
+import type { WarMap, RobotObject, MapObject } from '../core/warmap';
+import type { OccupancyMap } from '../core/occupancy';
+import { isOccupied, updateRobotPosition } from '../core/occupancy';
+import { getTerrainRule, Chassis } from '../core/terrain';
 import { MOVE_STEP, MOVE_COOLDOWN } from './types';
 
 // Map coordinate system:

@@ -7,10 +7,10 @@
  * Exports a single function: bug2Dirs — returns an ordered list of directions
  * to try this tick, updating robot.nav state as a side-effect.
  */
-import { NavMode } from '../warmap';
-import { Direction } from '../warmap';
-import type { WarMap, RobotObject } from '../warmap';
-import type { OccupancyMap } from '../occupancy';
+import { NavMode } from '../core/warmap';
+import { Direction } from '../core/warmap';
+import type { WarMap, RobotObject } from '../core/warmap';
+import type { OccupancyMap } from '../core/occupancy';
 import { MOVE_STEP } from '../actions';
 import { dirDelta, rightOf, leftOf, backOf, isPassable, preferredDirs } from './nav';
 

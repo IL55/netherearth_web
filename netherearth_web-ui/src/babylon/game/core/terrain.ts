@@ -1,7 +1,7 @@
 // Chassis types and their terrain passability.
 // speedFactor: 1 = move every tick, 0.5 = move every 2nd tick, 0 = impassable.
 
-import { Chassis } from '../data/robot';
+import { Chassis } from '../../data/robot';
 export { Chassis };
 
 interface TerrainRule {

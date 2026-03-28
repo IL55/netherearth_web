@@ -1,11 +1,11 @@
-import { ObjectType } from '../../game/warmap';
+import { ObjectType } from '../../game/core/warmap';
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
 import { addFactory } from './factory';
 import { addWarbase } from './warbase';
 import { placeRobot } from './robot';
-import type { WarMap, WarObject } from '../../game/warmap';
-import { Direction } from "../../game/warmap";
+import type { WarMap, WarObject } from '../../game/core/warmap';
+import { Direction } from "../../game/core/warmap";
 import { directionToRotation } from './rotation';
 
 const TILE_MODELS: Record<string, string> = {

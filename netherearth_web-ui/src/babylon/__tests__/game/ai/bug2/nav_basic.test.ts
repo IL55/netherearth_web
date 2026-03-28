@@ -1,11 +1,11 @@
-import { ObjectType } from '../../../../game/warmap';
-import { Direction } from '../../../../game/warmap';
+import { ObjectType } from '../../../../game/core/warmap';
+import { Direction } from '../../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../../game/ai/dummy';
 import { applyAction } from '../../../../game/actions';
-import { buildOccupancy } from '../../../../game/occupancy';
-import { RobotGoal, Owner } from '../../../../game/warmap';
-import type { WarMap, WarObject, RobotObject } from '../../../../game/warmap';
+import { buildOccupancy } from '../../../../game/core/occupancy';
+import { RobotGoal, Owner } from '../../../../game/core/warmap';
+import type { WarMap, WarObject, RobotObject } from '../../../../game/core/warmap';
 import { Chassis, Electronics } from '../../../../data/robot';
 
 // ─── helpers ────────────────────────────────────────────────────────────────

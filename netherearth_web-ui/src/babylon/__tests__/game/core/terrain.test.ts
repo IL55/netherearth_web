@@ -1,6 +1,6 @@
-import { Direction } from '../../../game/warmap';
+import { Direction } from '../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { getTerrainRule, Chassis } from '../../../game/terrain';
+import { getTerrainRule, Chassis } from '../../../game/core/terrain';
 
 describe('getTerrainRule — antigrav (best: full speed everywhere)', () => {
     it('grass: passable, speed 1',     () => expect(getTerrainRule('G',  Chassis.ANTIGRAV)).toEqual({ passable: true, speedFactor: 1 }));

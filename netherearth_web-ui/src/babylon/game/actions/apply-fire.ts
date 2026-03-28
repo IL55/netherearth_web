@@ -1,8 +1,8 @@
-import { ObjectType } from '../../game/warmap';
-import { Direction } from '../warmap';
-import type { WarMap, RobotObject } from '../warmap';
+import { ObjectType } from '../core/warmap';
+import { Direction } from '../core/warmap';
+import type { WarMap, RobotObject } from '../core/warmap';
 import { WEAPON_DAMAGE, WEAPON_RANGE, calcDamageFalloff } from '../../data/robot';
-import { spawnProjectile } from '../projectile';
+import { spawnProjectile } from '../mechanics/projectile';
 
 function directionToward(fromX: number, fromY: number, toX: number, toY: number): Direction {
     const dx = toX - fromX;

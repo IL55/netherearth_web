@@ -1,7 +1,7 @@
-import { ObjectType } from '../game/warmap';
+import { ObjectType } from '../game/core/warmap';
 import * as BABYLON from '@babylonjs/core';
-import { cycleOwner } from '../game/warmap';
-import type { WarMap } from '../game/warmap';
+import { cycleOwner } from '../game/core/warmap';
+import type { WarMap } from '../game/core/warmap';
 
 export const attachGameControls = (
     scene: BABYLON.Scene,

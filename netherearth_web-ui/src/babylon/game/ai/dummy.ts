@@ -8,14 +8,14 @@
  *
  * Also owns target selection (findTarget) and capture-zone resolution (targetPos).
  */
-import { ObjectType } from '../../game/warmap';
-import { RobotGoal } from '../warmap';
-import { CW_DIRS } from '../warmap';
-import { Direction } from '../warmap';
-import type { WarMap, WarObject, RobotObject } from '../warmap';
-import type { OccupancyMap } from '../occupancy';
+import { ObjectType } from '../core/warmap';
+import { RobotGoal } from '../core/warmap';
+import { CW_DIRS } from '../core/warmap';
+import { Direction } from '../core/warmap';
+import type { WarMap, WarObject, RobotObject } from '../core/warmap';
+import type { OccupancyMap } from '../core/occupancy';
 import { ActionType, RotateDir, type RobotAction } from '../actions';
-import { CAPTURE_ZONES, isInCaptureZone } from '../capture';
+import { CAPTURE_ZONES, isInCaptureZone } from '../mechanics/capture';
 import { dirDelta, isPassable } from './nav';
 import { fightAction } from './fight';
 import { NavAlgo } from './nav-algo';

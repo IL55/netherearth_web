@@ -1,4 +1,4 @@
-import { ObjectType } from '../game/warmap';
+import { ObjectType } from './warmap';
 import type { WarMap } from './warmap';
 
 interface AABBDef { dx0: number; dy0: number; dx1: number; dy1: number; }

@@ -1,5 +1,5 @@
-import { ObjectType } from '../game/warmap';
-import { Owner } from '../game/owner';
+import { ObjectType } from '../game/core/warmap';
+import { Owner } from '../game/types/owner';
 
 export interface MapData {
     width: number;

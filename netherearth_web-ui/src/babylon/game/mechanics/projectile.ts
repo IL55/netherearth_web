@@ -1,7 +1,7 @@
 
 
-import { WeaponType } from "./warmap";
-import type { WarMap, RobotObject } from './warmap';
+import { WeaponType } from "../core/warmap";
+import type { WarMap, RobotObject } from '../core/warmap';
 
 // How much progress advances per sub-tick (5 sub-ticks = full travel at normal speed).
 export const SUB_TICKS = 5;

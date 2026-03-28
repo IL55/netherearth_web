@@ -6,11 +6,11 @@
  * Returns a RobotAction if combat is appropriate this tick, or null
  * to let the navigation layer decide.
  */
-import { ObjectType } from '../../game/warmap';
-import { Direction } from '../warmap';
-import type { WarMap, WarObject, RobotObject } from '../warmap';
-import type { OccupancyMap } from '../occupancy';
-import { isOccupied, isLOSBlocked } from '../occupancy';
+import { ObjectType } from '../core/warmap';
+import { Direction } from '../core/warmap';
+import type { WarMap, WarObject, RobotObject } from '../core/warmap';
+import type { OccupancyMap } from '../core/occupancy';
+import { isOccupied, isLOSBlocked } from '../core/occupancy';
 import { ActionType, RotateDir, type RobotAction } from '../actions';
 import { SIGHT_RANGE, WEAPON_RANGE, WEAPON_COOLDOWN } from '../../data/robot';
 import { dirDelta, CW_DIRS } from './nav';

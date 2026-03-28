@@ -1,11 +1,11 @@
-import { ObjectType } from '../../../game/warmap';
-import { Direction } from '../../../game/warmap';
+import { ObjectType } from '../../../game/core/warmap';
+import { Direction } from '../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
 import { applyAction, ActionType, RotateDir, MOVE_STEP } from '../../../game/actions';
 import { rotationToDirection, directionToRotation } from '../../../view/map/rotation';
-import { buildOccupancy, isOccupied } from '../../../game/occupancy';
-import { Owner } from '../../../game/owner';
-import type { WarMap, WarObject, RobotObject } from '../../../game/warmap';
+import { buildOccupancy, isOccupied } from '../../../game/core/occupancy';
+import { Owner } from '../../../game/types/owner';
+import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
 import { Chassis, Electronics } from '../../../data/robot';
 
 function makeMap(objects: WarMap['objects'] = [], width = 20, height = 20): WarMap {

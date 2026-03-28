@@ -5,8 +5,8 @@ export { applyMove }   from './apply-move';
 
 import { ActionType } from './types';
 import type { RobotAction } from './types';
-import type { RobotObject, WarMap } from '../warmap';
-import type { OccupancyMap } from '../occupancy';
+import type { RobotObject, WarMap } from '../core/warmap';
+import type { OccupancyMap } from '../core/occupancy';
 import { applyRotate } from './apply-rotate';
 import { applyFire }   from './apply-fire';
 import { applyMove }   from './apply-move';

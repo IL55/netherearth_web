@@ -2,7 +2,7 @@ import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
 import { Chassis, Weapon, Electronics } from '../../data/robot';
 import type { RobotConfig } from '../../data/robot';
-import { Owner } from '../../game/owner';
+import { Owner } from '../../game/types/owner';
 
 export type { RobotConfig } from '../../data/robot';
 export { robotConfigs } from '../../data/robot';

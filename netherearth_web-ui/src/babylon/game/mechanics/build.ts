@@ -1,13 +1,13 @@
-import { ObjectType } from '../game/warmap';
-import { Direction, RobotAI } from "./warmap";
+import { ObjectType } from '../core/warmap';
+import { Direction, RobotAI } from "../core/warmap";
 
-import { Chassis, Weapon, Electronics, calcHealth } from '../data/robot';
-import type { RobotConfig } from '../data/robot';
-import { Owner } from './owner';
-import type { WarMap, RobotObject } from './warmap';
-import { RobotGoal } from './warmap';
-import type { OwnerResources, Resources } from './resources';
-import { buildOccupancy, isOccupied } from './occupancy';
+import { Chassis, Weapon, Electronics, calcHealth } from '../../data/robot';
+import type { RobotConfig } from '../../data/robot';
+import { Owner } from '../types/owner';
+import type { WarMap, RobotObject } from '../core/warmap';
+import { RobotGoal } from '../core/warmap';
+import type { OwnerResources, Resources } from '../resources';
+import { buildOccupancy, isOccupied } from '../core/occupancy';
 import { CAPTURE_ZONES } from './capture';
 
 type Cost = Partial<Resources>;

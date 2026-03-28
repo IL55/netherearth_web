@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
-import type { Owner } from '../../game/owner';
+import type { Owner } from '../../game/types/owner';
 
 const FACTORY_PARTS = [
     { model: 'highwall1', xo: 0, yo: 0 },

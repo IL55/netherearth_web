@@ -1,17 +1,17 @@
-import { RobotAI, Direction } from "../../../game/warmap";
+import { RobotAI, Direction } from "../../../game/core/warmap";
 
-import { ObjectType } from '../../../game/warmap';
+import { ObjectType } from '../../../game/core/warmap';
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
     tickBuild, canAfford, BUILD_OPTIONS,
     CHASSIS_BUILD_COST, WEAPON_BUILD_COST, ELECTRONICS_BUILD_COST, NUCLEAR_BUILD_COST,
     _resetBuildState,
-} from '../../../game/build';
+} from '../../../game/mechanics/build';
 import { createOwnerResources, createResources } from '../../../game/resources';
-import { Owner } from '../../../game/owner';
+import { Owner } from '../../../game/types/owner';
 import { Chassis, Weapon, Electronics } from '../../../data/robot';
-import { RobotGoal } from '../../../game/warmap';
-import type { WarMap, WarObject, RobotObject } from '../../../game/warmap';
+import { RobotGoal } from '../../../game/core/warmap';
+import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
 
 function makeMap(objects: WarMap['objects']): WarMap {
     return { width: 20, height: 20, objects, tick: 0 };

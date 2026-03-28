@@ -16,15 +16,15 @@
  * with goal=capture_factory actually reaches the nearest factory
  * capture zone within a reasonable tick budget.
  */
-import { ObjectType } from '../../../game/warmap';
-import { Direction } from '../../../game/warmap';
+import { ObjectType } from '../../../game/core/warmap';
+import { Direction } from '../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
 import { dummyAI } from '../../../game/ai/dummy';
 import { applyAction } from '../../../game/actions';
-import { buildOccupancy } from '../../../game/occupancy';
-import { CAPTURE_ZONES } from '../../../game/capture';
-import type { WarMap, WarObject, RobotObject } from '../../../game/warmap';
-import { isRobot, RobotGoal, Owner } from '../../../game/warmap';
+import { buildOccupancy } from '../../../game/core/occupancy';
+import { CAPTURE_ZONES } from '../../../game/mechanics/capture';
+import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
+import { isRobot, RobotGoal, Owner } from '../../../game/core/warmap';
 import { Chassis, Electronics } from '../../../data/robot';
 
 const MAP_W = 8, MAP_H = 64;

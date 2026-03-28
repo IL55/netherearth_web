@@ -2,8 +2,8 @@
 
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
-import type { WarMap, Projectile } from "../../game/warmap";
-import { WeaponType } from '../../game/warmap';
+import type { WarMap, Projectile } from "../../game/core/warmap";
+import { WeaponType } from '../../game/core/warmap';
 
 const BULLET_MODEL: Record<WeaponType, string> = {
     cannon:  'bullet1',

@@ -1,5 +1,5 @@
-import { ObjectType } from './game/warmap';
-import { Direction, RobotAI } from "./game/warmap";
+import { ObjectType } from './game/core/warmap';
+import { Direction, RobotAI } from "./game/core/warmap";
 
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
@@ -8,7 +8,7 @@ import { loadMap } from './data/map';
 import { debugLoadMap } from './view/map/map';
 import { Renderer } from './view/map/renderer';
 import { ProjectileRenderer } from './view/map/projectile-renderer';
-import { createWarMap, Owner, RobotGoal } from './game/warmap';
+import { createWarMap, Owner, RobotGoal } from './game/core/warmap';
 import { robotConfigs, calcHealth } from './data/robot';
 import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';

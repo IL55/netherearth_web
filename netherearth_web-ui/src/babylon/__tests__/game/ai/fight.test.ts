@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { Owner } from '../../../game/owner';
-import { Direction } from '../../../game/direction';
-import { ObjectType } from '../../../game/object-type';
-import { WeaponType } from '../../../game/weapon-type';
-import { RobotGoal } from '../../../game/robot-goal';
+import { Owner } from '../../../game/types/owner';
+import { Direction } from '../../../game/types/direction';
+import { ObjectType } from '../../../game/types/object-type';
+import { WeaponType } from '../../../game/types/weapon-type';
+import { RobotGoal } from '../../../game/types/robot-goal';
 import { ActionType, RotateDir } from '../../../game/actions';
 import { fightAction } from '../../../game/ai/fight';
-import { buildOccupancy } from '../../../game/occupancy';
+import { buildOccupancy } from '../../../game/core/occupancy';
 import { Chassis, Electronics, Weapon } from '../../../data/robot';
-import type { WarMap, RobotObject, WarObject } from '../../../game/warmap';
+import type { WarMap, RobotObject, WarObject } from '../../../game/core/warmap';
 
 function makeRobot(
     id: string,

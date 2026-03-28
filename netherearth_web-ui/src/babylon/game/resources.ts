@@ -1,6 +1,6 @@
-import { ObjectType } from '../game/warmap';
-import { Owner } from './owner';
-import type { WarMap } from './warmap';
+import { ObjectType } from './core/warmap';
+import { Owner } from './types/owner';
+import type { WarMap } from './core/warmap';
 
 /** Number of ticks in one in-game "day" — resources are credited at the end of each day. */
 export const DAY_TICKS = 40;
