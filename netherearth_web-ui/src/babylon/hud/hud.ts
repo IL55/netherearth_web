@@ -32,13 +32,16 @@ const FACTORY_SHAPE = [
     {xo:1,yo:0},{xo:1,yo:2},
 ];
 
-// Warbase shape — WARBASE_PARTS with fractional xo floored
+// Warbase schematic shape (integer grid, matches top-down footprint):
+//   yo=0,4: cols 1-2 (caps start at xo=0.5 — shifted 1 col from the back wall at col 0)
+//   yo=1,3: cols 0-3 (full-width side rows, back wall at col 0)
+//   yo=2:   cols 0-2 (col 3 open = entrance / capture zone)
 const WARBASE_SHAPE = [
-    {xo:0,yo:0},{xo:1,yo:0},
+    {xo:1,yo:0},{xo:2,yo:0},
     {xo:0,yo:1},{xo:1,yo:1},{xo:2,yo:1},{xo:3,yo:1},
     {xo:0,yo:2},{xo:1,yo:2},{xo:2,yo:2},
     {xo:0,yo:3},{xo:1,yo:3},{xo:2,yo:3},{xo:3,yo:3},
-    {xo:0,yo:4},{xo:1,yo:4},
+    {xo:1,yo:4},{xo:2,yo:4},
 ];
 
 const ROWS: Array<{ label: string; key: keyof OwnerStats }> = [
@@ -123,7 +126,7 @@ export class GameHud {
     }
 
     private updateMinimap(warMap: WarMap): void {
-        // Rotated 90° CCW: canvas width = mapHeight, canvas height = mapWidth
+        // Rotated 90° CW: canvas width = mapHeight, canvas height = mapWidth
         const cw = warMap.height * CELL;
         const ch = warMap.width  * CELL;
 
@@ -138,10 +141,10 @@ export class GameHud {
         ctx.fillStyle = 'rgba(0,0,0,0.75)';
         ctx.fillRect(0, 0, cw, ch);
 
-        // 90° CCW: map (x, y) → canvas (y * CELL, (mapWidth-1-x) * CELL)
+        // 90° CCW: map (x, y) → canvas (y * CELL, x * CELL)
         const toCanvas = (mx: number, my: number) => ({
             cx: Math.floor(my) * CELL,
-            cy: (warMap.width - 1 - Math.floor(mx)) * CELL,
+            cy: Math.floor(mx) * CELL,
         });
 
         for (const obj of warMap.objects) {
@@ -154,8 +157,11 @@ export class GameHud {
                     ctx.fillRect(cx, cy, CELL, CELL);
                 }
             } else if (obj.type === ObjectType.WARBASE) {
+                // Use xo directly (not obj.x + xo) so both warbases render
+                // the same shape regardless of their sub-cell x offset.
+                const baseY = Math.round(obj.y);
                 for (const {xo, yo} of WARBASE_SHAPE) {
-                    const {cx, cy} = toCanvas(obj.x + xo, obj.y + yo);
+                    const {cx, cy} = toCanvas(xo, baseY + yo);
                     ctx.fillRect(cx, cy, CELL, CELL);
                 }
             } else if (WALL_TYPES.has(obj.type)) {
