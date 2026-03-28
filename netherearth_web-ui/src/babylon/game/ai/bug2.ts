@@ -73,5 +73,5 @@ export function bug2Dirs(
 
     return nav.navMode === NavMode.WALL_FOLLOW
         ? [facing, rightOf(facing), leftOf(facing), backOf(facing)]
-        : preferredDirs(robot, tx, ty);
+        : preferredDirs(robot, tx, ty).slice(0, 2);
 }
