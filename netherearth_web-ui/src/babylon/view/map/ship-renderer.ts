@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
-import type { ShipState } from '../../game/ship';
+import type { ShipState } from '../../game/ship/index';
 
 // Renders the player-controlled ship.
 // On first call the GLB geometry is measured: scaled so the XZ footprint is 1×1 (same as a
@@ -24,7 +24,7 @@ export class ShipRenderer {
         if (this.instance) {
             this.instance.position.set(
                 this.mapBegin.x + ship.x + this.xOffset,
-                ship.height       + this.yOffset,
+                ship.height + 1.0 + this.yOffset, // +1.0 because map visual ground is at y=1.0
                 this.mapBegin.z + ship.y + this.zOffset,
             );
             return;
@@ -77,7 +77,7 @@ export class ShipRenderer {
 
         inst.position.set(
             this.mapBegin.x + ship.x + this.xOffset,
-            ship.height       + this.yOffset,
+            ship.height + 1.0 + this.yOffset, // +1.0 because map visual ground is at y=1.0
             this.mapBegin.z + ship.y + this.zOffset,
         );
         this.instance = inst;

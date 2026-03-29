@@ -10,7 +10,7 @@ import { advanceProjectiles, SUB_TICKS } from './mechanics/projectile';
 import { tickResources, createOwnerResources, type OwnerResources } from './resources';
 import { tickBuild } from './mechanics/build';
 import { recordKill } from './mechanics/kill-terrain';
-import { type ShipState } from './ship';
+import { type ShipState } from './ship/index';
 
 export interface Clock {
     stop: () => void;

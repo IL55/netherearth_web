@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core';
-import type { ShipInput } from '../game/ship';
+import type { ShipInput } from '../game/ship/index';
 
 // Arrow keys: 4 horizontal directions.  Space: ascend (auto-descent when released).
 export function attachShipControls(scene: BABYLON.Scene, input: ShipInput): void {

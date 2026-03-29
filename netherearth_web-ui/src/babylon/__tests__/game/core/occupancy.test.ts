@@ -119,8 +119,8 @@ describe('isOccupied — structures (AABB, no floor)', () => {
     it('blocked inside warbase wall parts', () => {
         const map = makeMap([{ id: 'wb', type: ObjectType.WARBASE, x: 2, y: 5 }]);
         const occ = buildOccupancy(map);
-        expect(isOccupied(occ, 2, 5)).toBe(true);   // inside top part (xo=0.5, yo=0)
-        expect(isOccupied(occ, 5, 8)).toBe(true);   // inside bottom-right part (xo=3, yo=3)
+        expect(isOccupied(occ, 2.5, 5)).toBe(true);   // inside top part (xo=0.5, yo=0) -> 2 + 0.5 = 2.5
+        expect(isOccupied(occ, 4.0, 8)).toBe(true);   // inside bottom-left part (xo=2, yo=3) -> 2 + 2 = 4, 5 + 3 = 8
     });
 
     it('not blocked at warbase capture hole (right-side gap at xo≈3.5, yo≈2)', () => {
