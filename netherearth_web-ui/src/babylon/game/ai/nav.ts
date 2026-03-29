@@ -45,7 +45,22 @@ export function isPassable(
 ): boolean {
     if (x < 0 || y < 0 || x > warMap.width - 1 || y > warMap.height - 1) return false;
     const chassis = robot.robotConfig?.chassis ?? Chassis.TRACKS;
-    if (!getTerrainRule(tileAt(warMap, x, y), chassis).passable) return false;
+    
+    const EPSILON = 0.01;
+    const xMin = Math.ceil(x - 1 + EPSILON);
+    const xMax = Math.floor(x + 1 - EPSILON);
+    const yMin = Math.ceil(y - 1 + EPSILON);
+    const yMax = Math.floor(y + 1 - EPSILON);
+
+    for (let tx = xMin; tx <= xMax; tx++) {
+        for (let ty = yMin; ty <= yMax; ty++) {
+            const subtype = tileAt(warMap, tx, ty);
+            if (!getTerrainRule(subtype, chassis).passable) {
+                return false;
+            }
+        }
+    }
+    
     if (isOccupied(occupancy, x, y, robot.id)) return false;
     return true;
 }

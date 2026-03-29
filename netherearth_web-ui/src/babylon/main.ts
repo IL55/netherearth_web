@@ -8,7 +8,7 @@ import { loadMap } from './data/map';
 import { debugLoadMap } from './view/map/map';
 import { Renderer } from './view/map/renderer';
 import { ProjectileRenderer } from './view/map/projectile-renderer';
-import { GameHud } from './hud/hud';
+import { GameHud } from './view/hud/hud';
 import { createWarMap, Owner, RobotGoal } from './game/core/warmap';
 import { robotConfigs, calcHealth } from './data/robot';
 import { attachCameraControls } from './controls/camera';

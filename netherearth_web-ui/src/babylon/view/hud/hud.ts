@@ -8,9 +8,9 @@
  *
  * Both panels have opacity 0.7 — secondary info, not intrusive.
  */
-import type { WarMap } from '../game/core/warmap';
-import { ObjectType } from '../game/core/warmap';
-import { Owner } from '../game/types/owner';
+import type { WarMap } from '../../game/core/warmap';
+import { ObjectType } from '../../game/core/warmap';
+import { Owner } from '../../game/types/owner';
 import { buildHudData, type OwnerStats } from './hud-data';
 
 const C_RED     = '#ef5350';
@@ -113,14 +113,9 @@ export class GameHud {
 
         this.resourcesEl.innerHTML = `
             <div style="text-align:center;margin-bottom:2px;letter-spacing:1px">
-                Day&nbsp;<b>${d.day}</b>&nbsp;<span style="color:${C_LABEL}">${prog}%</span>
+                Day&nbsp;<b>${d.day}</b>&nbsp;<span style="color:${C_LABEL}">${prog}</span>
             </div>
             <table style="border-collapse:collapse;line-height:1.35">
-                <tr>
-                    <th style="color:${C_RED};text-align:right;padding:0 4px">R</th>
-                    <th></th>
-                    <th style="color:${C_BLUE};padding:0 4px">B</th>
-                </tr>
                 ${rows}
             </table>`;
     }

@@ -25,6 +25,24 @@ function getTileSubtype(warMap: WarMap, x: number, y: number): string {
     return tile?.subtype ?? 'G';
 }
 
+export function isTerrainPassable(warMap: WarMap, tx: number, ty: number, chassis: Chassis): boolean {
+    const EPSILON = 0.01;
+    const xMin = Math.ceil(tx - 1 + EPSILON);
+    const xMax = Math.floor(tx + 1 - EPSILON);
+    const yMin = Math.ceil(ty - 1 + EPSILON);
+    const yMax = Math.floor(ty + 1 - EPSILON);
+
+    for (let x = xMin; x <= xMax; x++) {
+        for (let y = yMin; y <= yMax; y++) {
+            const subtype = getTileSubtype(warMap, x, y);
+            if (!getTerrainRule(subtype, chassis).passable) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 export function applyMove(
     robot: RobotObject,
     direction: Direction,
@@ -42,10 +60,10 @@ export function applyMove(
 
     if (tx < 0 || tx > warMap.width - 1 || ty < 0 || ty > warMap.height - 1) return false;
 
-    const rule = getTerrainRule(getTileSubtype(warMap, tx, ty), chassis);
-    if (!rule.passable) return false;
+    if (!isTerrainPassable(warMap, tx, ty, chassis)) return false;
     if (isOccupied(occupancy, tx, ty, robot.id)) return false;
 
+    const rule = getTerrainRule(getTileSubtype(warMap, tx, ty), chassis);
     if (rule.speedFactor < 1) {
         robot.nav ??= {};
         robot.nav.slowCounter = (robot.nav.slowCounter ?? 0) + rule.speedFactor;

@@ -9,6 +9,7 @@ import { tickCapture } from './mechanics/capture';
 import { advanceProjectiles, SUB_TICKS } from './mechanics/projectile';
 import { tickResources, createOwnerResources, type OwnerResources } from './resources';
 import { tickBuild } from './mechanics/build';
+import { recordKill } from './mechanics/kill-terrain';
 
 export interface Clock {
     stop: () => void;
@@ -63,10 +64,11 @@ function gameTick(warMap: WarMap, ownerResources: OwnerResources): void {
         applyAction(obj, action, warMap, occupancy);
     }
 
-    // Start death animation for robots that just reached 0 health
+    // Start death animation for robots that just reached 0 health; record kill for terrain upgrade
     for (const obj of warMap.objects) {
         if (obj.type === ObjectType.ROBOT && (obj.health ?? 1) <= 0 && obj.dyingTicks === undefined) {
             obj.dyingTicks = DEATH_BLINK_TICKS;
+            recordKill(warMap, obj);
         }
     }
 

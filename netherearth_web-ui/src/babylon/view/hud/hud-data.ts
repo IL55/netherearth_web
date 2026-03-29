@@ -2,10 +2,10 @@
  * Pure data extraction for the HUD.
  * Reads warMap objects to count robots, warbases and owned factories per owner.
  */
-import { ObjectType } from '../game/core/warmap';
-import type { WarMap } from '../game/core/warmap';
-import { Owner } from '../game/types/owner';
-import { DAY_TICKS } from '../game/resources';
+import { ObjectType } from '../../game/core/warmap';
+import type { WarMap } from '../../game/core/warmap';
+import { Owner } from '../../game/types/owner';
+import { DAY_TICKS } from '../../game/resources';
 
 export interface OwnerStats {
     robots:      number;

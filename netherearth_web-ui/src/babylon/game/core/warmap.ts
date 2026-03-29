@@ -75,4 +75,5 @@ export interface WarMap {
     objects: WarObject[];
     tick?: number;
     projectiles?: Projectile[];
+    killCounts?: Record<string, number>;
 }
