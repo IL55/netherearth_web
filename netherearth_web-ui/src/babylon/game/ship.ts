@@ -2,6 +2,8 @@ export interface ShipState {
     x: number;
     y: number;
     height: number;
+    vx?: number;
+    vy?: number;
 }
 
 export interface ShipInput {
@@ -22,7 +24,9 @@ export function createShipInput(): ShipInput {
     return { left: false, right: false, forward: false, backward: false, ascend: false };
 }
 
-const SPEED         = 0.05;  // cells per sub-tick (horizontal)
+const BASE_SPEED    = 0.05;  // starting speed
+const MAX_SPEED     = 0.20;  // maximum speed
+const ACCEL         = 0.02;  // speed increase per sub-tick while key is held
 const ASCEND_SPEED  = 0.05;  // height units per sub-tick
 const DESCENT_SPEED = 0.01;  // automatic descent per sub-tick
 const MIN_HEIGHT    = 1.0;  // ground level — ship can land on grass
@@ -60,14 +64,38 @@ function hitsObstacle(x: number, y: number, obstacles: ShipObstacle[]): boolean 
     );
 }
 
-export function tickShip(ship: ShipState, input: ShipInput, obstacles: ShipObstacle[] = [], robots: {x: number, y: number}[] = []): void {
+export function tickShip(
+    ship: ShipState,
+    input: ShipInput,
+    mapWidth: number,
+    mapHeight: number,
+    obstacles: ShipObstacle[] = [],
+    robots: {x: number, y: number}[] = []
+): void {
     // Above WALL_HEIGHT the ship can fly over base walls freely.
     const canPassWalls = ship.height > WALL_HEIGHT;
 
-    const dx = (input.right ? SPEED : 0) - (input.left ? SPEED : 0);
-    const dy = (input.backward ? SPEED : 0) - (input.forward ? SPEED : 0);
+    if (input.right) {
+        ship.vx = (ship.vx !== undefined && ship.vx >= BASE_SPEED) ? Math.min(ship.vx + ACCEL, MAX_SPEED) : BASE_SPEED;
+    } else if (input.left) {
+        ship.vx = (ship.vx !== undefined && ship.vx <= -BASE_SPEED) ? Math.max(ship.vx - ACCEL, -MAX_SPEED) : -BASE_SPEED;
+    } else {
+        ship.vx = 0;
+    }
+
+    if (input.backward) {
+        ship.vy = (ship.vy !== undefined && ship.vy >= BASE_SPEED) ? Math.min(ship.vy + ACCEL, MAX_SPEED) : BASE_SPEED;
+    } else if (input.forward) {
+        ship.vy = (ship.vy !== undefined && ship.vy <= -BASE_SPEED) ? Math.max(ship.vy - ACCEL, -MAX_SPEED) : -BASE_SPEED;
+    } else {
+        ship.vy = 0;
+    }
+
+    const dx = ship.vx;
+    const dy = ship.vy;
 
     const checkCollision = (nx: number, ny: number) => {
+        if (nx < 0 || nx > mapWidth - 1 || ny < 0 || ny > mapHeight - 1) return true;
         if (!canPassWalls && hitsObstacle(nx, ny, obstacles)) return true;
         return robots.some(r => Math.max(Math.abs(r.x - nx), Math.abs(r.y - ny)) < ROBOT_COLLISION_DISTANCE);
     };

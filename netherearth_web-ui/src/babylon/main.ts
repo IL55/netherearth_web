@@ -81,6 +81,8 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 3, Math.PI / 4, 8, mapCenter, scene);
   camera.attachControl(canvas, true);
+  // Remove default keyboard inputs (arrow keys, etc.) from the camera
+  camera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput");
 
   attachCameraControls(scene, camera);
   attachGameControls(scene, warMap, () => renderer.render(warMap));
@@ -88,7 +90,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const ownerResources = createOwnerResources();
   startClock(warMap, () => {
     const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y }));
-    tickShip(ship, shipInput, shipObstacles, robotsPositions);
+    tickShip(ship, shipInput, mapData.width, mapData.height, shipObstacles, robotsPositions);
     renderer.render(warMap);
     projectileRenderer.render(warMap);
     shipRenderer.render(ship);
