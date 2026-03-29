@@ -13,8 +13,12 @@ import { createWarMap, Owner, RobotGoal } from './game/core/warmap';
 import { robotConfigs, calcHealth } from './data/robot';
 import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';
+import { attachShipControls } from './controls/ship';
 import { startClock } from './game/clock';
 import { createOwnerResources } from './game/resources';
+import { createShipInput, tickShip, WARBASE_BLOCK_OFFSETS } from './game/ship';
+import type { ShipObstacle } from './game/ship';
+import { ShipRenderer } from './view/map/ship-renderer';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -56,6 +60,22 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const hud = new GameHud(canvas);
   renderer.render(warMap);
 
+  // Build ship collision obstacles from all warbases (per-block, matching occupancy.ts).
+  const shipObstacles: ShipObstacle[] = warMap.objects
+    .filter(o => o.type === ObjectType.WARBASE)
+    .flatMap(o => WARBASE_BLOCK_OFFSETS.map(b => ({
+      x0: o.x + b.x0, y0: o.y + b.y0,
+      x1: o.x + b.x1, y1: o.y + b.y1,
+    })));
+
+  // Place ship at the RED warbase capture-zone opening (gap on the right side, yo≈2).
+  const redWarbase = warMap.objects.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
+  const shipStartX = redWarbase ? redWarbase.x + 3.5 : mapData.width / 2;
+  const shipStartY = redWarbase ? redWarbase.y + 2   : mapData.height / 2;
+  const ship = { x: shipStartX, y: shipStartY, height: 3 };
+  const shipInput = createShipInput();
+  const shipRenderer = new ShipRenderer(models, mapBegin);
+
   const mapCenter = new BABYLON.Vector3(mapBegin.x + mapData.width / 4, 2, mapBegin.z + mapData.height / 4);
 
   const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 3, Math.PI / 4, 8, mapCenter, scene);
@@ -63,10 +83,13 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   attachCameraControls(scene, camera);
   attachGameControls(scene, warMap, () => renderer.render(warMap));
+  attachShipControls(scene, shipInput);
   const ownerResources = createOwnerResources();
   startClock(warMap, () => {
+    tickShip(ship, shipInput, shipObstacles);
     renderer.render(warMap);
     projectileRenderer.render(warMap);
+    shipRenderer.render(ship);
     hud.update(warMap);
   }, ownerResources);
 
