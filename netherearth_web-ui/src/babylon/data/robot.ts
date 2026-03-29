@@ -51,16 +51,16 @@ export const WEAPON_RANGE: Record<Weapon, number> = {
 
 // Minimum game ticks between shots (firing cooldown per weapon type).
 export const WEAPON_COOLDOWN: Record<Weapon, number> = {
-    [Weapon.PHASERS]:  2,
-    [Weapon.CANNON]:   3,
-    [Weapon.MISSILES]: 5,
+    [Weapon.PHASERS]:  6,
+    [Weapon.CANNON]:   7,
+    [Weapon.MISSILES]: 12,
 };
 
 // HP dealt to target per shot.
 export const WEAPON_DAMAGE: Record<Weapon, number> = {
-    [Weapon.CANNON]:   8,
-    [Weapon.MISSILES]: 14,
-    [Weapon.PHASERS]:  20,
+    [Weapon.CANNON]:   4,
+    [Weapon.MISSILES]: 6,
+    [Weapon.PHASERS]:  8,
 };
 
 // Damage contribution per part (1–100 scale) used by calcHealth.
