@@ -49,9 +49,10 @@ interface StructureAABB { x0: number; y0: number; x1: number; y1: number; }
 export interface OccupancyMap {
     robots: RobotPos[];
     structures: StructureAABB[];
+    ship?: { x: number; y: number; height: number; };
 }
 
-export function buildOccupancy(warMap: WarMap): OccupancyMap {
+export function buildOccupancy(warMap: WarMap, ship?: { x: number; y: number; height: number; }): OccupancyMap {
     const robots: RobotPos[] = [];
     const structures: StructureAABB[] = [];
     for (const obj of warMap.objects) {
@@ -68,7 +69,7 @@ export function buildOccupancy(warMap: WarMap): OccupancyMap {
             }
         }
     }
-    return { robots, structures };
+    return { robots, structures, ship };
 }
 
 function isBlockingType(type: string): boolean {
@@ -85,6 +86,13 @@ export function isOccupied(
         tx - 0.5 < s.x1 && tx + 0.5 > s.x0 &&
         ty - 0.5 < s.y1 && ty + 0.5 > s.y0,
     )) return true;
+    // A robot can go under the ship only if the ship is above the WALL_HEIGHT
+    // So if the ship height is <= WALL_HEIGHT, the robot will be blocked by the ship
+    if (occupancy.ship && occupancy.ship.height <= 3.5 /* WALL_HEIGHT */) {
+        if (Math.max(Math.abs(occupancy.ship.x - tx), Math.abs(occupancy.ship.y - ty)) < ROBOT_COLLISION_DISTANCE) {
+            return true;
+        }
+    }
     return occupancy.robots.some(r =>
         r.id !== excludeId &&
         Math.max(Math.abs(r.x - tx), Math.abs(r.y - ty)) < ROBOT_COLLISION_DISTANCE

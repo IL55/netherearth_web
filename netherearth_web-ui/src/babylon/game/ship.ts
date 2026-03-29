@@ -51,6 +51,8 @@ export const WARBASE_BLOCK_OFFSETS: ShipObstacle[] = [
     { x0:  1.0, y0:  3.5, x1:  2.0, y1:  4.5 },  // xo=1.5, yo=4
 ];
 
+import { ROBOT_COLLISION_DISTANCE } from './core/occupancy';
+
 function hitsObstacle(x: number, y: number, obstacles: ShipObstacle[]): boolean {
     return obstacles.some(o =>
         x + SHIP_RADIUS > o.x0 && x - SHIP_RADIUS < o.x1 &&
@@ -58,17 +60,26 @@ function hitsObstacle(x: number, y: number, obstacles: ShipObstacle[]): boolean 
     );
 }
 
-export function tickShip(ship: ShipState, input: ShipInput, obstacles: ShipObstacle[] = []): void {
+export function tickShip(ship: ShipState, input: ShipInput, obstacles: ShipObstacle[] = [], robots: {x: number, y: number}[] = []): void {
     // Above WALL_HEIGHT the ship can fly over base walls freely.
     const canPassWalls = ship.height > WALL_HEIGHT;
 
     const dx = (input.right ? SPEED : 0) - (input.left ? SPEED : 0);
     const dy = (input.backward ? SPEED : 0) - (input.forward ? SPEED : 0);
 
+    const checkCollision = (nx: number, ny: number) => {
+        if (!canPassWalls && hitsObstacle(nx, ny, obstacles)) return true;
+        return robots.some(r => Math.max(Math.abs(r.x - nx), Math.abs(r.y - ny)) < ROBOT_COLLISION_DISTANCE);
+    };
+
     // Check axes independently so the ship can slide along walls.
-    if (dx !== 0 && (canPassWalls || !hitsObstacle(ship.x + dx, ship.y, obstacles))) ship.x += dx;
-    if (dy !== 0 && (canPassWalls || !hitsObstacle(ship.x, ship.y + dy, obstacles))) ship.y += dy;
+    if (dx !== 0 && !checkCollision(ship.x + dx, ship.y)) ship.x += dx;
+    if (dy !== 0 && !checkCollision(ship.x, ship.y + dy)) ship.y += dy;
 
     if (input.ascend) ship.height += ASCEND_SPEED;
     ship.height = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, ship.height - DESCENT_SPEED));
+}
+
+export function shipHitsObstacle(shipX: number, shipY: number, obstacles: ShipObstacle[]): boolean {
+    return hitsObstacle(shipX, shipY, obstacles);
 }

@@ -10,6 +10,7 @@ import { advanceProjectiles, SUB_TICKS } from './mechanics/projectile';
 import { tickResources, createOwnerResources, type OwnerResources } from './resources';
 import { tickBuild } from './mechanics/build';
 import { recordKill } from './mechanics/kill-terrain';
+import { type ShipState } from './ship';
 
 export interface Clock {
     stop: () => void;
@@ -23,12 +24,13 @@ export function startClock(
     warMap: WarMap,
     onTick: () => void,
     ownerResources: OwnerResources = createOwnerResources(),
+    ship?: ShipState,
     subTickMs = 100,
 ): Clock {
     let subTick = 0;
     const id = setInterval(() => {
         if (subTick === 0) {
-            gameTick(warMap, ownerResources);
+            gameTick(warMap, ownerResources, ship);
         }
         advanceProjectiles(warMap);
         onTick();
@@ -40,7 +42,7 @@ export function startClock(
 // Number of ticks for the death-blink animation (show/hide alternates each tick).
 const DEATH_BLINK_TICKS = 6; // 3 blinks: show@6, hide@5, show@4, hide@3, show@2, hide@1 → removed
 
-function gameTick(warMap: WarMap, ownerResources: OwnerResources): void {
+function gameTick(warMap: WarMap, ownerResources: OwnerResources, ship?: ShipState): void {
     warMap.tick = (warMap.tick ?? 0) + 1;
 
     // Step dying-robot countdown; remove those that have finished
@@ -53,7 +55,7 @@ function gameTick(warMap: WarMap, ownerResources: OwnerResources): void {
         o => o.type !== ObjectType.ROBOT || o.dyingTicks === undefined || o.dyingTicks > 0,
     );
 
-    const occupancy = buildOccupancy(warMap);
+    const occupancy = buildOccupancy(warMap, ship);
 
     // Run AI only for live (non-dying) robots
     for (const obj of [...warMap.objects]) {

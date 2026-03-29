@@ -19,6 +19,7 @@ import { createOwnerResources } from './game/resources';
 import { createShipInput, tickShip, WARBASE_BLOCK_OFFSETS } from './game/ship';
 import type { ShipObstacle } from './game/ship';
 import { ShipRenderer } from './view/map/ship-renderer';
+import { buildOccupancy } from './game/core/occupancy';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -86,12 +87,13 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   attachShipControls(scene, shipInput);
   const ownerResources = createOwnerResources();
   startClock(warMap, () => {
-    tickShip(ship, shipInput, shipObstacles);
+    const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y }));
+    tickShip(ship, shipInput, shipObstacles, robotsPositions);
     renderer.render(warMap);
     projectileRenderer.render(warMap);
     shipRenderer.render(ship);
     hud.update(warMap);
-  }, ownerResources);
+  }, ownerResources, ship);
 
   return scene;
 };
