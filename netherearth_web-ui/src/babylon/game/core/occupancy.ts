@@ -14,28 +14,28 @@ const DEFAULT_AABB: AABBDef = { dx0: -0.5, dy0: -0.5, dx1: 0.5, dy1: 0.5 };
 // Warbase: 15 blocks; hole at (xo≈3.5, yo≈2) is the capture slot.
 const STRUCTURE_PARTS: Partial<Record<string, AABBDef[]>> = {
     factory: [
-        { dx0: -0.5, dy0: -0.5, dx1:  0.5, dy1:  0.5, height: 2.0 },  // highwall1 (xo=0, yo=0)
-        { dx0: -0.5, dy0:  0.5, dx1:  0.5, dy1:  1.5, height: 2.0 },  // highwall1 (xo=0, yo=1)
-        { dx0: -0.5, dy0:  1.5, dx1:  0.5, dy1:  2.5, height: 2.0 },  // highwall1 (xo=0, yo=2)
+        { dx0: -0.5, dy0: -0.5, dx1:  0.5, dy1:  0.5, height: 1.0 },  // highwall1 (xo=0, yo=0)
+        { dx0: -0.5, dy0:  0.5, dx1:  0.5, dy1:  1.5, height: 1.5 },  // highwall1 (xo=0, yo=1)
+        { dx0: -0.5, dy0:  1.5, dx1:  0.5, dy1:  2.5, height: 1.0 },  // highwall1 (xo=0, yo=2)
         { dx0:  0.5, dy0: -0.5, dx1:  1.5, dy1:  0.5, height: 0.5 },  // lowwall2  (xo=1, yo=0)
         { dx0:  0.5, dy0:  1.5, dx1:  1.5, dy1:  2.5, height: 0.5 },  // lowwall2  (xo=1, yo=2)
     ],
     warbase: [
-        { dx0:  0.0, dy0: -0.5, dx1:  1.0, dy1:  0.5, height: 2.0 },  // highwall1 (xo=0.5, yo=0)
-        { dx0:  1.0, dy0: -0.5, dx1:  2.0, dy1:  0.5, height: 2.0 },  // highwall2 (xo=1.5, yo=0)
-        { dx0: -0.5, dy0:  0.5, dx1:  0.5, dy1:  1.5, height: 2.0 },  // highwall1 (xo=0, yo=1)
+        { dx0:  0.0, dy0: -0.5, dx1:  1.0, dy1:  0.5, height: 1.0 },  // highwall1 (xo=0.5, yo=0)
+        { dx0:  1.0, dy0: -0.5, dx1:  2.0, dy1:  0.5, height: 1.0 },  // highwall2 (xo=1.5, yo=0)
+        { dx0: -0.5, dy0:  0.5, dx1:  0.5, dy1:  1.5, height: 1.0 },  // highwall1 (xo=0, yo=1)
         { dx0:  0.5, dy0:  0.5, dx1:  1.5, dy1:  1.5, height: 0.5 },  // lowwall1  (xo=1, yo=1)
         { dx0:  1.5, dy0:  0.5, dx1:  2.5, dy1:  1.5, height: 0.5 },  // lowwall1  (xo=2, yo=1)
         { dx0:  2.5, dy0:  0.5, dx1:  3.5, dy1:  1.5, height: 0.5 },  // lowwall2  (xo=3, yo=1)
-        { dx0:  0.0, dy0:  1.5, dx1:  1.0, dy1:  2.5, height: 2.0 },  // highwall1 (xo=0.5, yo=2)
+        { dx0:  0.0, dy0:  1.5, dx1:  1.0, dy1:  2.5, height: 1.0 },  // highwall1 (xo=0.5, yo=2)
         { dx0:  1.0, dy0:  1.5, dx1:  2.0, dy1:  2.5, height: 1.0 },  // warbase   (xo=1.5, yo=2)
         { dx0:  2.0, dy0:  1.5, dx1:  3.0, dy1:  2.5, height: 0.5 },  // lowwall2  (xo=2.5, yo=2)
-        { dx0: -0.5, dy0:  2.5, dx1:  0.5, dy1:  3.5, height: 2.0 },  // highwall1 (xo=0, yo=3)
+        { dx0: -0.5, dy0:  2.5, dx1:  0.5, dy1:  3.5, height: 1.0 },  // highwall1 (xo=0, yo=3)
         { dx0:  0.5, dy0:  2.5, dx1:  1.5, dy1:  3.5, height: 0.5 },  // lowwall1  (xo=1, yo=3)
         { dx0:  1.5, dy0:  2.5, dx1:  2.5, dy1:  3.5, height: 0.5 },  // lowwall1  (xo=2, yo=3)
         { dx0:  2.5, dy0:  2.5, dx1:  3.5, dy1:  3.5, height: 0.5 },  // lowwall2  (xo=3, yo=3)
-        { dx0:  0.0, dy0:  3.5, dx1:  1.0, dy1:  4.5, height: 2.0 },  // highwall1 (xo=0.5, yo=4)
-        { dx0:  1.0, dy0:  3.5, dx1:  2.0, dy1:  4.5, height: 2.0 },  // highwall2 (xo=1.5, yo=4)
+        { dx0:  0.0, dy0:  3.5, dx1:  1.0, dy1:  4.5, height: 1.0 },  // highwall1 (xo=0.5, yo=4)
+        { dx0:  1.0, dy0:  3.5, dx1:  2.0, dy1:  4.5, height: 1.0 },  // highwall2 (xo=1.5, yo=4)
     ],
 };
 
