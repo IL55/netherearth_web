@@ -1,6 +1,6 @@
 import type { ShipObstacle } from './types';
 import { SHIP_RADIUS, MIN_HEIGHT } from './constants';
-import { ROBOT_COLLISION_DISTANCE } from '../core/occupancy';
+import { ROBOT_COLLISION_DISTANCE, ROBOT_HEIGHT } from '../core/occupancy';
 
 export function hitsObstacle(x: number, y: number, height: number, obstacles: ShipObstacle[]): boolean {
     return obstacles.some(o =>
@@ -29,7 +29,7 @@ export function getFloorHeight(x: number, y: number, obstacles: ShipObstacle[], 
     }
     for (const r of robots) {
         if (Math.max(Math.abs(r.x - x), Math.abs(r.y - y)) < ROBOT_COLLISION_DISTANCE) {
-            maxH = Math.max(maxH, 1.0); // Robot height is 1.0
+            maxH = Math.max(maxH, ROBOT_HEIGHT);
         }
     }
     return maxH;

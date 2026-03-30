@@ -1,7 +1,7 @@
 import type { ShipState, ShipInput, ShipObstacle } from './types';
 import { BASE_SPEED, MAX_SPEED, ACCEL, ASCEND_SPEED, DESCENT_SPEED, MIN_HEIGHT, MAX_HEIGHT } from './constants';
 import { hitsObstacle, getFloorHeight } from './collision';
-import { ROBOT_COLLISION_DISTANCE } from '../core/occupancy';
+import { ROBOT_COLLISION_DISTANCE, ROBOT_HEIGHT } from '../core/occupancy';
 
 export function tickShip(
     ship: ShipState,
@@ -33,8 +33,8 @@ export function tickShip(
     const checkCollision = (nx: number, ny: number) => {
         if (nx < 0 || nx > mapWidth - 1 || ny < 0 || ny > mapHeight - 1) return true;
         if (hitsObstacle(nx, ny, ship.height, obstacles)) return true;
-        // Robots are treated as height 1.0 (meaning ship needs to be strictly > 1.0 to clear them)
-        if (ship.height < 1.0) {
+        // Robots are treated as height ROBOT_HEIGHT (meaning ship needs to be strictly > ROBOT_HEIGHT to clear them)
+        if (ship.height < ROBOT_HEIGHT) {
             return robots.some(r => Math.max(Math.abs(r.x - nx), Math.abs(r.y - ny)) < ROBOT_COLLISION_DISTANCE);
         }
         return false;

@@ -41,6 +41,7 @@ const STRUCTURE_PARTS: Partial<Record<string, AABBDef[]>> = {
 
 // Minimum Chebyshev distance between two robot centers.
 export const ROBOT_COLLISION_DISTANCE = 1.0;
+export const ROBOT_HEIGHT = 1.0;
 
 interface RobotPos { id: string; x: number; y: number; }
 
@@ -99,8 +100,8 @@ export function isOccupied(
         tx - 0.5 < s.x1 && tx + 0.5 > s.x0 &&
         ty - 0.5 < s.y1 && ty + 0.5 > s.y0,
     )) return true;
-    // A robot can go under the ship only if the ship is above 1.0
-    if (occupancy.ship && occupancy.ship.height <= 1.0) {
+    // A robot can go under the ship only if the ship is above ROBOT_HEIGHT
+    if (occupancy.ship && occupancy.ship.height <= ROBOT_HEIGHT) {
         if (Math.max(Math.abs(occupancy.ship.x - tx), Math.abs(occupancy.ship.y - ty)) < ROBOT_COLLISION_DISTANCE) {
             return true;
         }
