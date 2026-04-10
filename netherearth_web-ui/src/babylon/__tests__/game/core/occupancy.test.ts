@@ -139,6 +139,52 @@ describe('isOccupied — structures (AABB, no floor)', () => {
     });
 });
 
+describe('factory capture slot — boundary-touching approach (MOVE_STEP=0.25)', () => {
+    // Factory at (5,7). Walls around the capture slot at (6,8):
+    //   highwall1@yo=1  x=[4.5,5.5]  y=[7.5,8.5]  — left wall of slot
+    //   lowwall2@yo=0   x=[5.5,6.5]  y=[6.5,7.5]  — top wall of slot
+    //   lowwall2@yo=2   x=[5.5,6.5]  y=[8.5,9.5]  — bottom wall of slot
+    // Robot (box ±0.5) approaches from east along y=8.
+
+    it('all MOVE_STEP positions on approach path are unblocked', () => {
+        const map = makeMap([{ id: 'f1', type: ObjectType.FACTORY, x: 5, y: 7, subtype: 'cannons' }]);
+        const occ = buildOccupancy(map);
+        for (const x of [7.0, 6.75, 6.5, 6.25, 6.0]) {
+            expect(isOccupied(occ, x, 8), `x=${x}`).toBe(false);
+        }
+    });
+
+    it('slot center (6,8) touches all three adjacent wall boundaries but is not blocked', () => {
+        // left edge of robot box  = 6.0 - 0.5 = 5.5 = highwall1 x1  → strict < → no overlap
+        // bottom edge of robot box = 8.0 - 0.5 = 7.5 = lowwall2@yo=0 y1 → strict < → no overlap
+        // top edge of robot box    = 8.0 + 0.5 = 8.5 = lowwall2@yo=2 y0 → strict > → no overlap
+        const map = makeMap([{ id: 'f1', type: ObjectType.FACTORY, x: 5, y: 7, subtype: 'cannons' }]);
+        const occ = buildOccupancy(map);
+        expect(isOccupied(occ, 6.0, 8.0)).toBe(false);
+    });
+
+    it('one MOVE_STEP inside the left wall (x=5.75) is blocked', () => {
+        // robot box left edge = 5.25 < highwall1 x1=5.5 → overlap → blocked
+        const map = makeMap([{ id: 'f1', type: ObjectType.FACTORY, x: 5, y: 7, subtype: 'cannons' }]);
+        const occ = buildOccupancy(map);
+        expect(isOccupied(occ, 5.75, 8.0)).toBe(true);
+    });
+
+    it('off-center toward top wall (6, 7.75) is blocked', () => {
+        // robot box bottom edge = 7.25 < lowwall2@yo=0 y1=7.5 → overlap → blocked
+        const map = makeMap([{ id: 'f1', type: ObjectType.FACTORY, x: 5, y: 7, subtype: 'cannons' }]);
+        const occ = buildOccupancy(map);
+        expect(isOccupied(occ, 6.0, 7.75)).toBe(true);
+    });
+
+    it('off-center toward bottom wall (6, 8.25) is blocked', () => {
+        // robot box top edge = 8.75 > lowwall2@yo=2 y0=8.5 → overlap → blocked
+        const map = makeMap([{ id: 'f1', type: ObjectType.FACTORY, x: 5, y: 7, subtype: 'cannons' }]);
+        const occ = buildOccupancy(map);
+        expect(isOccupied(occ, 6.0, 8.25)).toBe(true);
+    });
+});
+
 describe('updateRobotPosition', () => {
     it('updates stored position so future checks use new coords', () => {
         const map = makeMap([{ id: 'r1', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 1, y: 0 }]);

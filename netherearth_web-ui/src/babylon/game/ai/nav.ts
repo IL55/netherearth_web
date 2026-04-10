@@ -15,7 +15,7 @@ export { CW_DIRS };
 import type { OccupancyMap } from '../core/occupancy';
 import { isOccupied } from '../core/occupancy';
 import { MOVE_STEP } from '../actions';
-import { getTerrainRule, Chassis } from '../core/terrain';
+import { getTerrainRule, Chassis, TileSubtype } from '../core/terrain';
 
 
 export function dirDelta(dir: Direction): { dx: number; dy: number } {
@@ -32,7 +32,7 @@ export function backOf (d: Direction): Direction { return ({ N:Direction.S, S:Di
 export function tileAt(warMap: WarMap, x: number, y: number): string {
     return (warMap.objects.find(
         (o): o is MapObject => o.type === ObjectType.TILE && o.x === Math.floor(x) && o.y === Math.floor(y),
-    ))?.subtype ?? 'G';
+    ))?.subtype ?? TileSubtype.GRASS;
 }
 
 // True if the robot can step to (x, y): within bounds, terrain passable, not occupied.

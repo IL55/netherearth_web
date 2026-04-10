@@ -3,7 +3,7 @@ import { Direction } from "../core/warmap";
 import type { WarMap, RobotObject, MapObject } from '../core/warmap';
 import type { OccupancyMap } from '../core/occupancy';
 import { isOccupied, updateRobotPosition } from '../core/occupancy';
-import { getTerrainRule, Chassis } from '../core/terrain';
+import { getTerrainRule, Chassis, TileSubtype } from '../core/terrain';
 import { MOVE_STEP, MOVE_COOLDOWN } from './types';
 
 // Map coordinate system:
@@ -22,7 +22,7 @@ function getTileSubtype(warMap: WarMap, x: number, y: number): string {
     const tile = warMap.objects.find(
         (o): o is MapObject => o.type === ObjectType.TILE && o.x === Math.floor(x) && o.y === Math.floor(y),
     );
-    return tile?.subtype ?? 'G';
+    return tile?.subtype ?? TileSubtype.GRASS;
 }
 
 export function isTerrainPassable(warMap: WarMap, tx: number, ty: number, chassis: Chassis): boolean {
