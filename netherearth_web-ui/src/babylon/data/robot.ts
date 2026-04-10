@@ -82,6 +82,25 @@ const ELECTRONICS_HP: Record<Electronics, number> = {
 
 const NUCLEAR_HP = 18;
 
+// Physical height contribution per part (used for collision with the ship)
+export const CHASSIS_HEIGHT: Record<Chassis, number> = {
+    [Chassis.TRACKS]:   0.4,
+    [Chassis.ANTIGRAV]: 0.3,
+    [Chassis.BIPOD]:    0.5,
+};
+
+export const WEAPON_HEIGHT: Record<Weapon, number> = {
+    [Weapon.CANNON]:   0.3,
+    [Weapon.MISSILES]: 0.4,
+    [Weapon.PHASERS]:  0.3,
+};
+
+export const ELECTRONICS_HEIGHT: Record<Electronics, number> = {
+    [Electronics.STANDARD]: 0.2,
+};
+
+export const NUCLEAR_HEIGHT = 0.3;
+
 // ─── Damage falloff & health ──────────────────────────────────────────────────
 
 // Damage multiplier based on shot distance (linear from 100% at dist=1 to 40% at maxRange).
@@ -97,6 +116,15 @@ export function calcHealth(config: RobotConfig): number {
     if (config.electronics) total += ELECTRONICS_HP[config.electronics];
     if (config.nuclear)     total += NUCLEAR_HP;
     return Math.max(1, Math.min(100, total));
+}
+
+// Calculate the total physical height of the robot based on its configured parts
+export function calcRobotHeight(config: RobotConfig): number {
+    let total = CHASSIS_HEIGHT[config.chassis] ?? 0.4;
+    if (config.weapon)      total += WEAPON_HEIGHT[config.weapon] ?? 0.3;
+    if (config.nuclear)     total += NUCLEAR_HEIGHT;
+    if (config.electronics) total += ELECTRONICS_HEIGHT[config.electronics] ?? 0.2;
+    return total;
 }
 
 // ─── Preset configs ───────────────────────────────────────────────────────────

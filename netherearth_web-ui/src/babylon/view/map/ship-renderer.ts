@@ -9,6 +9,7 @@ import type { ShipState } from '../../game/ship/index';
 // Subsequent calls just update position — no dispose/recreate needed.
 export class ShipRenderer {
     private instance: BABYLON.TransformNode | null = null;
+    private shadowMesh: BABYLON.Mesh | null = null;
     // Offsets applied to inst.position every frame so the ship is visually centred on (x,y)
     // and its underside is at ship.height.
     private xOffset = 0;
@@ -27,6 +28,14 @@ export class ShipRenderer {
                 ship.height + 1.0 + this.yOffset, // +1.0 because map visual ground is at y=1.0
                 this.mapBegin.z + ship.y + this.zOffset,
             );
+            
+            if (this.shadowMesh) {
+                this.shadowMesh.position.set(
+                    this.mapBegin.x + ship.x,
+                    1.01,
+                    this.mapBegin.z + ship.y,
+                );
+            }
             return;
         }
 
@@ -81,10 +90,30 @@ export class ShipRenderer {
             this.mapBegin.z + ship.y + this.zOffset,
         );
         this.instance = inst;
+
+        const scene = model.getScene();
+        const shadow = BABYLON.MeshBuilder.CreatePlane('shipShadow', { size: 1.0 }, scene);
+        shadow.rotation.x = Math.PI / 2;
+        
+        const shadowMat = new BABYLON.StandardMaterial('shipShadowMat', scene);
+        shadowMat.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        shadowMat.specularColor = new BABYLON.Color3(0, 0, 0);
+        shadowMat.alpha = 0.4;
+        shadowMat.zOffset = -1; // Prevent Z-fighting with ground
+        
+        shadow.material = shadowMat;
+        shadow.position.set(
+            this.mapBegin.x + ship.x,
+            1.01,
+            this.mapBegin.z + ship.y,
+        );
+        this.shadowMesh = shadow;
     }
 
     dispose(): void {
         this.instance?.dispose();
         this.instance = null;
+        this.shadowMesh?.dispose();
+        this.shadowMesh = null;
     }
 }

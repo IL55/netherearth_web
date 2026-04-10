@@ -9,7 +9,7 @@ export function tickShip(
     mapWidth: number,
     mapHeight: number,
     obstacles: ShipObstacle[] = [],
-    robots: {x: number, y: number}[] = []
+    robots: {x: number, y: number, height?: number}[] = []
 ): void {
     if (input.right) {
         ship.vx = (ship.vx !== undefined && ship.vx >= BASE_SPEED) ? Math.min(ship.vx + ACCEL, MAX_SPEED) : BASE_SPEED;
@@ -33,11 +33,13 @@ export function tickShip(
     const checkCollision = (nx: number, ny: number) => {
         if (nx < 0 || nx > mapWidth - 1 || ny < 0 || ny > mapHeight - 1) return true;
         if (hitsObstacle(nx, ny, ship.height, obstacles)) return true;
-        // Robots are treated as height ROBOT_HEIGHT (meaning ship needs to be strictly > ROBOT_HEIGHT to clear them)
-        if (ship.height < ROBOT_HEIGHT) {
-            return robots.some(r => Math.max(Math.abs(r.x - nx), Math.abs(r.y - ny)) < ROBOT_COLLISION_DISTANCE);
-        }
-        return false;
+        return robots.some(r => {
+            const h = r.height ?? ROBOT_HEIGHT;
+            if (ship.height < h) {
+                return Math.max(Math.abs(r.x - nx), Math.abs(r.y - ny)) < ROBOT_COLLISION_DISTANCE;
+            }
+            return false;
+        });
     };
 
     // Check axes independently so the ship can slide along walls.

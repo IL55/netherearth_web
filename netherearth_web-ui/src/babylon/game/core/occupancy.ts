@@ -43,9 +43,11 @@ const STRUCTURE_PARTS: Partial<Record<string, AABBDef[]>> = {
 export const ROBOT_COLLISION_DISTANCE = 1.0;
 export const ROBOT_HEIGHT = 1.0;
 
-interface RobotPos { id: string; x: number; y: number; }
+import { calcRobotHeight } from '../../data/robot';
 
-interface StructureAABB { x0: number; y0: number; x1: number; y1: number; height: number; }
+export interface RobotPos { id: string; x: number; y: number; height: number; }
+
+export interface StructureAABB { x0: number; y0: number; x1: number; y1: number; height: number; }
 
 export interface OccupancyMap {
     robots: RobotPos[];
@@ -58,7 +60,8 @@ export function buildOccupancy(warMap: WarMap, ship?: { x: number; y: number; he
     const structures: StructureAABB[] = [];
     for (const obj of warMap.objects) {
         if (obj.type === ObjectType.ROBOT) {
-            robots.push({ id: obj.id, x: obj.x, y: obj.y });
+            const h = obj.robotConfig ? calcRobotHeight(obj.robotConfig) : ROBOT_HEIGHT;
+            robots.push({ id: obj.id, x: obj.x, y: obj.y, height: h });
         } else {
             const parts = STRUCTURE_PARTS[obj.type];
             if (parts) {
@@ -95,13 +98,21 @@ export function isOccupied(
     occupancy: OccupancyMap,
     tx: number, ty: number,
     excludeId?: string,
+    robotHeight?: number,
 ): boolean {
     if (occupancy.structures.some(s =>
         tx - 0.5 < s.x1 && tx + 0.5 > s.x0 &&
         ty - 0.5 < s.y1 && ty + 0.5 > s.y0,
     )) return true;
-    // A robot can go under the ship only if the ship is above ROBOT_HEIGHT
-    if (occupancy.ship && occupancy.ship.height <= ROBOT_HEIGHT) {
+    
+    let movingHeight = robotHeight ?? ROBOT_HEIGHT;
+    if (!robotHeight && excludeId) {
+        const r = occupancy.robots.find(r => r.id === excludeId);
+        if (r) movingHeight = r.height;
+    }
+
+    // A robot can go under the ship only if the ship is above the robot's height
+    if (occupancy.ship && occupancy.ship.height <= movingHeight) {
         if (Math.max(Math.abs(occupancy.ship.x - tx), Math.abs(occupancy.ship.y - ty)) < ROBOT_COLLISION_DISTANCE) {
             return true;
         }

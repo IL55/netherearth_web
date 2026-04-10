@@ -14,7 +14,7 @@ export function shipHitsObstacle(shipX: number, shipY: number, height: number, o
     return hitsObstacle(shipX, shipY, height, obstacles);
 }
 
-export function getFloorHeight(x: number, y: number, obstacles: ShipObstacle[], robots: {x: number, y: number}[]): number {
+export function getFloorHeight(x: number, y: number, obstacles: ShipObstacle[], robots: {x: number, y: number, height?: number}[]): number {
     let maxH = MIN_HEIGHT;
     
     // Create a strict footprint buffer slightly smaller than radius to avoid getting stuck at edges
@@ -29,7 +29,7 @@ export function getFloorHeight(x: number, y: number, obstacles: ShipObstacle[], 
     }
     for (const r of robots) {
         if (Math.max(Math.abs(r.x - x), Math.abs(r.y - y)) < ROBOT_COLLISION_DISTANCE) {
-            maxH = Math.max(maxH, ROBOT_HEIGHT);
+            maxH = Math.max(maxH, r.height ?? ROBOT_HEIGHT);
         }
     }
     return maxH;
