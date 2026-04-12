@@ -27,7 +27,7 @@ onMounted(async () => {
       <h1>hello world</h1>
     </div>
   </header>
-  <main>
+  <main class="game-container">
     <canvas ref="canvas"></canvas>
   </main>
 </template>
@@ -42,10 +42,16 @@ header {
   margin: 0 auto 2rem;
 }
 
+.game-container {
+  position: relative;
+  width: 100%;
+}
+
 canvas {
   width: 100%;
   height: 500px;
   border: 1px solid black;
+  display: block;
 }
 
 @media (min-width: 1024px) {

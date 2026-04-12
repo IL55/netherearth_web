@@ -1,7 +1,7 @@
 import { ObjectType } from '../core/warmap';
 import { Direction, RobotAI } from "../core/warmap";
 
-import { Chassis, Weapon, Electronics, calcHealth } from '../../data/robot';
+import { Chassis, Weapon, Electronics, calcHealth, calcRobotHeight } from '../../data/robot';
 import type { RobotConfig } from '../../data/robot';
 import { Owner } from '../types/owner';
 import type { WarMap, RobotObject } from '../core/warmap';
@@ -162,6 +162,6 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
 
         warMap.objects.push(robot);
         // Register in occupancy so a second warbase on the same tick can't spawn at the same point.
-        occupancy.robots.push({ id: robot.id, x: robot.x, y: robot.y });
+        occupancy.robots.push({ id: robot.id, x: robot.x, y: robot.y, height: calcRobotHeight(option.config) });
     }
 }

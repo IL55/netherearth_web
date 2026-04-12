@@ -26,9 +26,11 @@ export function startClock(
     ownerResources: OwnerResources = createOwnerResources(),
     ship?: ShipState,
     subTickMs = 100,
+    isPaused: () => boolean = () => false,
 ): Clock {
     let subTick = 0;
     const id = setInterval(() => {
+        if (isPaused()) return;
         if (subTick === 0) {
             gameTick(warMap, ownerResources, ship);
         }

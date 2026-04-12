@@ -20,6 +20,8 @@ import { createShipInput, tickShip } from './game/ship/index';
 import { ShipRenderer } from './view/map/ship-renderer';
 import { buildOccupancy } from './game/core/occupancy';
 
+import { ConstructionYard3D } from './view/construction-yard';
+
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
 
@@ -60,11 +62,11 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const hud = new GameHud(canvas);
   renderer.render(warMap);
 
-  // Place ship at the RED warbase capture-zone opening (gap on the right side, yo≈2).
+  // Place ship 0.5 units above the H-tile of the red warbase.
   const redWarbase = warMap.objects.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
-  const shipStartX = redWarbase ? redWarbase.x + 3.5 : mapData.width / 2;
+  const shipStartX = redWarbase ? redWarbase.x + 1.5 : mapData.width / 2;
   const shipStartY = redWarbase ? redWarbase.y + 2   : mapData.height / 2;
-  const ship = { x: shipStartX, y: shipStartY, height: 1.0 };
+  const ship = { x: shipStartX, y: shipStartY, height: 1.5 };
   const shipInput = createShipInput();
   const shipRenderer = new ShipRenderer(models, mapBegin);
 
@@ -79,16 +81,45 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   attachGameControls(scene, warMap, () => renderer.render(warMap));
   attachShipControls(scene, shipInput);
   const ownerResources = createOwnerResources();
+  
+  let isConstructionYardOpen = false;
+  let hasTriggeredYard = false;
+  let constructionYard: ConstructionYard3D | null = null;
+
   startClock(warMap, () => {
     const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y }));
     // We fetch the current complete structures from occupancy to be precise about collisions (walls, factories, warbases)
     const occ = buildOccupancy(warMap, ship);
     tickShip(ship, shipInput, mapData.width, mapData.height, occ.structures, robotsPositions);
+    
+    const redWarbase = warMap.objects.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
+    if (redWarbase) {
+      const hX = redWarbase.x + 1.5;
+      const hY = redWarbase.y + 2;
+      const dist = Math.sqrt((ship.x - hX) ** 2 + (ship.y - hY) ** 2);
+      
+      if (dist < 0.5 && ship.height <= 1.05) {
+        if (!hasTriggeredYard) {
+          isConstructionYardOpen = true;
+          hasTriggeredYard = true;
+          
+          if (!constructionYard) {
+              constructionYard = new ConstructionYard3D(scene, models, () => {
+                  isConstructionYardOpen = false;
+              });
+          }
+          constructionYard.open();
+        }
+      } else if (dist >= 0.5 || ship.height > 1.2) {
+        hasTriggeredYard = false;
+      }
+    }
+
     renderer.render(warMap);
     projectileRenderer.render(warMap);
     shipRenderer.render(ship);
     hud.update(warMap);
-  }, ownerResources, ship);
+  }, ownerResources, ship, 100, () => isConstructionYardOpen);
 
   return scene;
 };
