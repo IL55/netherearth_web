@@ -1,7 +1,9 @@
 import * as BABYLON from '@babylonjs/core';
 import { CY_LAYER_MASK, CY_PARTS, CY_LAYOUT } from './constants';
-import { createTextPlane, createBackground } from './ui-utils';
+import { createTextPlane, createBackground, updateTextOnTexture } from './ui-utils';
 import { createModelWrapper } from './model-utils';
+import type { OwnerResources } from '../../game/resources';
+import { Owner } from '../../game/core/warmap';
 
 export class ConstructionYard3D {
     private scene: BABYLON.Scene;
@@ -11,8 +13,10 @@ export class ConstructionYard3D {
     private root: BABYLON.TransformNode;
     private renderObserver: BABYLON.Observer<BABYLON.Scene> | null = null;
     private onExitCallback: () => void;
+    private ownerResources: OwnerResources;
+    private labelTextures: Map<string, BABYLON.DynamicTexture> = new Map();
 
-    constructor(scene: BABYLON.Scene, models: Map<string, BABYLON.AbstractMesh>, onExit: () => void) {
+    constructor(scene: BABYLON.Scene, models: Map<string, BABYLON.AbstractMesh>, ownerResources: OwnerResources, onExit: () => void) {
         this.scene = scene;
         this.mainCamera = scene.activeCamera!;
         this.onExitCallback = onExit;
@@ -37,15 +41,17 @@ export class ConstructionYard3D {
         // Semi-transparent background
         createBackground(scene, this.root, CY_LAYOUT.bgWidth, CY_LAYOUT.bgHeight, CY_LAYER_MASK);
 
+        this.ownerResources = ownerResources;
+
         // Title
-        const title = createTextPlane(scene, "Construction Yard", 8, 2, CY_LAYER_MASK, "bold 60px Arial");
+        const { mesh: title } = createTextPlane(scene, "Construction Yard", 10, 2, CY_LAYER_MASK, "bold 100px Arial");
         title.parent = this.root;
-        title.position = new BABYLON.Vector3(0, 8.5, 0);
+        title.position = new BABYLON.Vector3(0, 10.5, 0);
 
         // Exit Button
-        const exitBtn = createTextPlane(scene, "EXIT", 4, 1.5, CY_LAYER_MASK, "bold 50px Arial", "red");
+        const { mesh: exitBtn } = createTextPlane(scene, "EXIT", 4, 1.5, CY_LAYER_MASK, "bold 80px Arial", "red");
         exitBtn.parent = this.root;
-        exitBtn.position = new BABYLON.Vector3(0, -8.5, 0);
+        exitBtn.position = new BABYLON.Vector3(0, -10.5, 0);
         
         // Add click action to Exit button
         if (!scene.actionManager) {
@@ -63,25 +69,30 @@ export class ConstructionYard3D {
         CY_PARTS.forEach((part, index) => {
             const y = CY_LAYOUT.startY - index * CY_LAYOUT.stepY;
 
-            // Clone and center the model
-            const wrapper = createModelWrapper(
-                scene, 
-                models, 
-                part.id, 
-                this.root, 
-                new BABYLON.Vector3(CY_LAYOUT.modelX, y, 0), 
-                CY_LAYOUT.targetScale, 
-                CY_LAYER_MASK
-            );
-            
-            if (wrapper) {
-                rotatingMeshes.push(wrapper);
+            // Only try to load a model if it's not the "common" resource line
+            if (part.id !== 'common') {
+                const wrapper = createModelWrapper(
+                    scene, 
+                    models, 
+                    part.id, 
+                    this.root, 
+                    new BABYLON.Vector3(CY_LAYOUT.modelX, y, 0), 
+                    CY_LAYOUT.targetScale, 
+                    CY_LAYER_MASK
+                );
+                
+                if (wrapper) {
+                    rotatingMeshes.push(wrapper);
+                }
             }
 
             // Label
-            const label = createTextPlane(scene, part.label, 6, 1.5, CY_LAYER_MASK, "40px Arial");
-            label.parent = this.root;
-            label.position = new BABYLON.Vector3(CY_LAYOUT.labelX, y, 0);
+            // Using a larger width and font size
+            const { mesh: labelMesh, texture: dt } = createTextPlane(scene, part.label, 8, 1.5, CY_LAYER_MASK, "bold 70px Arial");
+            labelMesh.parent = this.root;
+            labelMesh.position = new BABYLON.Vector3(CY_LAYOUT.labelX + 1, y, 0); // Shift slightly right to accommodate larger width
+            
+            this.labelTextures.set(part.id, dt);
         });
 
         this.renderObserver = scene.onBeforeRenderObservable.add(() => {
@@ -91,7 +102,21 @@ export class ConstructionYard3D {
         });
     }
 
+    public updateLabels() {
+        const redResources = this.ownerResources[Owner.RED];
+        
+        CY_PARTS.forEach(part => {
+            const dt = this.labelTextures.get(part.id);
+            if (dt) {
+                const count = redResources[part.resourceType];
+                const text = `${part.label} ${count}`;
+                updateTextOnTexture(dt, text, "bold 70px Arial");
+            }
+        });
+    }
+
     public open() {
+        this.updateLabels();
         this.scene.activeCameras = [this.mainCamera, this.camera];
         this.light.setEnabled(true);
         this.root.setEnabled(true);

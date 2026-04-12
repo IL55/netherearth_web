@@ -104,7 +104,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
           hasTriggeredYard = true;
           
           if (!constructionYard) {
-              constructionYard = new ConstructionYard3D(scene, models, () => {
+              constructionYard = new ConstructionYard3D(scene, models, ownerResources, () => {
                   isConstructionYardOpen = false;
               });
           }
