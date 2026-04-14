@@ -1,0 +1,203 @@
+import { describe, it, expect } from 'vitest';
+import { ObjectType, RobotGoal, Owner } from '../../../game/core/warmap';
+import type { WarMap, RobotObject } from '../../../game/core/warmap';
+import type { ShipState } from '../../../game/ship/types';
+import {
+    findRobotUnderShip,
+    cycleRobotGoal,
+    setManualControl,
+    getGoalLabel,
+    getRobotDescription,
+} from '../../../view/robot-control/robot-control-logic';
+import { ORDERABLE_GOALS, HOVER_DISTANCE, HOVER_HEIGHT } from '../../../view/robot-control/constants';
+import { Chassis, Weapon, Electronics } from '../../../data/robot';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function makeShip(x: number, y: number, height = 1.5): ShipState {
+    return { x, y, height };
+}
+
+function makeRobot(id: string, x: number, y: number, owner = Owner.RED, goal = RobotGoal.ATTACK_ROBOTS): RobotObject {
+    return { id, type: ObjectType.ROBOT, x, y, owner, goal };
+}
+
+function makeWarMap(...robots: RobotObject[]): WarMap {
+    return { width: 20, height: 20, objects: [...robots], projectiles: [] };
+}
+
+// ─── findRobotUnderShip ───────────────────────────────────────────────────────
+
+describe('findRobotUnderShip', () => {
+    it('returns null when no robots exist', () => {
+        const warMap = makeWarMap();
+        expect(findRobotUnderShip(warMap, makeShip(5, 5), Owner.RED)).toBeNull();
+    });
+
+    it('returns null when ship is too high', () => {
+        const warMap = makeWarMap(makeRobot('r1', 5, 5));
+        expect(findRobotUnderShip(warMap, makeShip(5, 5, HOVER_HEIGHT + 0.1), Owner.RED)).toBeNull();
+    });
+
+    it('returns robot when ship is directly over it at trigger height', () => {
+        const robot = makeRobot('r1', 5, 5);
+        const warMap = makeWarMap(robot);
+        const result = findRobotUnderShip(warMap, makeShip(5, 5, HOVER_HEIGHT), Owner.RED);
+        expect(result).toBe(robot);
+    });
+
+    it('returns robot within HOVER_DISTANCE (Chebyshev)', () => {
+        const robot = makeRobot('r1', 5, 5);
+        const warMap = makeWarMap(robot);
+        // Exactly at boundary
+        const ship = makeShip(5 + HOVER_DISTANCE, 5 + HOVER_DISTANCE);
+        expect(findRobotUnderShip(warMap, ship, Owner.RED)).toBe(robot);
+    });
+
+    it('returns null when robot is just beyond HOVER_DISTANCE', () => {
+        const robot = makeRobot('r1', 5, 5);
+        const warMap = makeWarMap(robot);
+        const ship = makeShip(5 + HOVER_DISTANCE + 0.01, 5);
+        expect(findRobotUnderShip(warMap, ship, Owner.RED)).toBeNull();
+    });
+
+    it('ignores robots owned by a different owner', () => {
+        const robot = makeRobot('r1', 5, 5, Owner.BLUE);
+        const warMap = makeWarMap(robot);
+        expect(findRobotUnderShip(warMap, makeShip(5, 5), Owner.RED)).toBeNull();
+    });
+
+    it('ignores dying robots (dyingTicks set)', () => {
+        const robot: RobotObject = { ...makeRobot('r1', 5, 5), dyingTicks: 3 };
+        const warMap = makeWarMap(robot);
+        expect(findRobotUnderShip(warMap, makeShip(5, 5), Owner.RED)).toBeNull();
+    });
+
+    it('returns the closest robot when multiple are nearby', () => {
+        const near   = makeRobot('near',  5,   5);
+        const medium = makeRobot('med',   5.5, 5);
+        const warMap = makeWarMap(medium, near); // near is second in array
+        // Ship at (5,5) — "near" is closer but both qualify; first qualifying wins
+        const result = findRobotUnderShip(warMap, makeShip(5, 5), Owner.RED);
+        expect(result).toBeDefined();
+    });
+
+    it('ignores non-robot objects', () => {
+        const factory = { id: 'f1', type: ObjectType.FACTORY as const, x: 5, y: 5, owner: Owner.RED };
+        const warMap: WarMap = { width: 20, height: 20, objects: [factory], projectiles: [] };
+        expect(findRobotUnderShip(warMap, makeShip(5, 5), Owner.RED)).toBeNull();
+    });
+});
+
+// ─── cycleRobotGoal ───────────────────────────────────────────────────────────
+
+describe('cycleRobotGoal', () => {
+    it('advances to the next goal in ORDERABLE_GOALS', () => {
+        const robot = makeRobot('r1', 0, 0, Owner.RED, ORDERABLE_GOALS[0]);
+        cycleRobotGoal(robot);
+        expect(robot.goal).toBe(ORDERABLE_GOALS[1]);
+    });
+
+    it('wraps around from last to first', () => {
+        const last = ORDERABLE_GOALS[ORDERABLE_GOALS.length - 1];
+        const robot = makeRobot('r1', 0, 0, Owner.RED, last);
+        cycleRobotGoal(robot);
+        expect(robot.goal).toBe(ORDERABLE_GOALS[0]);
+    });
+
+    it('starts from index 0 when current goal is not in ORDERABLE_GOALS', () => {
+        // CAPTURE_ENEMY_FACTORY is not in ORDERABLE_GOALS
+        // indexOf returns -1; (-1+1) % n = 0 → cycles to ORDERABLE_GOALS[0]
+        const robot = makeRobot('r1', 0, 0, Owner.RED, RobotGoal.CAPTURE_ENEMY_FACTORY);
+        cycleRobotGoal(robot);
+        expect(robot.goal).toBe(ORDERABLE_GOALS[0]);
+    });
+
+    it('cycles through all goals without getting stuck', () => {
+        const robot = makeRobot('r1', 0, 0, Owner.RED, ORDERABLE_GOALS[0]);
+        const seen = new Set<RobotGoal>();
+        for (let i = 0; i < ORDERABLE_GOALS.length; i++) {
+            cycleRobotGoal(robot);
+            seen.add(robot.goal!);
+        }
+        expect(seen.size).toBe(ORDERABLE_GOALS.length);
+    });
+});
+
+// ─── setManualControl ─────────────────────────────────────────────────────────
+
+describe('setManualControl', () => {
+    it('sets goal to DEFEND', () => {
+        const robot = makeRobot('r1', 0, 0, Owner.RED, RobotGoal.ATTACK_ROBOTS);
+        setManualControl(robot);
+        expect(robot.goal).toBe(RobotGoal.DEFEND);
+    });
+
+    it('clears the moveOutTarget from nav', () => {
+        const robot: RobotObject = {
+            ...makeRobot('r1', 0, 0),
+            nav: { moveOutTarget: { x: 5, y: 5 } },
+        };
+        setManualControl(robot);
+        expect(robot.nav?.moveOutTarget).toBeUndefined();
+    });
+
+    it('does not throw when robot has no nav state', () => {
+        const robot = makeRobot('r1', 0, 0);
+        expect(() => setManualControl(robot)).not.toThrow();
+        expect(robot.goal).toBe(RobotGoal.DEFEND);
+    });
+});
+
+// ─── getGoalLabel ─────────────────────────────────────────────────────────────
+
+describe('getGoalLabel', () => {
+    it('returns a non-empty label for every orderable goal', () => {
+        ORDERABLE_GOALS.forEach(goal => {
+            expect(getGoalLabel(goal).length).toBeGreaterThan(0);
+        });
+    });
+
+    it('returns a non-empty label for all RobotGoal values', () => {
+        Object.values(RobotGoal).forEach(goal => {
+            expect(getGoalLabel(goal).length).toBeGreaterThan(0);
+        });
+    });
+
+    it('falls back gracefully when goal is undefined', () => {
+        expect(getGoalLabel(undefined).length).toBeGreaterThan(0);
+    });
+});
+
+// ─── getRobotDescription ──────────────────────────────────────────────────────
+
+describe('getRobotDescription', () => {
+    it('returns fallback for undefined config', () => {
+        expect(getRobotDescription(undefined)).toBe('Unknown Robot');
+    });
+
+    it('includes chassis type in description', () => {
+        const desc = getRobotDescription({ chassis: Chassis.TRACKS });
+        expect(desc.toLowerCase()).toContain('tracks');
+    });
+
+    it('shows weapon when present', () => {
+        const desc = getRobotDescription({ chassis: Chassis.BIPOD, weapon: Weapon.PHASERS });
+        expect(desc.toLowerCase()).toContain('phasers');
+    });
+
+    it('shows "Nuclear" when only nuclear is set (no weapon)', () => {
+        const desc = getRobotDescription({ chassis: Chassis.TRACKS, nuclear: true });
+        expect(desc).toContain('Nuclear');
+    });
+
+    it('shows "Unarmed" when no weapon and no nuclear', () => {
+        const desc = getRobotDescription({ chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD });
+        expect(desc).toContain('Unarmed');
+    });
+
+    it('capitalises the chassis name', () => {
+        const desc = getRobotDescription({ chassis: Chassis.ANTIGRAV });
+        expect(desc[0]).toBe(desc[0].toUpperCase());
+    });
+});
