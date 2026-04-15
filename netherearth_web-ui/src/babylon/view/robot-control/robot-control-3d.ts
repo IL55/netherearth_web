@@ -1,137 +1,122 @@
 import * as BABYLON from '@babylonjs/core';
-import { RC_LAYER_MASK, RC_FONT, RC_LAYOUT } from './constants';
 import { cycleRobotGoal, setManualControl, getGoalLabel, getRobotDescription } from './robot-control-logic';
-import { createTextPlane, createBackground, updateTextOnTexture } from '../construction-yard/ui-utils';
 import type { RobotObject } from '../../game/core/warmap';
 
+const PANEL_STYLE: Partial<CSSStyleDeclaration> = {
+    position: 'absolute',
+    bottom: '8px',
+    right: '8px',
+    background: 'rgba(0,0,0,0.75)',
+    color: 'white',
+    fontFamily: 'monospace',
+    fontSize: '11px',
+    padding: '4px 8px',
+    borderRadius: '3px',
+    opacity: '0.85',
+    userSelect: 'none',
+    lineHeight: '1.5',
+};
+
+const BTN_STYLE: Partial<CSSStyleDeclaration> = {
+    background: 'none',
+    border: 'none',
+    fontFamily: 'monospace',
+    fontSize: '11px',
+    cursor: 'pointer',
+    padding: '0',
+    margin: '0',
+};
+
 export class RobotControl3D {
-    private scene: BABYLON.Scene;
-    private mainCamera: BABYLON.Camera;
-    private camera: BABYLON.FreeCamera;
-    private root: BABYLON.TransformNode;
     private onExitCallback: () => void;
     private currentRobot: RobotObject | null = null;
-    private descTexture: BABYLON.DynamicTexture;
-    private goalTexture: BABYLON.DynamicTexture;
+    private panel: HTMLDivElement;
+    private descEl: HTMLSpanElement;
+    private goalEl: HTMLSpanElement;
 
-    constructor(scene: BABYLON.Scene, onExit: () => void) {
-        this.scene = scene;
-        this.mainCamera = scene.activeCamera!;
+    constructor(scene: BABYLON.Scene, onExit: () => void, bottomOffset = 8) {
         this.onExitCallback = onExit;
 
-        this.root = new BABYLON.TransformNode("rcRoot", scene);
+        const canvas = scene.getEngine().getRenderingCanvas()!;
+        const parent = canvas.parentElement ?? document.body;
+        parent.style.position = 'relative';
 
-        // Orthographic camera for the left-panel overlay
-        this.camera = new BABYLON.FreeCamera(
-            "rcCamera",
-            new BABYLON.Vector3(0, 0, RC_LAYOUT.cameraZ),
-            scene,
-        );
-        this.camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
-        this.camera.orthoTop    =  RC_LAYOUT.orthoHeight;
-        this.camera.orthoBottom = -RC_LAYOUT.orthoHeight;
-        const ratio = scene.getEngine().getRenderWidth() / scene.getEngine().getRenderHeight();
-        this.camera.orthoLeft  = -RC_LAYOUT.orthoHeight * ratio;
-        this.camera.orthoRight =  RC_LAYOUT.orthoHeight * ratio;
-        this.camera.layerMask = RC_LAYER_MASK;
+        this.panel = document.createElement('div');
+        Object.assign(this.panel.style, PANEL_STYLE);
+        this.panel.style.bottom = `${bottomOffset}px`;
+        this.panel.style.display = 'none';
 
-        // Left-strip semi-transparent background
-        const bg = createBackground(scene, this.root, RC_LAYOUT.bgWidth, RC_LAYOUT.bgHeight, RC_LAYER_MASK);
-        bg.position.x = RC_LAYOUT.bgX;
-        bg.position.y = RC_LAYOUT.bgY;
+        // Title
+        const title = document.createElement('div');
+        title.style.color = '#bbb';
+        title.style.marginBottom = '2px';
+        title.textContent = 'ROBOT CONTROL';
+        this.panel.appendChild(title);
 
-        if (!scene.actionManager) {
-            scene.actionManager = new BABYLON.ActionManager(scene);
-        }
+        // Robot description
+        this.descEl = document.createElement('div');
+        this.panel.appendChild(this.descEl);
 
-        // ── Static labels ────────────────────────────────────────────────────
-        const { mesh: title } = createTextPlane(scene, "Robot Control", 8, 1.5, RC_LAYER_MASK, "bold 60px Arial");
-        title.parent = this.root;
-        title.position = new BABYLON.Vector3(RC_LAYOUT.panelX, RC_LAYOUT.titleY, 0);
+        // Current goal
+        this.goalEl = document.createElement('div');
+        this.panel.appendChild(this.goalEl);
 
-        // ── Dynamic: robot description ───────────────────────────────────────
-        const { mesh: descMesh, texture: descTex } = createTextPlane(scene, "", 8, 1.5, RC_LAYER_MASK, RC_FONT);
-        descMesh.parent = this.root;
-        descMesh.position = new BABYLON.Vector3(RC_LAYOUT.panelX, RC_LAYOUT.infoY, 0);
-        this.descTexture = descTex;
+        // Buttons row
+        const btnRow = document.createElement('div');
+        btnRow.style.marginTop = '3px';
+        btnRow.style.display = 'flex';
+        btnRow.style.gap = '10px';
 
-        // ── Dynamic: current goal ────────────────────────────────────────────
-        const { mesh: goalMesh, texture: goalTex } = createTextPlane(scene, "", 8, 1.5, RC_LAYER_MASK, RC_FONT);
-        goalMesh.parent = this.root;
-        goalMesh.position = new BABYLON.Vector3(RC_LAYOUT.panelX, RC_LAYOUT.goalLabelY, 0);
-        this.goalTexture = goalTex;
+        const changeBtn = document.createElement('button');
+        Object.assign(changeBtn.style, BTN_STYLE, { color: '#42a5f5' });
+        changeBtn.textContent = 'CHANGE ORDER';
+        changeBtn.addEventListener('click', () => {
+            if (!this.currentRobot) return;
+            cycleRobotGoal(this.currentRobot);
+            this.goalEl.textContent = this.goalText();
+        });
 
-        // ── CHANGE ORDER button ──────────────────────────────────────────────
-        const { mesh: changeBtn } = createTextPlane(
-            scene, "CHANGE ORDER", 8, 1.5, RC_LAYER_MASK, RC_FONT, "blue",
-        );
-        changeBtn.parent = this.root;
-        changeBtn.position = new BABYLON.Vector3(RC_LAYOUT.panelX, RC_LAYOUT.changeOrderBtnY, 0);
-        changeBtn.actionManager = new BABYLON.ActionManager(scene);
-        changeBtn.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-                if (!this.currentRobot) return;
-                cycleRobotGoal(this.currentRobot);
-                updateTextOnTexture(this.goalTexture, this.goalText(), RC_FONT);
-            }),
-        );
+        const manualBtn = document.createElement('button');
+        Object.assign(manualBtn.style, BTN_STYLE, { color: '#ffa726' });
+        manualBtn.textContent = 'MANUAL CONTROL';
+        manualBtn.addEventListener('click', () => {
+            if (!this.currentRobot) return;
+            setManualControl(this.currentRobot);
+            this.close();
+        });
 
-        // ── MANUAL CONTROL button ────────────────────────────────────────────
-        const { mesh: manualBtn } = createTextPlane(
-            scene, "MANUAL CONTROL", 8, 1.5, RC_LAYER_MASK, RC_FONT, "orange",
-        );
-        manualBtn.parent = this.root;
-        manualBtn.position = new BABYLON.Vector3(RC_LAYOUT.panelX, RC_LAYOUT.manualControlBtnY, 0);
-        manualBtn.actionManager = new BABYLON.ActionManager(scene);
-        manualBtn.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-                if (!this.currentRobot) return;
-                setManualControl(this.currentRobot);
-                this.close();
-            }),
-        );
+        const exitBtn = document.createElement('button');
+        Object.assign(exitBtn.style, BTN_STYLE, { color: '#ef5350' });
+        exitBtn.textContent = 'EXIT';
+        exitBtn.addEventListener('click', () => this.close());
 
-        // ── EXIT button ──────────────────────────────────────────────────────
-        const { mesh: exitBtn } = createTextPlane(scene, "EXIT", 3, 1.5, RC_LAYER_MASK, RC_FONT, "red");
-        exitBtn.parent = this.root;
-        exitBtn.position = new BABYLON.Vector3(RC_LAYOUT.panelX, RC_LAYOUT.exitBtnY, 0);
-        exitBtn.actionManager = new BABYLON.ActionManager(scene);
-        exitBtn.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
-                this.close();
-            }),
-        );
+        btnRow.appendChild(changeBtn);
+        btnRow.appendChild(manualBtn);
+        btnRow.appendChild(exitBtn);
+        this.panel.appendChild(btnRow);
 
-        this.root.setEnabled(false);
+        parent.appendChild(this.panel);
     }
-
-    // ── Helpers ────────────────────────────────────────────────────────────────
 
     private goalText(): string {
-        return `GOAL: ${getGoalLabel(this.currentRobot?.goal)}`;
+        return `Goal: ${getGoalLabel(this.currentRobot?.goal)}`;
     }
-
-    // ── Public API ─────────────────────────────────────────────────────────────
 
     public open(robot: RobotObject): void {
         this.currentRobot = robot;
-        updateTextOnTexture(this.descTexture, getRobotDescription(robot.robotConfig), RC_FONT);
-        updateTextOnTexture(this.goalTexture, this.goalText(), RC_FONT);
-        this.scene.activeCameras = [this.mainCamera, this.camera];
-        this.root.setEnabled(true);
+        this.descEl.textContent = getRobotDescription(robot.robotConfig);
+        this.goalEl.textContent = this.goalText();
+        this.panel.style.display = 'block';
     }
 
     public close(): void {
-        (this.scene as any).activeCameras = null;
-        this.scene.activeCamera = this.mainCamera;
-        this.root.setEnabled(false);
+        this.panel.style.display = 'none';
         this.currentRobot = null;
         this.onExitCallback();
     }
 
     public dispose(): void {
         this.close();
-        this.root.dispose();
-        this.camera.dispose();
+        this.panel.remove();
     }
 }

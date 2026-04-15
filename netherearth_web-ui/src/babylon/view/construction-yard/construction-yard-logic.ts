@@ -131,6 +131,19 @@ export function buildRobotConfig(selection: BuildSelection): RobotConfig | null 
     return config;
 }
 
+// ─── Spawn availability ───────────────────────────────────────────────────────
+
+/** Returns true if the owner's warbase spawn point is currently blocked. */
+export function isSpawnOccupied(warMap: WarMap, owner: Owner): boolean {
+    const zone = CAPTURE_ZONES['warbase'];
+    if (!zone) return true;
+    const warbase = warMap.objects.find(
+        o => o.type === ObjectType.WARBASE && o.owner === owner,
+    );
+    if (!warbase) return true;
+    return isOccupied(buildOccupancy(warMap), warbase.x + zone.dx, warbase.y + zone.dy);
+}
+
 // ─── Robot spawning ───────────────────────────────────────────────────────────
 
 let _manualBuildCount = 0;

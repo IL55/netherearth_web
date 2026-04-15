@@ -9,6 +9,7 @@ import {
     canAffordSelection,
     deductSelectionCost,
     isValidBuild,
+    isSpawnOccupied,
     buildRobotConfig,
     spawnManualRobot,
     type BuildSelection,
@@ -203,7 +204,9 @@ export class ConstructionYard3D {
     private updateCreateBtnState(): void {
         if (!this.createBtnMesh) return;
         const resources = this.ownerResources[Owner.RED];
-        const enabled = isValidBuild(this.selection) && canAffordSelection(resources, this.selection);
+        const enabled = isValidBuild(this.selection)
+            && canAffordSelection(resources, this.selection)
+            && !isSpawnOccupied(this.warMap, Owner.RED);
         (this.createBtnMesh.material as BABYLON.StandardMaterial).alpha = enabled ? 1.0 : 0.3;
         this.createBtnMesh.isPickable = enabled;
     }

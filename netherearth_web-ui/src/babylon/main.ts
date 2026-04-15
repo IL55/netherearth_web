@@ -21,7 +21,7 @@ import { ShipRenderer } from './view/map/ship-renderer';
 import { buildOccupancy } from './game/core/occupancy';
 
 import { ConstructionYard3D } from './view/construction-yard';
-import { RobotControl3D, findRobotUnderShip } from './view/robot-control';
+import { RobotControl3D, findRobotUnderShip, HOVER_HEIGHT } from './view/robot-control';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -63,10 +63,11 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const hud = new GameHud(canvas);
   renderer.render(warMap);
 
-  // Place ship 0.5 units above the H-tile of the red warbase.
+  // Place ship directly on the first RED robot so the control panel opens immediately.
+  const firstRedRobot = warMap.objects.find(o => o.type === ObjectType.ROBOT && o.owner === Owner.RED);
   const redWarbase = warMap.objects.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
-  const shipStartX = redWarbase ? redWarbase.x + 1.5 : mapData.width / 2;
-  const shipStartY = redWarbase ? redWarbase.y + 2   : mapData.height / 2;
+  const shipStartX = firstRedRobot ? firstRedRobot.x : (redWarbase ? redWarbase.x + 1.5 : mapData.width / 2);
+  const shipStartY = firstRedRobot ? firstRedRobot.y : (redWarbase ? redWarbase.y + 2   : mapData.height / 2);
   const ship = { x: shipStartX, y: shipStartY, height: 1.5 };
   const shipInput = createShipInput();
   const shipRenderer = new ShipRenderer(models, mapBegin);
@@ -102,7 +103,9 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
     const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y }));
     // We fetch the current complete structures from occupancy to be precise about collisions (walls, factories, warbases)
     const occ = buildOccupancy(warMap, ship);
-    tickShip(ship, shipInput, mapData.width, mapData.height, occ.structures, robotsPositions);
+    if (!isRobotControlOpen) {
+      tickShip(ship, shipInput, mapData.width, mapData.height, occ.structures, robotsPositions);
+    }
 
     // ── Construction yard ────────────────────────────────────────────────────
     const redWarbase = warMap.objects.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
@@ -111,7 +114,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       const hY = redWarbase.y + 2;
       const dist = Math.sqrt((ship.x - hX) ** 2 + (ship.y - hY) ** 2);
 
-      if (dist < 0.5 && ship.height <= 1.05) {
+      if (dist < 0.1 && ship.height <= 1.05) {
         if (!hasTriggeredYard) {
           isConstructionYardOpen = true;
           hasTriggeredYard = true;
@@ -124,7 +127,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
           }
           constructionYard.open();
         }
-      } else if (dist >= 0.5 || ship.height > 1.2) {
+      } else if (dist >= 0.1 || ship.height > 1.2) {
         hasTriggeredYard = false;
       }
     }
@@ -136,10 +139,13 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
         triggeredRobotControlId = nearRobot.id;
         isRobotControlOpen = true;
         if (!robotControl) {
+          // minimap height = mapData.width * 4px (CELL=4, rotated 90°), plus 8px margin and 8px gap
+          const minimapHeight = mapData.width * 4;
           robotControl = new RobotControl3D(scene, () => {
             isRobotControlOpen = false;
             triggeredRobotControlId = null;
-          });
+            ship.height = HOVER_HEIGHT + 0.5;  // lift ship so it won't immediately re-trigger
+          }, 8 + minimapHeight + 8);
         }
         robotControl.open(nearRobot);
       }
@@ -149,7 +155,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
     projectileRenderer.render(warMap);
     shipRenderer.render(ship);
     hud.update(warMap);
-  }, ownerResources, ship, 100, () => isConstructionYardOpen);
+  }, ownerResources, ship, 100, () => isConstructionYardOpen, () => triggeredRobotControlId);
 
   return scene;
 };

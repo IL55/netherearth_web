@@ -13,6 +13,7 @@ import {
     isValidBuild,
     buildRobotConfig,
     spawnManualRobot,
+    isSpawnOccupied,
     _resetManualBuildCount,
     type BuildSelection,
 } from '../../../view/construction-yard/construction-yard-logic';
@@ -397,5 +398,40 @@ describe('spawnManualRobot', () => {
         expect(robot1.id).toBe('robot_manual_0');
         expect(robot2.id).toBe('robot_manual_1');
         expect(robot1.id).not.toBe(robot2.id);
+    });
+});
+
+// ─── isSpawnOccupied ──────────────────────────────────────────────────────────
+// Warbase spawn offset: dx=3.5, dy=2.0 (from CAPTURE_ZONES['warbase'])
+
+describe('isSpawnOccupied', () => {
+    it('returns true when no warbase exists', () => {
+        const warMap = makeWarMap(false);
+        expect(isSpawnOccupied(warMap, Owner.RED)).toBe(true);
+    });
+
+    it('returns true when warbase belongs to a different owner', () => {
+        const warMap = makeWarMap(true, Owner.BLUE);
+        expect(isSpawnOccupied(warMap, Owner.RED)).toBe(true);
+    });
+
+    it('returns false when spawn point is clear', () => {
+        const warMap = makeWarMap(true, Owner.RED);
+        expect(isSpawnOccupied(warMap, Owner.RED)).toBe(false);
+    });
+
+    it('returns true when a robot occupies the spawn point', () => {
+        const warMap = makeWarMap(true, Owner.RED); // warbase at (0,0)
+        // spawn = (0 + 3.5, 0 + 2.0) = (3.5, 2.0)
+        warMap.objects.push({ id: 'blocker', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.RED });
+        expect(isSpawnOccupied(warMap, Owner.RED)).toBe(true);
+    });
+
+    it('returns false after the blocking robot is removed', () => {
+        const warMap = makeWarMap(true, Owner.RED);
+        warMap.objects.push({ id: 'blocker', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.RED });
+        expect(isSpawnOccupied(warMap, Owner.RED)).toBe(true);
+        warMap.objects = warMap.objects.filter(o => o.id !== 'blocker');
+        expect(isSpawnOccupied(warMap, Owner.RED)).toBe(false);
     });
 });
