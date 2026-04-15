@@ -21,8 +21,8 @@ import { createShipInput, tickShip } from './game/ship/index';
 import { ShipRenderer } from './view/map/ship-renderer';
 import { buildOccupancy } from './game/core/occupancy';
 
-import { ConstructionYard3D } from './view/construction-yard';
-import { RobotControl3D, findRobotUnderShip, HOVER_HEIGHT, isRobotAlive } from './view/robot-control';
+import { ConstructionYardTrigger } from './view/construction-yard';
+import { RobotControlTrigger, HOVER_HEIGHT } from './view/robot-control';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -92,94 +92,34 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
     r.common = r.chassis = r.cannons = r.missiles = r.phasers = r.electronics = r.nuclear = INITIAL_RESOURCES;
   }
 
-  let isConstructionYardOpen = false;
-  let hasTriggeredYard = false;
-  let constructionYard: ConstructionYard3D | null = null;
+  const constructionYardTrigger = new ConstructionYardTrigger(scene, models, ownerResources, () => {
+    ship.height = 1.5;
+  });
 
-  let isRobotControlOpen = false;
-  let triggeredRobotControlId: string | null = null;
-  let robotControl: RobotControl3D | null = null;
-  let pendingManualAction: import('./game/actions').RobotAction | null = null;
+  const robotControlTrigger = new RobotControlTrigger(scene, mapData.width, () => {
+    ship.height = HOVER_HEIGHT + 0.5;
+  });
 
   startClock(warMap, () => {
     const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y }));
     // We fetch the current complete structures from occupancy to be precise about collisions (walls, factories, warbases)
     const occ = buildOccupancy(warMap, ship);
-    if (!isRobotControlOpen) {
+    if (!robotControlTrigger.isOpen()) {
       tickShip(ship, shipInput, mapData.width, mapData.height, occ.structures, robotsPositions);
     }
 
     // ── Construction yard ────────────────────────────────────────────────────
-    const redWarbase = warMap.objects.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
-    if (redWarbase) {
-      const hX = redWarbase.x + 1.5;
-      const hY = redWarbase.y + 2;
-      const dist = Math.sqrt((ship.x - hX) ** 2 + (ship.y - hY) ** 2);
-
-      if (dist < 0.1 && ship.height <= 1.05) {
-        if (!hasTriggeredYard) {
-          isConstructionYardOpen = true;
-          hasTriggeredYard = true;
-
-          if (!constructionYard) {
-              constructionYard = new ConstructionYard3D(scene, models, ownerResources, warMap, () => {
-                  isConstructionYardOpen = false;
-                  ship.height = 1.5;
-              });
-          }
-          constructionYard.open();
-        }
-      } else if (dist >= 0.1 || ship.height > 1.2) {
-        hasTriggeredYard = false;
-      }
-    }
-
-    // ── Robot control — close if controlled robot died; track robot position ──
-    if (isRobotControlOpen && robotControl && !isRobotAlive(warMap, triggeredRobotControlId)) {
-      robotControl.close();
-    } else if (isRobotControlOpen && robotControl) {
-      // Keep ship above the controlled robot so it follows as the robot moves
-      const controlled = warMap.objects.find(o => o.id === triggeredRobotControlId);
-      if (controlled) { ship.x = controlled.x; ship.y = controlled.y; }
-      robotControl.updateDisplay();
-    }
+    constructionYardTrigger.check(warMap, ship);
 
     // ── Robot control ────────────────────────────────────────────────────────
-    if (!isConstructionYardOpen && !isRobotControlOpen) {
-      const nearRobot = findRobotUnderShip(warMap, ship, Owner.RED);
-      if (nearRobot && nearRobot.id !== triggeredRobotControlId) {
-        triggeredRobotControlId = nearRobot.id;
-        isRobotControlOpen = true;
-        ship.height = HOVER_HEIGHT + 0.5;
-        if (!robotControl) {
-          // minimap height = mapData.width * 4px (CELL=4, rotated 90°), plus 8px margin and 8px gap
-          const minimapHeight = mapData.width * 4;
-          robotControl = new RobotControl3D(scene, warMap, () => {
-            isRobotControlOpen = false;
-            triggeredRobotControlId = null;
-            ship.height = HOVER_HEIGHT + 0.5;  // lift ship so it won't immediately re-trigger
-          }, (action) => {
-            // Fire takes priority: don't let a direction/rotate overwrite a pending fire
-            if (pendingManualAction?.type === ActionType.FIRE && action.type !== ActionType.FIRE) return;
-            pendingManualAction = action;
-          }, 8 + minimapHeight + 8);
-        }
-        robotControl.open(nearRobot);
-      }
-    }
+    robotControlTrigger.check(warMap, ship, constructionYardTrigger.isOpen());
 
     renderer.render(warMap);
     projectileRenderer.render(warMap);
-    shipRenderer.render(ship);
-    // Hide shadow when ship is over any game object so it doesn't cover models below
-    const shadowOccupied = warMap.objects.some(o =>
-      o.type !== ObjectType.TILE &&
-      Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5
-    );
-    shipRenderer.setShadowVisible(!shadowOccupied);
+    shipRenderer.render(ship, warMap);
     hud.update(warMap);
-  }, ownerResources, ship, 100, () => isConstructionYardOpen, () => triggeredRobotControlId,
-    () => { const a = pendingManualAction; pendingManualAction = null; return a; });
+  }, ownerResources, ship, 100, () => constructionYardTrigger.isOpen(), () => robotControlTrigger.getTriggeredRobotId(),
+    () => robotControlTrigger.takePendingAction());
 
   return scene;
 };

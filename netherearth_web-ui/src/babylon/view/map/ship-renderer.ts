@@ -1,6 +1,8 @@
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
 import type { ShipState } from '../../game/ship/index';
+import { ObjectType } from '../../game/core/warmap';
+import type { WarMap } from '../../game/core/warmap';
 
 // Renders the player-controlled ship.
 // On first call the GLB geometry is measured: scaled so the XZ footprint is 1×1 (same as a
@@ -21,7 +23,15 @@ export class ShipRenderer {
         private mapBegin: BABYLON.Vector3,
     ) {}
 
-    render(ship: ShipState): void {
+    render(ship: ShipState, warMap?: WarMap): void {
+        if (warMap && this.shadowMesh) {
+            const shadowOccupied = warMap.objects.some(o =>
+                o.type !== ObjectType.TILE &&
+                Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5
+            );
+            this.shadowMesh.isVisible = !shadowOccupied;
+        }
+
         if (this.instance) {
             this.instance.position.set(
                 this.mapBegin.x + ship.x + this.xOffset,
@@ -109,10 +119,14 @@ export class ShipRenderer {
             this.mapBegin.z + ship.y,
         );
         this.shadowMesh = shadow;
-    }
-
-    setShadowVisible(visible: boolean): void {
-        if (this.shadowMesh) this.shadowMesh.isVisible = visible;
+        
+        if (warMap) {
+            const shadowOccupied = warMap.objects.some(o =>
+                o.type !== ObjectType.TILE &&
+                Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5
+            );
+            this.shadowMesh.isVisible = !shadowOccupied;
+        }
     }
 
     dispose(): void {
