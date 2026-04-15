@@ -65,7 +65,7 @@ Robots can be equipped with different weapon modules that determine their firing
 When a robot equipped with a **Nuclear Bomb** (A-bomb) activates it, it detonates with the following effects:
 - **3x3 Kill Zone**: The 3x3 area centered on the detonating robot is completely destroyed.
   - All robots inside this 3x3 area are instantly killed.
-  - All structures (fences, walls, etc.) inside this 3x3 area turn to sand.
+  - All structures (fences, walls, rocks, etc.) inside this 3x3 area turn to sand.
   - If **any** block of a factory or warbase falls within this 3x3 area, the **entire** structure is destroyed and turns to sand.
 - **5x5 Damage Zone**: Any robot located within the 5x5 area centered on the detonating robot (but outside the 3x3 kill zone) receives 50% damage.
 

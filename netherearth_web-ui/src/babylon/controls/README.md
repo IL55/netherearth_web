@@ -17,3 +17,11 @@ keeping controls decoupled from the view layer.
 | `t` | Cycle owner for all factories and warbases |
 | `Arrow Keys` | Move ship horizontally (forward, backward, left, right) |
 | `Space` | Ship ascend |
+
+### Manual Robot Control (when active)
+
+| Key | Action |
+|-----|--------|
+| `Arrow Keys` | Move / rotate the robot manually |
+| `Space` | Fire equipped weapon |
+| `x` | Detonate nuclear bomb (if equipped) |

@@ -21,6 +21,7 @@ import { fightAction } from './fight';
 import { NavAlgo } from './nav-algo';
 import { bug2Dirs } from './bug2';
 import { recordCell, tremauxDirs } from './tremaux';
+import { shouldDetonateNuclear } from './nuclear';
 
 function findTarget(robot: RobotObject, warMap: WarMap): WarObject | undefined {
     const candidates = warMap.objects.filter(o => {
@@ -48,6 +49,11 @@ function targetPos(target: WarObject): { x: number; y: number } {
 }
 
 export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: OccupancyMap): RobotAction {
+    // 0. Nuclear check (random chance, e.g. when close to multiple enemies)
+    if (shouldDetonateNuclear(robot, warMap, false)) {
+        return { type: ActionType.DETONATE };
+    }
+
     // 1. Combat: fire or advance toward a visible enemy
     const combat = fightAction(robot, warMap, occupancy);
 
@@ -125,6 +131,11 @@ export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: Occupancy
         if (facing === dir) return { type: ActionType.MOVE, direction: dir };
         const steps = (CW_DIRS.indexOf(dir) - CW_DIRS.indexOf(facing) + 4) % 4;
         return { type: ActionType.ROTATE, direction: steps <= 2 ? RotateDir.RIGHT : RotateDir.LEFT };
+    }
+
+    // Stuck (no passable directions). If equipped with nuclear, detonate if targets are nearby.
+    if (shouldDetonateNuclear(robot, warMap, true)) {
+        return { type: ActionType.DETONATE };
     }
 
     return { type: ActionType.IDLE };

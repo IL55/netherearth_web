@@ -11,6 +11,8 @@ export enum ActionType {
     ROTATE = 'rotate',
     /** Fire the equipped weapon at a target robot. */
     FIRE   = 'fire',
+    /** Detonate the equipped nuclear bomb. */
+    DETONATE = 'detonate',
     /** Do nothing this tick. */
     IDLE   = 'idle',
 }
@@ -19,6 +21,7 @@ export type RobotAction =
     | { type: ActionType.MOVE;   direction: Direction }
     | { type: ActionType.ROTATE; direction: RotateDir }
     | { type: ActionType.FIRE;   targetId: string }
+    | { type: ActionType.DETONATE }
     | { type: ActionType.IDLE };
 
 // Robots move in 1/4 grid increments per tick (4 ticks to cross one cell)

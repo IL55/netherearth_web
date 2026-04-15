@@ -25,7 +25,12 @@ export const loadMap = async (url: string): Promise<MapData> => {
     for (let i = height + 2; i < lines.length; i++) {
         const parts = lines[i].split(' ');
         const type = parts[0];
-        if (type === ObjectType.FENCE || type.startsWith('wall')) {
+        if (
+            type === ObjectType.FENCE ||
+            type === ObjectType.ROCKS ||
+            type === ObjectType.HEAVYROCKS ||
+            type.startsWith('wall')
+        ) {
             objects.push({ type, x: parseFloat(parts[1]), y: parseFloat(parts[2]) });
         } else if (type === ObjectType.FACTORY) {
             const ownerNum = parts[4] ? parseInt(parts[4]) : undefined;

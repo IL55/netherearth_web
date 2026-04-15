@@ -20,4 +20,7 @@ export enum ObjectType {
     WALL6   = 'wall6',
     /** A boundary obstacle typically preventing movement while allowing vision. */
     FENCE   = 'fence',
+    /** Natural obstacles */
+    ROCKS   = 'rocks',
+    HEAVYROCKS = 'heavyrocks',
 }

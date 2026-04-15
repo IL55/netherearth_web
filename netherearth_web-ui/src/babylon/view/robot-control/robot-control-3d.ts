@@ -62,6 +62,7 @@ export class RobotControl3D {
     private moveDistanceEl: HTMLSpanElement;
     private moveFwdBtn: HTMLButtonElement;
     private moveBwdBtn: HTMLButtonElement;
+    private detonateBtn: HTMLButtonElement;
     private keyHandler: ((e: KeyboardEvent) => void) | null = null;
     private keyUpHandler: ((e: KeyboardEvent) => void) | null = null;
     private heldDirection: Direction | null = null;
@@ -212,6 +213,10 @@ export class RobotControl3D {
         this.manualView.appendChild(dpad);
 
         this.manualView.appendChild(makeBtn('FIRE  [Space]', '#ffa726', () => this.dispatchFire()));
+
+        this.detonateBtn = makeBtn('DETONATE A-BOMB  [X]', '#ef5350', () => this.dispatchDetonate());
+        this.manualView.appendChild(this.detonateBtn);
+
         this.manualView.appendChild(makeBtn('RETURN', '#888', () => this.showMainView()));
         this.panel.appendChild(this.manualView);
 
@@ -231,6 +236,12 @@ export class RobotControl3D {
         if (action) this.onAction(action);
     }
 
+    private dispatchDetonate(): void {
+        if (!this.currentRobot?.robotConfig?.nuclear) return;
+        this.onAction({ type: ActionType.DETONATE });
+        this.close(); // Detonation kills the robot, so close the control panel
+    }
+
     // ── Key bindings ───────────────────────────────────────────────────────────
 
     private attachKeys(): void {
@@ -241,6 +252,7 @@ export class RobotControl3D {
                 case 'ArrowUp':    e.preventDefault(); this.heldDirection = Direction.W; break;
                 case 'ArrowDown':  e.preventDefault(); this.heldDirection = Direction.E; break;
                 case 'Space':      if (!e.repeat) { e.preventDefault(); this.dispatchFire(); } break;
+                case 'KeyX':       if (!e.repeat) { e.preventDefault(); this.dispatchDetonate(); } break;
             }
         };
         this.keyUpHandler = (e: KeyboardEvent) => {
@@ -298,11 +310,19 @@ export class RobotControl3D {
     private showManualView(): void {
         if (!this.currentRobot) return;
         setManualControl(this.currentRobot);
-        this.goalEl.textContent = this.goalText();
+        this.attachKeys();
+        
+        // Show or hide detonate button based on robot equipment
+        if (this.currentRobot.robotConfig?.nuclear) {
+            this.detonateBtn.style.display = 'block';
+        } else {
+            this.detonateBtn.style.display = 'none';
+        }
+        
         this.mainView.style.display = 'none';
         this.goalView.style.display = 'none';
         this.manualView.style.display = 'block';
-        this.attachKeys();
+        this.updateDisplay();
     }
 
     // ── Public API ─────────────────────────────────────────────────────────────

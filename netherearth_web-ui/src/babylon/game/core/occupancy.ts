@@ -77,16 +77,32 @@ export function buildOccupancy(warMap: WarMap, ship?: { x: number; y: number; he
 }
 
 function isBlockingType(type: string): boolean {
-    return ['wall1', 'wall2', 'wall3', 'wall4', 'wall5', 'wall6', 'fence'].includes(type);
+    return [
+        ObjectType.WALL1,
+        ObjectType.WALL2,
+        ObjectType.WALL3,
+        ObjectType.WALL4,
+        ObjectType.WALL5,
+        ObjectType.WALL6,
+        ObjectType.FENCE,
+        ObjectType.ROCKS,
+        ObjectType.HEAVYROCKS,
+    ].includes(type as ObjectType);
 }
 
 function getStructureHeight(type: string): number {
-    // Low walls and fences are height 0.5
-    if (type.startsWith('wall1') || type.startsWith('wall2') || type.startsWith('wall3') || type === 'fence') {
+    // Low walls, fences, and regular rocks are height 0.5
+    if (
+        type === ObjectType.WALL1 ||
+        type === ObjectType.WALL2 ||
+        type === ObjectType.WALL3 ||
+        type === ObjectType.FENCE ||
+        type === ObjectType.ROCKS
+    ) {
         return 0.5;
     }
     // Warbase has mixed heights, but if considered as a single block for other purposes, default to 1.0
-    if (type === 'warbase') {
+    if (type === ObjectType.WARBASE) {
         return 1.0;
     }
     // High walls and factories are height 2.0
