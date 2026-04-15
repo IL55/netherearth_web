@@ -52,6 +52,23 @@ Antigrav moves at full speed on all terrain, including holes (flies over them).
 - **Antigrav** — from `antigrav`
 - **Bipod** — from `bipod`
 
+### Weapons & Nuclear Bomb
+
+Robots can be equipped with different weapon modules that determine their firing stats. Damage falls off linearly over distance (from 100% at 1 cell to 40% at maximum range). A robot can only fire if it is equipped with an Electronics module.
+
+| Weapon | Max Range | Cooldown | Base Damage (at 1 cell) | Projectile Speed |
+|--------|-----------|----------|-------------------------|------------------|
+| Cannon | 5 cells | 7 ticks | 4 HP | Medium |
+| Missiles | 7 cells | 12 ticks | 6 HP | Slow |
+| Phasers | 5 cells | 6 ticks | 8 HP | Slow |
+
+When a robot equipped with a **Nuclear Bomb** (A-bomb) activates it, it detonates with the following effects:
+- **3x3 Kill Zone**: The 3x3 area centered on the detonating robot is completely destroyed.
+  - All robots inside this 3x3 area are instantly killed.
+  - All structures (fences, walls, etc.) inside this 3x3 area turn to sand.
+  - If **any** block of a factory or warbase falls within this 3x3 area, the **entire** structure is destroyed and turns to sand.
+- **5x5 Damage Zone**: Any robot located within the 5x5 area centered on the detonating robot (but outside the 3x3 kill zone) receives 50% damage.
+
 ## AI
 
 Each robot has a **goal** and an **AI strategy**:
@@ -68,6 +85,8 @@ Each robot has a **goal** and an **AI strategy**:
 | `capture_enemy_warbase`   | Nearest enemy-owned warbase only |
 | `capture_neutral_warbase` | Nearest neutral (unowned) warbase only |
 | `defend`                  | Stay in place (no movement target) |
+| `move_forward`            | Move a fixed number of tiles toward the enemy base, then stop |
+| `move_backward`           | Move a fixed number of tiles toward own base, then stop |
 
 ### AI Strategies
 
