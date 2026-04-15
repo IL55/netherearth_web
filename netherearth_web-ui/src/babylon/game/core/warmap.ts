@@ -57,6 +57,8 @@ export interface RobotObject extends ObjectBase {
     dyingTicks?: number;
     captureCounter?: number;
     nav?: NavState;
+    /** Target tile for MOVE_FORWARD / MOVE_BACKWARD goals. Cleared on arrival. */
+    goalPosition?: { x: number; y: number };
 }
 
 // Static map object (tile, factory, warbase, wall, fence)

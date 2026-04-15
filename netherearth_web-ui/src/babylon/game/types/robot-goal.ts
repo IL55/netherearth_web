@@ -19,4 +19,8 @@ export enum RobotGoal {
     CAPTURE_NEUTRAL_WARBASE = 'capture_neutral_warbase',
     /** Stay in place; no movement target. Will still defend if attacked. */
     DEFEND                  = 'defend',
+    /** Move a fixed number of tiles toward the enemy base, then stop. */
+    MOVE_FORWARD            = 'move_forward',
+    /** Move a fixed number of tiles toward own base, then stop. */
+    MOVE_BACKWARD           = 'move_backward',
 }

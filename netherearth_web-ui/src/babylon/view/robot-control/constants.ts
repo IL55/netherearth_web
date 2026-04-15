@@ -25,6 +25,8 @@ export const GOAL_LABELS: Record<string, string> = {
     [RobotGoal.CAPTURE_ENEMY_WARBASE]:   'Enemy Warbase',
     [RobotGoal.CAPTURE_NEUTRAL_WARBASE]: 'Neutral Warbase',
     [RobotGoal.DEFEND]:                  'Defend',
+    [RobotGoal.MOVE_FORWARD]:            'Move Forward',
+    [RobotGoal.MOVE_BACKWARD]:           'Move Backward',
 };
 
 /** Left-panel layout (orthographic camera space, same scale as CY). */

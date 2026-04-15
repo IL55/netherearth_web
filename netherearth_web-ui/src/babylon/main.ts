@@ -15,13 +15,14 @@ import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';
 import { attachShipControls } from './controls/ship';
 import { startClock } from './game/clock';
+import { ActionType } from './game/actions';
 import { createOwnerResources } from './game/resources';
 import { createShipInput, tickShip } from './game/ship/index';
 import { ShipRenderer } from './view/map/ship-renderer';
 import { buildOccupancy } from './game/core/occupancy';
 
 import { ConstructionYard3D } from './view/construction-yard';
-import { RobotControl3D, findRobotUnderShip, HOVER_HEIGHT } from './view/robot-control';
+import { RobotControl3D, findRobotUnderShip, HOVER_HEIGHT, isRobotAlive } from './view/robot-control';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -98,6 +99,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   let isRobotControlOpen = false;
   let triggeredRobotControlId: string | null = null;
   let robotControl: RobotControl3D | null = null;
+  let pendingManualAction: import('./game/actions').RobotAction | null = null;
 
   startClock(warMap, () => {
     const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y }));
@@ -132,19 +134,34 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       }
     }
 
+    // ── Robot control — close if controlled robot died; track robot position ──
+    if (isRobotControlOpen && robotControl && !isRobotAlive(warMap, triggeredRobotControlId)) {
+      robotControl.close();
+    } else if (isRobotControlOpen && robotControl) {
+      // Keep ship above the controlled robot so it follows as the robot moves
+      const controlled = warMap.objects.find(o => o.id === triggeredRobotControlId);
+      if (controlled) { ship.x = controlled.x; ship.y = controlled.y; }
+      robotControl.updateDisplay();
+    }
+
     // ── Robot control ────────────────────────────────────────────────────────
     if (!isConstructionYardOpen && !isRobotControlOpen) {
       const nearRobot = findRobotUnderShip(warMap, ship, Owner.RED);
       if (nearRobot && nearRobot.id !== triggeredRobotControlId) {
         triggeredRobotControlId = nearRobot.id;
         isRobotControlOpen = true;
+        ship.height = HOVER_HEIGHT + 0.5;
         if (!robotControl) {
           // minimap height = mapData.width * 4px (CELL=4, rotated 90°), plus 8px margin and 8px gap
           const minimapHeight = mapData.width * 4;
-          robotControl = new RobotControl3D(scene, () => {
+          robotControl = new RobotControl3D(scene, warMap, () => {
             isRobotControlOpen = false;
             triggeredRobotControlId = null;
             ship.height = HOVER_HEIGHT + 0.5;  // lift ship so it won't immediately re-trigger
+          }, (action) => {
+            // Fire takes priority: don't let a direction/rotate overwrite a pending fire
+            if (pendingManualAction?.type === ActionType.FIRE && action.type !== ActionType.FIRE) return;
+            pendingManualAction = action;
           }, 8 + minimapHeight + 8);
         }
         robotControl.open(nearRobot);
@@ -154,8 +171,15 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
     renderer.render(warMap);
     projectileRenderer.render(warMap);
     shipRenderer.render(ship);
+    // Hide shadow when ship is over any game object so it doesn't cover models below
+    const shadowOccupied = warMap.objects.some(o =>
+      o.type !== ObjectType.TILE &&
+      Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5
+    );
+    shipRenderer.setShadowVisible(!shadowOccupied);
     hud.update(warMap);
-  }, ownerResources, ship, 100, () => isConstructionYardOpen, () => triggeredRobotControlId);
+  }, ownerResources, ship, 100, () => isConstructionYardOpen, () => triggeredRobotControlId,
+    () => { const a = pendingManualAction; pendingManualAction = null; return a; });
 
   return scene;
 };

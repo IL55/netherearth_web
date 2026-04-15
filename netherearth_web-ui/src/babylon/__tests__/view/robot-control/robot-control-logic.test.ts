@@ -8,9 +8,11 @@ import {
     setManualControl,
     getGoalLabel,
     getRobotDescription,
+    isRobotAlive,
+    getRobotHealthPercent,
 } from '../../../view/robot-control/robot-control-logic';
 import { ORDERABLE_GOALS, HOVER_DISTANCE, HOVER_HEIGHT } from '../../../view/robot-control/constants';
-import { Chassis, Weapon, Electronics } from '../../../data/robot';
+import { Chassis, Weapon, Electronics, calcHealth } from '../../../data/robot';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -199,5 +201,82 @@ describe('getRobotDescription', () => {
     it('capitalises the chassis name', () => {
         const desc = getRobotDescription({ chassis: Chassis.ANTIGRAV });
         expect(desc[0]).toBe(desc[0].toUpperCase());
+    });
+});
+
+// ─── isRobotAlive ─────────────────────────────────────────────────────────────
+
+describe('isRobotAlive', () => {
+    it('returns false for null id', () => {
+        const warMap = makeWarMap();
+        expect(isRobotAlive(warMap, null)).toBe(false);
+    });
+
+    it('returns false when robot is not in warMap', () => {
+        const warMap = makeWarMap();
+        expect(isRobotAlive(warMap, 'ghost')).toBe(false);
+    });
+
+    it('returns true for a live robot', () => {
+        const robot = makeRobot('r1', 5, 5);
+        const warMap = makeWarMap(robot);
+        expect(isRobotAlive(warMap, 'r1')).toBe(true);
+    });
+
+    it('returns false when robot has dyingTicks set', () => {
+        const robot: RobotObject = { ...makeRobot('r1', 5, 5), dyingTicks: 3 };
+        const warMap = makeWarMap(robot);
+        expect(isRobotAlive(warMap, 'r1')).toBe(false);
+    });
+
+    it('returns false after the robot is removed from warMap', () => {
+        const robot = makeRobot('r1', 5, 5);
+        const warMap = makeWarMap(robot);
+        expect(isRobotAlive(warMap, 'r1')).toBe(true);
+        warMap.objects = [];
+        expect(isRobotAlive(warMap, 'r1')).toBe(false);
+    });
+});
+
+// ─── getRobotHealthPercent ────────────────────────────────────────────────────
+
+describe('getRobotHealthPercent', () => {
+    it('returns 0 when robotConfig is missing', () => {
+        const robot: RobotObject = { ...makeRobot('r1', 0, 0) };
+        delete (robot as any).robotConfig;
+        expect(getRobotHealthPercent(robot)).toBe(0);
+    });
+
+    it('returns 100 at full health', () => {
+        const cfg = { chassis: Chassis.TRACKS, weapon: Weapon.CANNON };
+        const robot: RobotObject = {
+            ...makeRobot('r1', 0, 0),
+            robotConfig: cfg,
+            health: calcHealth(cfg),
+        };
+        expect(getRobotHealthPercent(robot)).toBe(100);
+    });
+
+    it('returns 0 when health is 0', () => {
+        const cfg = { chassis: Chassis.BIPOD };
+        const robot: RobotObject = { ...makeRobot('r1', 0, 0), robotConfig: cfg, health: 0 };
+        expect(getRobotHealthPercent(robot)).toBe(0);
+    });
+
+    it('returns roughly 50 at half health', () => {
+        const cfg = { chassis: Chassis.TRACKS, weapon: Weapon.CANNON };
+        const max = calcHealth(cfg);
+        const robot: RobotObject = {
+            ...makeRobot('r1', 0, 0),
+            robotConfig: cfg,
+            health: max / 2,
+        };
+        expect(getRobotHealthPercent(robot)).toBeCloseTo(50, 0);
+    });
+
+    it('clamps to 0 — never returns negative', () => {
+        const cfg = { chassis: Chassis.BIPOD };
+        const robot: RobotObject = { ...makeRobot('r1', 0, 0), robotConfig: cfg, health: -10 };
+        expect(getRobotHealthPercent(robot)).toBe(0);
     });
 });

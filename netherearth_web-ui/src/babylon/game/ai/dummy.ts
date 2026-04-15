@@ -53,7 +53,29 @@ export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: Occupancy
 
     if (combat) return combat;
 
-    // 2. Goal navigation
+    // 2. Waypoint goals (MOVE_FORWARD / MOVE_BACKWARD)
+    if (robot.goal === RobotGoal.MOVE_FORWARD || robot.goal === RobotGoal.MOVE_BACKWARD) {
+        if (!robot.goalPosition) return { type: ActionType.IDLE };
+        const { x: wx, y: wy } = robot.goalPosition;
+        if (Math.abs(robot.x - wx) + Math.abs(robot.y - wy) < 0.3) {
+            robot.goal = RobotGoal.DEFEND;
+            robot.goalPosition = undefined;
+            return { type: ActionType.IDLE };
+        }
+        const facing = robot.facing ?? Direction.N;
+        const dirs = bug2Dirs(robot, warMap, occupancy, wx, wy,
+            Math.abs(robot.x - wx) + Math.abs(robot.y - wy));
+        for (const dir of dirs) {
+            const { dx, dy } = dirDelta(dir);
+            if (!isPassable(warMap, occupancy, robot, robot.x + dx, robot.y + dy)) continue;
+            if (facing === dir) return { type: ActionType.MOVE, direction: dir };
+            const steps = (CW_DIRS.indexOf(dir) - CW_DIRS.indexOf(facing) + 4) % 4;
+            return { type: ActionType.ROTATE, direction: steps <= 2 ? RotateDir.RIGHT : RotateDir.LEFT };
+        }
+        return { type: ActionType.IDLE };
+    }
+
+    // 3. Goal navigation
     let tx = robot.x, ty = robot.y;
     let isMoveOut = false;
 

@@ -99,7 +99,8 @@ export class ShipRenderer {
         shadowMat.diffuseColor = new BABYLON.Color3(0, 0, 0);
         shadowMat.specularColor = new BABYLON.Color3(0, 0, 0);
         shadowMat.alpha = 0.4;
-        shadowMat.zOffset = -1; // Prevent Z-fighting with ground
+        shadowMat.zOffset = -1;           // Prevent Z-fighting with ground
+        shadowMat.disableDepthWrite = true; // Don't write depth — prevents shadow from occluding geometry above it
         
         shadow.material = shadowMat;
         shadow.position.set(
@@ -108,6 +109,10 @@ export class ShipRenderer {
             this.mapBegin.z + ship.y,
         );
         this.shadowMesh = shadow;
+    }
+
+    setShadowVisible(visible: boolean): void {
+        if (this.shadowMesh) this.shadowMesh.isVisible = visible;
     }
 
     dispose(): void {

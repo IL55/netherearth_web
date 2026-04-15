@@ -28,12 +28,13 @@ export function startClock(
     subTickMs = 100,
     isPaused: () => boolean = () => false,
     getControlledRobotId: () => string | null = () => null,
+    getManualAction: () => RobotAction | null = () => null,
 ): Clock {
     let subTick = 0;
     const id = setInterval(() => {
         if (isPaused()) return;
         if (subTick === 0) {
-            gameTick(warMap, ownerResources, ship, getControlledRobotId());
+            gameTick(warMap, ownerResources, ship, getControlledRobotId(), getManualAction);
         }
         advanceProjectiles(warMap);
         onTick();
@@ -45,7 +46,13 @@ export function startClock(
 // Number of ticks for the death-blink animation (show/hide alternates each tick).
 const DEATH_BLINK_TICKS = 6; // 3 blinks: show@6, hide@5, show@4, hide@3, show@2, hide@1 → removed
 
-function gameTick(warMap: WarMap, ownerResources: OwnerResources, ship?: ShipState, controlledRobotId: string | null = null): void {
+function gameTick(
+    warMap: WarMap,
+    ownerResources: OwnerResources,
+    ship?: ShipState,
+    controlledRobotId: string | null = null,
+    getManualAction: () => RobotAction | null = () => null,
+): void {
     warMap.tick = (warMap.tick ?? 0) + 1;
 
     // Step dying-robot countdown; remove those that have finished
@@ -63,7 +70,11 @@ function gameTick(warMap: WarMap, ownerResources: OwnerResources, ship?: ShipSta
     // Run AI only for live (non-dying) robots
     for (const obj of [...warMap.objects]) {
         if (obj.type !== ObjectType.ROBOT || obj.dyingTicks !== undefined) continue;
-        if (obj.id === controlledRobotId) continue;
+        if (obj.id === controlledRobotId) {
+            const action = getManualAction();
+            if (action) applyAction(obj, action, warMap, occupancy);
+            continue;
+        }
 
         const ai = obj.ai ?? 'dummy';
         const action: RobotAction = ai === RobotAI.DUMMY ? dummyAI(obj, warMap, occupancy) : { type: ActionType.IDLE };
