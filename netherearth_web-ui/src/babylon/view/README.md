@@ -6,8 +6,10 @@ BabylonJS rendering layer. Reads game state, draws the scene. No game logic live
 |--------|---------|
 | `shared/` | Utilities shared across all views (asset loader, scene helpers) |
 | `map/` | 3D battlefield: tiles, factories, warbases, robots in-game |
-| `workshop/` | Robot construction and customisation view |
-| `ui/` | Menus and HUD: start screen, pause, game over, overlays |
+| `construction-yard/` | Robot construction and customisation view |
+| `robot-control/` | Manual control view for robots |
+| `hud/` | Heads-up display during gameplay |
+| `ui/` | Menus: start screen, pause, game over, overlays |
 
 ## How rendering works
 

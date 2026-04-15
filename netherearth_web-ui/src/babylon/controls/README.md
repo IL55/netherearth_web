@@ -6,6 +6,7 @@ keeping controls decoupled from the view layer.
 
 - `camera.ts` — `attachCameraControls()`: `a`/`d` pan the `ArcRotateCamera`
 - `game.ts` — `attachGameControls()`: game action keys that mutate `WarMap` and trigger a re-render
+- `ship.ts` — `attachShipControls()`: controls the player's ship movement
 
 ## Keybindings
 
@@ -13,4 +14,6 @@ keeping controls decoupled from the view layer.
 |-----|--------|
 | `a` | Pan camera target −z |
 | `d` | Pan camera target +z |
-| `t` | Remove last robot from the map |
+| `t` | Cycle owner for all factories and warbases |
+| `Arrow Keys` | Move ship horizontally (forward, backward, left, right) |
+| `Space` | Ship ascend |

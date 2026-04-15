@@ -12,14 +12,16 @@ data/            Pure data: types, parsing, loading. Zero BabylonJS.
   robot.ts         RobotConfig interface + robotConfigs presets
 
 game/            Live game state. Zero BabylonJS.
-  warmap.ts        WarObject, WarMap, createWarMap()
+  core/warmap.ts   WarObject, WarMap, createWarMap()
                    Mutated by game events (move, capture, destroy, spawn).
 
 view/            BabylonJS rendering. Reads game state, draws scene.
-  shared/          Asset loader, scene helpers (used by all views)
-  map/             3D battlefield: tiles, factories, warbases, robots
-  workshop/        Robot construction and customisation view
-  ui/              Menus and HUD: start, pause, game over, overlays
+  shared/            Asset loader, scene helpers (used by all views)
+  map/               3D battlefield: tiles, factories, warbases, robots
+  construction-yard/ Robot construction and customisation view
+  robot-control/     Manual control view for robots
+  hud/               Heads-up display during gameplay
+  ui/                Menus and HUD: start, pause, game over, overlays
 
 controls/        User input handlers (keyboard, mouse, touch).
   camera.ts        Keyboard panning for ArcRotateCamera

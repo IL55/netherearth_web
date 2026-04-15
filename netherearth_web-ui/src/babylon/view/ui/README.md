@@ -6,4 +6,3 @@ Planned:
 - Start screen
 - Pause menu
 - Game over / you win screens
-- In-game HUD (turn info, resource counters, action buttons)
