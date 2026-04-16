@@ -13,7 +13,7 @@ import { ObjectType, Direction, RobotGoal, Owner } from '../../../../game/core/w
 import type { WarMap, WarObject, RobotObject } from '../../../../game/core/warmap';
 import { NavMode } from '../../../../game/types/nav-mode';
 import { describe, it, expect } from 'vitest';
-import { dummyAI } from '../../../../game/ai/dummy';
+import { simpleAI } from '../../../../game/ai/simple';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/core/occupancy';
 import { Chassis, Electronics } from '../../../../data/robot';
@@ -65,7 +65,7 @@ function runAndMeasure(
     for (let tick = 0; tick < ticks; tick++) {
         map.tick = tick;
         const occ    = buildOccupancy(map);
-        const action = dummyAI(robot, map, occ);
+        const action = simpleAI(robot, map, occ);
         applyAction(robot, action, map, occ);
 
         if (robot.x < minX) minX = robot.x;
@@ -136,7 +136,7 @@ describe('Backtrack: nearly-full-height wall, gap only at top', () => {
         for (let tick = 0; tick < 800; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
-            applyAction(robot, dummyAI(robot, map, occ), map, occ);
+            applyAction(robot, simpleAI(robot, map, occ), map, occ);
             if (Math.max(Math.abs(robot.x - goalX), Math.abs(robot.y - goalY)) <= 1.5) {
                 reached = true;
                 break;
@@ -182,7 +182,7 @@ describe('Backtrack: wall with gap at bottom (acceptable south-only detour)', ()
         for (let tick = 0; tick < 400; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
-            applyAction(robot, dummyAI(robot, map, occ), map, occ);
+            applyAction(robot, simpleAI(robot, map, occ), map, occ);
             if (Math.max(Math.abs(robot.x - goalX), Math.abs(robot.y - goalY)) <= 1.5) {
                 reached = true;
                 break;

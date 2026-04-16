@@ -79,25 +79,85 @@ export const BUILD_OPTIONS: BuildOption[] = [
       cost: CHASSIS_BUILD_COST[Chassis.TRACKS] },
 ];
 
-// ─── Goal cycling ─────────────────────────────────────────────────────────────
+// ─── Goal selection ───────────────────────────────────────────────────────────
 
-const BUILD_GOALS: RobotGoal[] = [
-    RobotGoal.ATTACK_ROBOTS,
-    RobotGoal.CAPTURE_FACTORY,
-    RobotGoal.CAPTURE_WARBASE,
+const NUKE_GOALS: RobotGoal[] = [
+    RobotGoal.NUKE_FACTORY,
+    RobotGoal.NUKE_WARBASE,
 ];
+
+/**
+ * Chooses a goal for a newly built (non-nuclear) robot based on the current
+ * map state and the team's existing robot composition.
+ *
+ * Strategy:
+ *  1. Always keep ≥1 fighter per 3 robots (combat baseline).
+ *  2. Early game: while neutral structures exist, send captors there.
+ *  3. Late game: no neutrals left — ramp fighters to 50 % then attack enemy
+ *     structures.
+ */
+export function chooseBuildGoal(warMap: WarMap, owner: Owner): RobotGoal {
+    const neutralFactories = warMap.objects.filter(o => o.type === ObjectType.FACTORY && !o.owner).length;
+    const neutralWarbases  = warMap.objects.filter(o => o.type === ObjectType.WARBASE  && !o.owner).length;
+    const enemyFactories   = warMap.objects.filter(o => o.type === ObjectType.FACTORY && !!o.owner && o.owner !== owner).length;
+    const enemyWarbases    = warMap.objects.filter(o => o.type === ObjectType.WARBASE  && !!o.owner && o.owner !== owner).length;
+
+    const myRobots = warMap.objects.filter(
+        o => o.type === ObjectType.ROBOT && o.owner === owner && (o as RobotObject).dyingTicks === undefined,
+    ) as RobotObject[];
+    const fighters = myRobots.filter(r => r.goal === RobotGoal.ATTACK_ROBOTS).length;
+
+    // Rule 1: always maintain at least 1 fighter per 3 other robots
+    if (fighters < Math.ceil(myRobots.length / 3)) {
+        return RobotGoal.ATTACK_ROBOTS;
+    }
+
+    // Rule 2: neutral structures exist → prioritise capturing them
+    if (neutralFactories > 0) return RobotGoal.CAPTURE_NEUTRAL_FACTORY;
+    if (neutralWarbases  > 0) return RobotGoal.CAPTURE_NEUTRAL_WARBASE;
+
+    // Rule 3: no neutrals left → ramp to 50 % fighters, then capture enemy
+    if (myRobots.length === 0 || fighters / myRobots.length < 0.5) {
+        return RobotGoal.ATTACK_ROBOTS;
+    }
+    if (enemyFactories > 0) return RobotGoal.CAPTURE_ENEMY_FACTORY;
+    if (enemyWarbases  > 0) return RobotGoal.CAPTURE_ENEMY_WARBASE;
+
+    return RobotGoal.ATTACK_ROBOTS;
+}
 
 let _builtCount = 0;
 
 /** Reset module state — call in tests that care about goal / ID sequencing. */
 export function _resetBuildState(): void { _builtCount = 0; }
 
+// ─── Option selection ─────────────────────────────────────────────────────────
+
+/**
+ * Score an option by how well it uses the team's current stockpile.
+ * Options that spend more of the resources you have the most of score higher,
+ * so the AI naturally builds bipods when phasers are plentiful, nuclear robots
+ * when nuclear resources are high, etc.
+ */
+function scoreBuildOption(option: BuildOption, resources: Resources): number {
+    return (Object.entries(option.cost) as [keyof Resources, number][])
+        .reduce((sum, [k, v]) => sum + v * resources[k], 0);
+}
+
+export function chooseBuildOption(resources: Resources): BuildOption | undefined {
+    const affordable = BUILD_OPTIONS.filter(o => canAfford(resources, o.cost));
+    if (affordable.length === 0) return undefined;
+    return affordable.reduce((best, o) =>
+        scoreBuildOption(o, resources) > scoreBuildOption(best, resources) ? o : best
+    );
+}
+
 // ─── Main function ────────────────────────────────────────────────────────────
 
 /**
  * Called each game tick. For every owned warbase whose spawn point is clear,
- * builds the most powerful robot the team can afford, deducts its cost, and
- * assigns it a goal from the round-robin cycle.
+ * builds the robot that best uses the team's current resource stockpile,
+ * deducts its cost, and assigns it a goal from the round-robin cycle.
  */
 export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void {
     const zone = CAPTURE_ZONES['warbase'];
@@ -116,7 +176,7 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
         if (isOccupied(occupancy, spawnX, spawnY)) continue;
 
         const resources = ownerResources[obj.owner];
-        const option = BUILD_OPTIONS.find(o => canAfford(resources, o.cost));
+        const option = chooseBuildOption(resources);
         if (!option) continue;
 
         deductCost(resources, option.cost);
@@ -152,8 +212,10 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
             facing: outFacing,
             robotConfig: option.config,
             health: calcHealth(option.config),
-            goal: BUILD_GOALS[_builtCount % BUILD_GOALS.length],
-            ai: RobotAI.DUMMY,
+            goal: option.config.nuclear
+                ? NUKE_GOALS[_builtCount % NUKE_GOALS.length]
+                : chooseBuildGoal(warMap, obj.owner as Owner),
+            ai: RobotAI.SIMPLE,
             nav: {
                 moveOutTarget: { x: tx, y: ty }
             }

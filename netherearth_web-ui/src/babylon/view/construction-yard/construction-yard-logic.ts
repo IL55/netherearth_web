@@ -183,7 +183,7 @@ export function spawnManualRobot(
         robotConfig: config,
         health: calcHealth(config),
         goal: RobotGoal.ATTACK_ROBOTS,
-        ai: RobotAI.DUMMY,
+        ai: RobotAI.SIMPLE,
         nav: { moveOutTarget: { x: spawnX + 4, y: spawnY } },
     };
 

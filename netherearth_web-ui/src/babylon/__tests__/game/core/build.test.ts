@@ -3,7 +3,7 @@ import { RobotAI, Direction } from "../../../game/core/warmap";
 import { ObjectType } from '../../../game/core/warmap';
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-    tickBuild, canAfford, BUILD_OPTIONS,
+    tickBuild, canAfford, chooseBuildOption, chooseBuildGoal, BUILD_OPTIONS,
     CHASSIS_BUILD_COST, WEAPON_BUILD_COST, ELECTRONICS_BUILD_COST, NUCLEAR_BUILD_COST,
     _resetBuildState,
 } from '../../../game/mechanics/build';
@@ -87,7 +87,7 @@ describe('tickBuild — no resources', () => {
 
 // ─── tickBuild — basic build ──────────────────────────────────────────────────
 
-describe('tickBuild — builds cheapest affordable robot', () => {
+describe('tickBuild — builds best resource-fit robot', () => {
     it('builds a tracks robot when only chassis resource is available', () => {
         const map = makeMap([warbase(Owner.RED)]);
         const res = createOwnerResources();
@@ -146,7 +146,7 @@ describe('tickBuild — builds cheapest affordable robot', () => {
         tickBuild(map, res);
         const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
         expect(robot.owner).toBe(Owner.BLUE);
-        expect(robot.ai).toBe(RobotAI.DUMMY);
+        expect(robot.ai).toBe(RobotAI.SIMPLE);
     });
 
     it('new robot is assigned a moveOutTarget 4 cells towards the enemy warbase to unblock the base', () => {
@@ -212,21 +212,211 @@ describe('tickBuild — multiple warbases', () => {
         expect(res[Owner.RED].cannons).toBe(0);
     });
 
-    it('cycles goals across robots built in the same tick', () => {
+    it('sends robots to capture neutral factories when they exist', () => {
+        const factory = { id: 'f1', type: ObjectType.FACTORY, x: 5, y: 5 }; // neutral
         const map = makeMap([
             warbase(Owner.RED, 0, 0),
             warbase(Owner.RED, 0, 10),
-            warbase(Owner.RED, 0, 20),
+            factory as any,
         ]);
         const res = createOwnerResources();
-        // tracks (cheapest) costs chassis:1 each
-        res[Owner.RED].chassis = 3;
+        res[Owner.RED].chassis = 3; // antigrav (2) + tracks (1)
         tickBuild(map, res);
         const robots = map.objects.filter(o => o.type === ObjectType.ROBOT) as RobotObject[];
-        // With chassis:3 total, first warbase builds antigrav (cost 2), second builds tracks (cost 1).
-        // Third warbase cannot afford → 2 robots, 2 different goals.
+        // First robot: no fighters yet → ATTACK_ROBOTS (rule 1 baseline)
+        // Second robot: 1 fighter / 1 total = 100 % ≥ 33 % → go capture neutral factory
         expect(robots.length).toBeGreaterThanOrEqual(2);
         const goals = robots.map(r => r.goal);
-        expect(new Set(goals).size).toBe(goals.length); // all different
+        expect(goals).toContain(RobotGoal.ATTACK_ROBOTS);
+        expect(goals).toContain(RobotGoal.CAPTURE_NEUTRAL_FACTORY);
+    });
+});
+
+// ─── chooseBuildOption — resource-aware selection ─────────────────────────────
+
+describe('chooseBuildOption — resource-aware selection', () => {
+    it('returns undefined when no option is affordable', () => {
+        expect(chooseBuildOption(createResources())).toBeUndefined();
+    });
+
+    it('picks tracks when chassis is the only resource', () => {
+        const res = { ...createResources(), chassis: 1 };
+        const option = chooseBuildOption(res);
+        expect(option?.config.chassis).toBe(Chassis.TRACKS);
+        expect(option?.config.weapon).toBeUndefined();
+    });
+
+    it('prefers bipod+phaser over tracks when phasers are plentiful', () => {
+        // phasers=10 makes any option spending phasers score much higher
+        const res = { ...createResources(), chassis: 3, phasers: 10, electronics: 1 };
+        const option = chooseBuildOption(res);
+        expect(option?.config.chassis).toBe(Chassis.BIPOD);
+        expect(option?.config.weapon).toBe(Weapon.PHASERS);
+    });
+
+    it('prefers nuclear bipod when nuclear stockpile is large', () => {
+        const res = { ...createResources(), chassis: 3, phasers: 3, nuclear: 10, electronics: 1 };
+        const option = chooseBuildOption(res);
+        expect(option?.config.nuclear).toBe(true);
+        expect(option?.config.chassis).toBe(Chassis.BIPOD);
+    });
+
+    it('prefers antigrav+missiles when missiles stockpile is large', () => {
+        const res = { ...createResources(), chassis: 2, missiles: 10, electronics: 1 };
+        const option = chooseBuildOption(res);
+        expect(option?.config.chassis).toBe(Chassis.ANTIGRAV);
+        expect(option?.config.weapon).toBe(Weapon.MISSILES);
+    });
+
+    it('prefers tracks+cannon over bare tracks when cannons are plentiful', () => {
+        const res = { ...createResources(), chassis: 1, cannons: 10 };
+        const option = chooseBuildOption(res);
+        expect(option?.config.weapon).toBe(Weapon.CANNON);
+    });
+
+    it('prefers option with electronics when electronics stockpile is large', () => {
+        // tracks+cannon+electronics vs tracks+cannon: electronics:10 tips the score
+        const res = { ...createResources(), chassis: 1, cannons: 1, electronics: 10 };
+        const option = chooseBuildOption(res);
+        expect(option?.config.electronics).toBe(Electronics.STANDARD);
+    });
+});
+
+// ─── chooseBuildGoal — context-aware goal strategy ────────────────────────────
+
+function makeWarMapForGoal(objects: WarMap['objects']): WarMap {
+    return { width: 20, height: 20, objects, tick: 0 };
+}
+
+function makeRobotWithGoal(id: string, goal: RobotGoal, owner = Owner.RED): RobotObject {
+    return { id, type: ObjectType.ROBOT, x: 0, y: 0, owner, goal };
+}
+
+describe('chooseBuildGoal — rule 1: maintain fighter baseline', () => {
+    it('returns ATTACK_ROBOTS when team has no robots yet', () => {
+        const map = makeWarMapForGoal([]);
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.ATTACK_ROBOTS);
+    });
+
+    it('returns ATTACK_ROBOTS when fighters are below 1-per-3 threshold', () => {
+        // 3 robots, 0 fighters → need at least ceil(3/3)=1
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.CAPTURE_FACTORY),
+            makeRobotWithGoal('r2', RobotGoal.CAPTURE_WARBASE),
+            makeRobotWithGoal('r3', RobotGoal.CAPTURE_FACTORY),
+        ]);
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.ATTACK_ROBOTS);
+    });
+
+    it('passes the fighter check when ratio is exactly 1-in-3', () => {
+        // 2 robots: 1 fighter, 1 captor → ceil(2/3)=1 fighter needed, we have 1 → satisfied
+        // No neutral/enemy structures → falls through to ATTACK_ROBOTS via rule 3
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.ATTACK_ROBOTS),
+            makeRobotWithGoal('r2', RobotGoal.CAPTURE_FACTORY),
+        ]);
+        // No neutral / enemy targets → rule 3 fires
+        const goal = chooseBuildGoal(map, Owner.RED);
+        expect(goal).not.toBe(RobotGoal.CAPTURE_NEUTRAL_FACTORY);
+        expect(goal).not.toBe(RobotGoal.CAPTURE_NEUTRAL_WARBASE);
+    });
+});
+
+describe('chooseBuildGoal — rule 2: early game, neutral structures', () => {
+    it('returns CAPTURE_NEUTRAL_FACTORY when neutral factory exists and fighters are sufficient', () => {
+        const neutralFactory: WarObject = { id: 'f1', type: ObjectType.FACTORY, x: 5, y: 5, owner: Owner.NEUTRAL };
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.ATTACK_ROBOTS), // 1 fighter / 1 robot → rule 1 satisfied
+            neutralFactory,
+        ]);
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.CAPTURE_NEUTRAL_FACTORY);
+    });
+
+    it('returns CAPTURE_NEUTRAL_WARBASE when neutral warbase exists and no neutral factory', () => {
+        const neutralWarbase: WarObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.NEUTRAL };
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.ATTACK_ROBOTS),
+            neutralWarbase,
+        ]);
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.CAPTURE_NEUTRAL_WARBASE);
+    });
+
+    it('prefers neutral factory over neutral warbase when both exist', () => {
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.ATTACK_ROBOTS),
+            { id: 'f1', type: ObjectType.FACTORY, x: 3, y: 3, owner: Owner.NEUTRAL } as WarObject,
+            { id: 'wb1', type: ObjectType.WARBASE, x: 8, y: 8, owner: Owner.NEUTRAL } as WarObject,
+        ]);
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.CAPTURE_NEUTRAL_FACTORY);
+    });
+
+    it('does not target a neutral structure owned by own team', () => {
+        // RED-owned factory should not be treated as neutral
+        const ownFactory: WarObject = { id: 'f1', type: ObjectType.FACTORY, x: 5, y: 5, owner: Owner.RED };
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.ATTACK_ROBOTS),
+            ownFactory,
+        ]);
+        // No neutral targets → falls to rule 3 (attack / enemy capture)
+        expect(chooseBuildGoal(map, Owner.RED)).not.toBe(RobotGoal.CAPTURE_NEUTRAL_FACTORY);
+    });
+});
+
+describe('chooseBuildGoal — rule 3: late game, no neutrals left', () => {
+    it('returns ATTACK_ROBOTS until fighters reach 50 % of army', () => {
+        // 2 captors, 0 fighters → fighter ratio = 0 % < 50 %
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.CAPTURE_FACTORY),
+            makeRobotWithGoal('r2', RobotGoal.CAPTURE_WARBASE),
+            { id: 'f1', type: ObjectType.FACTORY, x: 5, y: 5, owner: Owner.BLUE } as WarObject,
+        ]);
+        // Rule 1 fires first (0 fighters, need ceil(2/3)=1) → ATTACK_ROBOTS
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.ATTACK_ROBOTS);
+    });
+
+    it('returns CAPTURE_ENEMY_FACTORY once fighter ratio ≥ 50 %', () => {
+        // 2 fighters, 2 captors → 50 % → rule 3 satisfied → capture enemy factory
+        const enemyFactory: WarObject = { id: 'f1', type: ObjectType.FACTORY, x: 5, y: 5, owner: Owner.BLUE };
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.ATTACK_ROBOTS),
+            makeRobotWithGoal('r2', RobotGoal.ATTACK_ROBOTS),
+            makeRobotWithGoal('r3', RobotGoal.CAPTURE_FACTORY),
+            makeRobotWithGoal('r4', RobotGoal.CAPTURE_FACTORY),
+            enemyFactory,
+        ]);
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.CAPTURE_ENEMY_FACTORY);
+    });
+
+    it('returns CAPTURE_ENEMY_WARBASE when no enemy factories remain', () => {
+        const enemyWarbase: WarObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.BLUE };
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.ATTACK_ROBOTS),
+            makeRobotWithGoal('r2', RobotGoal.ATTACK_ROBOTS),
+            makeRobotWithGoal('r3', RobotGoal.CAPTURE_WARBASE),
+            makeRobotWithGoal('r4', RobotGoal.CAPTURE_WARBASE),
+            enemyWarbase,
+        ]);
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.CAPTURE_ENEMY_WARBASE);
+    });
+
+    it('returns ATTACK_ROBOTS when no targets remain at all', () => {
+        // All structures captured by RED — nothing to capture, nobody to attack
+        const ownFactory: WarObject = { id: 'f1', type: ObjectType.FACTORY, x: 5, y: 5, owner: Owner.RED };
+        const map = makeWarMapForGoal([
+            makeRobotWithGoal('r1', RobotGoal.ATTACK_ROBOTS),
+            makeRobotWithGoal('r2', RobotGoal.ATTACK_ROBOTS),
+            ownFactory,
+        ]);
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.ATTACK_ROBOTS);
+    });
+
+    it('ignores dying robots when computing fighter ratio', () => {
+        // 1 dying fighter + 1 live captor → dying one excluded → 0 live fighters → rule 1 fires
+        const dyingFighter: RobotObject = { id: 'r1', type: ObjectType.ROBOT, x: 0, y: 0, owner: Owner.RED, goal: RobotGoal.ATTACK_ROBOTS, dyingTicks: 3 };
+        const map = makeWarMapForGoal([
+            dyingFighter,
+            makeRobotWithGoal('r2', RobotGoal.CAPTURE_FACTORY),
+        ]);
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.ATTACK_ROBOTS);
     });
 });

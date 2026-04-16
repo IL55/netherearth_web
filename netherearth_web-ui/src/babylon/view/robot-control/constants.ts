@@ -12,6 +12,8 @@ export const ORDERABLE_GOALS: RobotGoal[] = [
     RobotGoal.ATTACK_ROBOTS,
     RobotGoal.CAPTURE_FACTORY,
     RobotGoal.CAPTURE_WARBASE,
+    RobotGoal.NUKE_FACTORY,
+    RobotGoal.NUKE_WARBASE,
     RobotGoal.DEFEND,
 ];
 
@@ -24,6 +26,8 @@ export const GOAL_LABELS: Record<string, string> = {
     [RobotGoal.CAPTURE_WARBASE]:         'Capture Warbase',
     [RobotGoal.CAPTURE_ENEMY_WARBASE]:   'Enemy Warbase',
     [RobotGoal.CAPTURE_NEUTRAL_WARBASE]: 'Neutral Warbase',
+    [RobotGoal.NUKE_FACTORY]:            'Nuke Factory',
+    [RobotGoal.NUKE_WARBASE]:            'Nuke Warbase',
     [RobotGoal.DEFEND]:                  'Defend',
     [RobotGoal.MOVE_FORWARD]:            'Move Forward',
     [RobotGoal.MOVE_BACKWARD]:           'Move Backward',

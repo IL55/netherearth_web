@@ -25,7 +25,7 @@ function makeRobotWithGoal(id: string, x: number, y: number): RobotObject {
         goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
         robotConfig: cfg,
         health: calcHealth(cfg),
-        ai: RobotAI.DUMMY,
+        ai: RobotAI.SIMPLE,
     };
 }
 

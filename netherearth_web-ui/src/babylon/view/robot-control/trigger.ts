@@ -1,11 +1,13 @@
 import { Owner } from '../../game/core/warmap';
-import type { WarMap } from '../../game/core/warmap';
+import type { WarMap, RobotObject } from '../../game/core/warmap';
 import { ActionType } from '../../game/actions';
 import type { RobotAction } from '../../game/actions';
 import { RobotControl3D } from './robot-control-3d';
 import { findRobotUnderShip, isRobotAlive } from './robot-control-logic';
-import { HOVER_HEIGHT } from './constants';
+import { calcRobotHeight } from '../../data/robot';
 import type * as BABYLON from '@babylonjs/core';
+
+const HOVER_GAP = 0.5; // how far above the robot's top the ship hovers
 
 export class RobotControlTrigger {
     private isRobotControlOpen = false;
@@ -29,8 +31,12 @@ export class RobotControlTrigger {
             this.robotControl.close();
         } else if (this.isRobotControlOpen && this.robotControl) {
             // Keep ship above the controlled robot so it follows as the robot moves
-            const controlled = warMap.objects.find(o => o.id === this.triggeredRobotControlId);
-            if (controlled) { ship.x = controlled.x; ship.y = controlled.y; }
+            const controlled = warMap.objects.find(o => o.id === this.triggeredRobotControlId) as RobotObject | undefined;
+            if (controlled) {
+                ship.x = controlled.x;
+                ship.y = controlled.y;
+                ship.height = (controlled.robotConfig ? calcRobotHeight(controlled.robotConfig) : 1.0) + HOVER_GAP;
+            }
             this.robotControl.updateDisplay();
         }
 
@@ -40,7 +46,7 @@ export class RobotControlTrigger {
             if (nearRobot && nearRobot.id !== this.triggeredRobotControlId) {
                 this.triggeredRobotControlId = nearRobot.id;
                 this.isRobotControlOpen = true;
-                ship.height = HOVER_HEIGHT + 0.5;
+                ship.height = (nearRobot.robotConfig ? calcRobotHeight(nearRobot.robotConfig) : 1.0) + HOVER_GAP;
                 if (!this.robotControl) {
                     // minimap height = mapData.width * 4px (CELL=4, rotated 90°), plus 8px margin and 8px gap
                     const minimapHeight = this.mapWidth * 4;

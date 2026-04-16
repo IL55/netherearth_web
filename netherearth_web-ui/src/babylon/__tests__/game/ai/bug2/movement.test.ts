@@ -1,7 +1,7 @@
 import { ObjectType } from '../../../../game/core/warmap';
 import { Direction } from '../../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { dummyAI } from '../../../../game/ai/dummy';
+import { simpleAI } from '../../../../game/ai/simple';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/core/occupancy';
 import { tickCapture, CAPTURE_ZONES } from '../../../../game/mechanics/capture';
@@ -49,7 +49,7 @@ function runUntilCapture(
     for (let tick = 0; tick < maxTicks; tick++) {
         map.tick = tick;
         const occ = buildOccupancy(map);
-        const action = dummyAI(robot, map, occ);
+        const action = simpleAI(robot, map, occ);
         applyAction(robot, action, map, occ);
 
         const d = Math.max(Math.abs(robot.x - goalX), Math.abs(robot.y - goalY));
@@ -154,7 +154,7 @@ describe('bipod + mountain barrier', () => {
         for (let tick = 0; tick < 30; tick++) {
             map.tick = tick;
             const occ    = buildOccupancy(map);
-            const action = dummyAI(robot, map, occ);
+            const action = simpleAI(robot, map, occ);
             applyAction(robot, action, map, occ);
             maxStuck = Math.max(maxStuck, robot.nav?.stuckTicks ?? 0);
         }
@@ -183,7 +183,7 @@ describe('boundary: robot stays within map bounds', () => {
         for (let tick = 0; tick < ticks; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
-            applyAction(robot, dummyAI(robot, map, occ), map, occ);
+            applyAction(robot, simpleAI(robot, map, occ), map, occ);
             minX = Math.min(minX, robot.x); maxX = Math.max(maxX, robot.x);
             minY = Math.min(minY, robot.y); maxY = Math.max(maxY, robot.y);
             if (robot.x < 0 || robot.y < 0 || robot.x > map.width - 1 || robot.y > map.height - 1) {
@@ -302,7 +302,7 @@ describe('factory capture: robot enters C-shaped slot', () => {
         for (let tick = 0; tick < 400; tick++) {
             map.tick = tick;
             const occ    = buildOccupancy(map);
-            const action = dummyAI(robot, map, occ);
+            const action = simpleAI(robot, map, occ);
             applyAction(robot, action, map, occ);
             tickCapture(map);
 

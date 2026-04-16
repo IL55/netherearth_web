@@ -9,7 +9,7 @@
 import { ObjectType } from '../../../../game/core/warmap';
 import { Direction } from '../../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { dummyAI } from '../../../../game/ai/dummy';
+import { simpleAI } from '../../../../game/ai/simple';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/core/occupancy';
 import { tickCapture, CAPTURE_ZONES } from '../../../../game/mechanics/capture';
@@ -54,7 +54,7 @@ function runUntilCapture(map: WarMap, robot: RobotObject, factory: WarObject, ma
     for (let tick = 0; tick < maxTicks; tick++) {
         map.tick = tick;
         const occ = buildOccupancy(map);
-        applyAction(robot, dummyAI(robot, map, occ), map, occ);
+        applyAction(robot, simpleAI(robot, map, occ), map, occ);
         if (Math.max(Math.abs(robot.x - goalX), Math.abs(robot.y - goalY)) <= zone.radius) return tick;
     }
     return -1;
@@ -66,7 +66,7 @@ function checkBounds(map: WarMap, robot: RobotObject, ticks: number) {
     for (let tick = 0; tick < ticks; tick++) {
         map.tick = tick;
         const occ = buildOccupancy(map);
-        applyAction(robot, dummyAI(robot, map, occ), map, occ);
+        applyAction(robot, simpleAI(robot, map, occ), map, occ);
         minX = Math.min(minX, robot.x); maxX = Math.max(maxX, robot.x);
         minY = Math.min(minY, robot.y); maxY = Math.max(maxY, robot.y);
         if (robot.x < 0 || robot.y < 0 || robot.x > map.width - 1 || robot.y > map.height - 1) {
@@ -91,7 +91,7 @@ describe('Trémaux basic: no position bounce', () => {
         for (let t = 0; t < 60; t++) {
             map.tick = t;
             const occ = buildOccupancy(map);
-            applyAction(robot, dummyAI(robot, map, occ), map, occ);
+            applyAction(robot, simpleAI(robot, map, occ), map, occ);
             path.push({ x: robot.x, y: robot.y });
         }
 
@@ -120,7 +120,7 @@ describe('Trémaux basic: clears single wall quickly', () => {
         for (let t = 0; t < 50; t++) {
             map.tick = t;
             const occ = buildOccupancy(map);
-            applyAction(robot, dummyAI(robot, map, occ), map, occ);
+            applyAction(robot, simpleAI(robot, map, occ), map, occ);
             maxX = Math.max(maxX, robot.x);
         }
         expect(maxX).toBeGreaterThanOrEqual(7);
@@ -140,7 +140,7 @@ describe('Trémaux basic: exits corner dead end', () => {
         for (let t = 0; t < 80; t++) {
             map.tick = t;
             const occ = buildOccupancy(map);
-            applyAction(robot, dummyAI(robot, map, occ), map, occ);
+            applyAction(robot, simpleAI(robot, map, occ), map, occ);
             maxX = Math.max(maxX, robot.x);
         }
         expect(maxX).toBeGreaterThanOrEqual(7);
@@ -205,7 +205,7 @@ describe('Trémaux: U-shaped dead end', () => {
         for (let tick = 0; tick < 1200; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
-            applyAction(robot, dummyAI(robot, map, occ), map, occ);
+            applyAction(robot, simpleAI(robot, map, occ), map, occ);
             if (Math.max(Math.abs(robot.x - goalX), Math.abs(robot.y - goalY)) <= 1.5) {
                 reached = true; break;
             }
@@ -226,7 +226,7 @@ describe('Trémaux: factory capture', () => {
         for (let tick = 0; tick < 1000; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
-            applyAction(robot, dummyAI(robot, map, occ), map, occ);
+            applyAction(robot, simpleAI(robot, map, occ), map, occ);
             tickCapture(map);
             if (factory.owner === robot.owner) { captured = true; break; }
         }

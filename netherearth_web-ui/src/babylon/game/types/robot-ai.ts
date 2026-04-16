@@ -4,7 +4,7 @@
  */
 export enum RobotAI {
     /** A simplistic AI that only performs basic tasks, often ignoring obstacles. */
-    DUMMY = 'dummy',
+    SIMPLE = 'simple',
     /** A more capable AI that handles pathfinding, combat prioritization, and objective tracking. */
     ADVANCED = 'advanced',
 }

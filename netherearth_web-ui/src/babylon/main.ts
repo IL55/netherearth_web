@@ -55,7 +55,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       health: calcHealth(configValues[x % configValues.length]),
       facing: Direction.W,
       goal: goals[x % goals.length],
-      ai: RobotAI.DUMMY,
+      ai: RobotAI.SIMPLE,
     });
   }
 

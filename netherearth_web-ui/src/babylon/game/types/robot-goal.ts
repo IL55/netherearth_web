@@ -17,6 +17,10 @@ export enum RobotGoal {
     CAPTURE_ENEMY_WARBASE   = 'capture_enemy_warbase',
     /** Capture the nearest neutral (unowned) warbase only. */
     CAPTURE_NEUTRAL_WARBASE = 'capture_neutral_warbase',
+    /** Navigate toward an enemy factory and detonate nuclear bomb when in kill range. */
+    NUKE_FACTORY            = 'nuke_factory',
+    /** Navigate toward an enemy warbase and detonate nuclear bomb when in kill range. */
+    NUKE_WARBASE            = 'nuke_warbase',
     /** Stay in place; no movement target. Will still defend if attacked. */
     DEFEND                  = 'defend',
     /** Move a fixed number of tiles toward the enemy base, then stop. */

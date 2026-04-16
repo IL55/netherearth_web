@@ -19,7 +19,7 @@
 import { ObjectType } from '../../../game/core/warmap';
 import { Direction } from '../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { dummyAI } from '../../../game/ai/dummy';
+import { simpleAI } from '../../../game/ai/simple';
 import { applyAction } from '../../../game/actions';
 import { buildOccupancy } from '../../../game/core/occupancy';
 import { CAPTURE_ZONES } from '../../../game/mechanics/capture';
@@ -88,7 +88,7 @@ describe('small1.map full setup', () => {
             map.tick = tick;
             const occ = buildOccupancy(map);
             for (const robot of robots) {
-                applyAction(robot, dummyAI(robot, map, occ), map, occ);
+                applyAction(robot, simpleAI(robot, map, occ), map, occ);
             }
             for (const r of robots) {
                 if (r.x < 0 || r.y < 0 || r.x >= MAP_W || r.y >= MAP_H) {
@@ -135,7 +135,7 @@ describe('small1.map full setup', () => {
         for (let tick = 0; tick < 400; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
-            const action = dummyAI(robot, map, occ);
+            const action = simpleAI(robot, map, occ);
             applyAction(robot, action, map, occ);
 
             trace.push(`t=${String(tick).padStart(3)} (${robot.x.toFixed(2)},${robot.y.toFixed(2)}) f=${robot.facing??Direction.N} ${robot.nav?.navMode??'goal'}`);

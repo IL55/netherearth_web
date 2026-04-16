@@ -1,7 +1,7 @@
 import { ObjectType } from '../../../../game/core/warmap';
 import { Direction } from '../../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { dummyAI } from '../../../../game/ai/dummy';
+import { simpleAI } from '../../../../game/ai/simple';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/core/occupancy';
 import { RobotGoal, Owner } from '../../../../game/core/warmap';
@@ -31,7 +31,7 @@ function run(map: WarMap, robot: RobotObject, ticks: number): { x: number; y: nu
     for (let t = 0; t < ticks; t++) {
         map.tick = t;
         const occ = buildOccupancy(map);
-        const action = dummyAI(robot, map, occ);
+        const action = simpleAI(robot, map, occ);
         applyAction(robot, action, map, occ);
         path.push({ x: robot.x, y: robot.y });
     }

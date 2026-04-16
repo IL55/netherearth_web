@@ -1,5 +1,5 @@
 /**
- * Dummy AI — main entry point for robot decision-making.
+ * Simple AI — main entry point for robot decision-making.
  *
  * Orchestrates combat (fight.ts) and navigation (bug2.ts / tremaux.ts).
  * Selects the navigation algorithm based on robotConfig.navAlgo:
@@ -32,6 +32,8 @@ function findTarget(robot: RobotObject, warMap: WarMap): WarObject | undefined {
         if (robot.goal === RobotGoal.CAPTURE_WARBASE)         return o.type === ObjectType.WARBASE && o.owner !== robot.owner;
         if (robot.goal === RobotGoal.CAPTURE_ENEMY_WARBASE)   return o.type === ObjectType.WARBASE && !!o.owner && o.owner !== robot.owner;
         if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_WARBASE) return o.type === ObjectType.WARBASE && !o.owner;
+        if (robot.goal === RobotGoal.NUKE_FACTORY)            return o.type === ObjectType.FACTORY && !!o.owner && o.owner !== robot.owner;
+        if (robot.goal === RobotGoal.NUKE_WARBASE)            return o.type === ObjectType.WARBASE && !!o.owner && o.owner !== robot.owner;
         return false;
     });
     if (candidates.length === 0) return undefined;
@@ -48,7 +50,7 @@ function targetPos(target: WarObject): { x: number; y: number } {
     return { x: target.x, y: target.y };
 }
 
-export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: OccupancyMap): RobotAction {
+export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: OccupancyMap): RobotAction {
     // 0. Nuclear check (random chance, e.g. when close to multiple enemies)
     if (shouldDetonateNuclear(robot, warMap, false)) {
         return { type: ActionType.DETONATE };
@@ -100,12 +102,15 @@ export function dummyAI(robot: RobotObject, warMap: WarMap, occupancy: Occupancy
         const target = findTarget(robot, warMap);
         if (!target) return { type: ActionType.IDLE };
 
-        // Already in the capture zone — hold position to complete capture
-        if (CAPTURE_ZONES[target.type] && isInCaptureZone(robot, target)) {
+        const isNukeGoal = robot.goal === RobotGoal.NUKE_FACTORY || robot.goal === RobotGoal.NUKE_WARBASE;
+
+        // Already in the capture zone — hold position to complete capture (not for nuke goals)
+        if (!isNukeGoal && CAPTURE_ZONES[target.type] && isInCaptureZone(robot, target)) {
             return { type: ActionType.IDLE };
         }
 
-        const pos = targetPos(target);
+        // Nuke goals navigate to the structure center; capture goals use the capture slot
+        const pos = isNukeGoal ? { x: target.x, y: target.y } : targetPos(target);
         tx = pos.x;
         ty = pos.y;
     }

@@ -1,7 +1,7 @@
 import { ObjectType } from '../../../../game/core/warmap';
 import { Direction } from '../../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { dummyAI } from '../../../../game/ai/dummy';
+import { simpleAI } from '../../../../game/ai/simple';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/core/occupancy';
 import { RobotGoal, Owner } from '../../../../game/core/warmap';
@@ -84,7 +84,7 @@ describe('anti-maze: robot escapes U-shaped dead end and reaches factory', () =>
         for (let tick = 0; tick < maxTicks; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
-            const action = dummyAI(robot, map, occ);
+            const action = simpleAI(robot, map, occ);
             applyAction(robot, action, map, occ);
 
             const dist = Math.max(Math.abs(robot.x - goalX), Math.abs(robot.y - goalY));
@@ -102,7 +102,7 @@ describe('anti-maze: robot escapes U-shaped dead end and reaches factory', () =>
         for (let tick = 0; tick < 60; tick++) {
             map.tick = tick;
             const occ = buildOccupancy(map);
-            const action = dummyAI(robot, map, occ);
+            const action = simpleAI(robot, map, occ);
             applyAction(robot, action, map, occ);
             maxStuck = Math.max(maxStuck, robot.nav?.stuckTicks ?? 0);
         }
