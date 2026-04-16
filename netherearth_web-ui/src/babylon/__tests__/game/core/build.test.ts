@@ -420,3 +420,38 @@ describe('chooseBuildGoal — rule 3: late game, no neutrals left', () => {
         expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.ATTACK_ROBOTS);
     });
 });
+
+// ─── tickBuild — robot id format (regression: id collision with preset robots) ─
+
+describe('tickBuild — robot id prefix', () => {
+    it('assigns ids starting with "robot_" (not "init_robot_")', () => {
+        const wb = warbase(Owner.RED, 0, 0);
+        const map = makeMap([wb]);
+        const res = createOwnerResources();
+        res[Owner.RED].chassis = 1;
+        tickBuild(map, res);
+        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
+        expect(robot).toBeDefined();
+        expect(robot.id).toMatch(/^robot_\d+$/);
+    });
+
+    it('built id does not collide with preset "init_robot_" ids used in main.ts', () => {
+        const wb = warbase(Owner.RED, 0, 0);
+        // Simulate a preset robot placed before the clock starts
+        const presetRobot: RobotObject = {
+            id: 'init_robot_0', type: ObjectType.ROBOT,
+            x: 0, y: 14, owner: Owner.RED, facing: Direction.E,
+            robotConfig: { chassis: Chassis.TRACKS },
+        };
+        const map = makeMap([wb, presetRobot]);
+        const res = createOwnerResources();
+        res[Owner.RED].chassis = 1;
+        tickBuild(map, res);
+        const builtRobot = map.objects.find(
+            o => o.type === ObjectType.ROBOT && o.id !== 'init_robot_0'
+        ) as RobotObject;
+        expect(builtRobot).toBeDefined();
+        expect(builtRobot.id).not.toBe('init_robot_0');
+        expect(builtRobot.id).toMatch(/^robot_/);
+    });
+});

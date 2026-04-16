@@ -23,6 +23,8 @@ import { buildOccupancy } from './game/core/occupancy';
 
 import { ConstructionYardTrigger } from './view/construction-yard';
 import { RobotControlTrigger, HOVER_HEIGHT } from './view/robot-control';
+import { GameOverScreen } from './view/game-over';
+import { checkVictory } from './game/mechanics/victory';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
   const scene = new BABYLON.Scene(engine);
@@ -46,7 +48,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const configValues = Object.values(robotConfigs);
   for (let x = 0; x < mapData.width; x++) {
     warMap.objects.push({
-      id: `robot_${x}`,
+      id: `init_robot_${x}`,
       type: ObjectType.ROBOT,
       x,
       y: 14,
@@ -100,7 +102,9 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
     ship.height = HOVER_HEIGHT + 0.5;
   });
 
-  startClock(warMap, () => {
+  const gameOverScreen = new GameOverScreen(() => {});
+
+  const clock = startClock(warMap, () => {
     const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y }));
     // We fetch the current complete structures from occupancy to be precise about collisions (walls, factories, warbases)
     const occ = buildOccupancy(warMap, ship);
@@ -113,6 +117,15 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
     // ── Robot control ────────────────────────────────────────────────────────
     robotControlTrigger.check(warMap, ship, constructionYardTrigger.isOpen());
+
+    // ── Victory check ────────────────────────────────────────────────────────
+    if (!gameOverScreen.isVisible()) {
+      const winner = checkVictory(warMap);
+      if (winner !== null) {
+        clock.stop();
+        gameOverScreen.show(winner);
+      }
+    }
 
     renderer.render(warMap);
     projectileRenderer.render(warMap);
