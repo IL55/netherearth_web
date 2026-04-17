@@ -29,11 +29,13 @@ export enum Electronics {
 
 export interface RobotConfig {
     chassis:      Chassis;
-    weapon?:      Weapon;
+    weapons?:     Weapon[];
     nuclear?:     boolean;       // true → place the team-coloured nuclear model
     electronics?: Electronics;   // absent → no sensor, robot never fires
     navAlgo?:     NavAlgo;
 }
+
+export const WEAPON_RENDER_ORDER: Weapon[] = [Weapon.CANNON, Weapon.MISSILES, Weapon.PHASERS];
 
 // ─── Stat tables (keyed by enum — no h-/e- duplication) ──────────────────────
 
@@ -112,7 +114,7 @@ export function calcDamageFalloff(dist: number, maxRange: number): number {
 // Sum health from all parts present in the config; clamp to [1, 100].
 export function calcHealth(config: RobotConfig): number {
     let total = CHASSIS_HP[config.chassis] ?? 0;
-    if (config.weapon)      total += WEAPON_HP[config.weapon];
+    for (const w of config.weapons ?? []) total += WEAPON_HP[w] ?? 0;
     if (config.electronics) total += ELECTRONICS_HP[config.electronics];
     if (config.nuclear)     total += NUCLEAR_HP;
     return Math.max(1, Math.min(100, total));
@@ -121,7 +123,7 @@ export function calcHealth(config: RobotConfig): number {
 // Calculate the total physical height of the robot based on its configured parts
 export function calcRobotHeight(config: RobotConfig): number {
     let total = CHASSIS_HEIGHT[config.chassis] ?? 0.4;
-    if (config.weapon)      total += WEAPON_HEIGHT[config.weapon] ?? 0.3;
+    for (const w of config.weapons ?? []) total += WEAPON_HEIGHT[w] ?? 0.3;
     if (config.nuclear)     total += NUCLEAR_HEIGHT;
     if (config.electronics) total += ELECTRONICS_HEIGHT[config.electronics] ?? 0.2;
     return total;
@@ -130,9 +132,9 @@ export function calcRobotHeight(config: RobotConfig): number {
 // ─── Preset configs ───────────────────────────────────────────────────────────
 
 export const robotConfigs = {
-    cannon:   { chassis: Chassis.TRACKS,   weapon: Weapon.CANNON,   electronics: Electronics.STANDARD },
-    missiles: { chassis: Chassis.ANTIGRAV, weapon: Weapon.MISSILES, electronics: Electronics.STANDARD },
-    phasers:  { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS,  nuclear: true, electronics: Electronics.STANDARD },
+    cannon:   { chassis: Chassis.TRACKS,   weapons: [Weapon.CANNON],   electronics: Electronics.STANDARD },
+    missiles: { chassis: Chassis.ANTIGRAV, weapons: [Weapon.MISSILES], electronics: Electronics.STANDARD },
+    phasers:  { chassis: Chassis.BIPOD,    weapons: [Weapon.PHASERS],  nuclear: true, electronics: Electronics.STANDARD },
     scout:    { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
 } satisfies Record<string, RobotConfig>;
 

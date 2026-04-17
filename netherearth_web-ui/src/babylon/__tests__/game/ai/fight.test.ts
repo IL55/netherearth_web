@@ -29,7 +29,7 @@ function makeRobot(
         robotConfig: {
             chassis: Chassis.TRACKS,
             electronics: Electronics.STANDARD,
-            weapon,
+            weapons: weapon ? [weapon] : [],
         },
         health: 100,
         dyingTicks: undefined,
@@ -80,7 +80,7 @@ describe('fightAction', () => {
         const occupancy = buildOccupancy(map);
 
         const action = fightAction(robot, map, occupancy);
-        expect(action).toEqual({ type: ActionType.FIRE, targetId: enemy.id });
+        expect(action).toMatchObject({ type: ActionType.FIRE, targetId: enemy.id });
     });
 
     it('rotates left towards adjacent enemy if it is to the West', () => {

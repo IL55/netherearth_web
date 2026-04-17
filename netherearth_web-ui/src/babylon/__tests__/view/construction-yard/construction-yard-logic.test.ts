@@ -286,7 +286,7 @@ describe('buildRobotConfig', () => {
     it('chassis-only maps to correct Chassis enum', () => {
         const cfg = buildRobotConfig({ ...EMPTY_SELECTION, chassis: 'h-bipod' });
         expect(cfg?.chassis).toBe(Chassis.BIPOD);
-        expect(cfg?.weapon).toBeUndefined();
+        expect(cfg?.weapons ?? []).toHaveLength(0);
     });
 
     it('maps all three chassis types correctly', () => {
@@ -296,11 +296,11 @@ describe('buildRobotConfig', () => {
 
     it('maps weapon correctly', () => {
         const cfg = buildRobotConfig({ ...EMPTY_SELECTION, chassis: 'h-bipod', weapon: 'h-cannon' });
-        expect(cfg?.weapon).toBe(Weapon.CANNON);
+        expect(cfg?.weapons).toContain(Weapon.CANNON);
     });
 
     it('maps all three weapon types correctly', () => {
-        const m = (w: string) => buildRobotConfig({ ...EMPTY_SELECTION, chassis: 'h-bipod', weapon: w })?.weapon;
+        const m = (w: string) => buildRobotConfig({ ...EMPTY_SELECTION, chassis: 'h-bipod', weapon: w })?.weapons?.[0];
         expect(m('h-missiles')).toBe(Weapon.MISSILES);
         expect(m('h-phasers')).toBe(Weapon.PHASERS);
     });
@@ -319,7 +319,7 @@ describe('buildRobotConfig', () => {
         const cfg = buildRobotConfig({ chassis: 'h-tracks', weapon: 'h-phasers', nuclear: true, electronics: true });
         expect(cfg).toEqual({
             chassis: Chassis.TRACKS,
-            weapon: Weapon.PHASERS,
+            weapons: [Weapon.PHASERS],
             nuclear: true,
             electronics: Electronics.STANDARD,
         });
@@ -329,7 +329,7 @@ describe('buildRobotConfig', () => {
 // ─── spawnManualRobot ─────────────────────────────────────────────────────────
 
 describe('spawnManualRobot', () => {
-    const cfg = { chassis: Chassis.TRACKS, weapon: Weapon.CANNON };
+    const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
 
     beforeEach(() => { _resetManualBuildCount(); });
 

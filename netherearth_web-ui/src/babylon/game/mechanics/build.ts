@@ -59,19 +59,25 @@ interface BuildOption { config: RobotConfig; cost: Cost; }
 
 // Priority order: most powerful to least. AI picks the first it can afford.
 export const BUILD_OPTIONS: BuildOption[] = [
-    { config: { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS,  nuclear: true, electronics: Electronics.STANDARD },
+    // Multi-weapon options (most powerful first)
+    { config: { chassis: Chassis.BIPOD, weapons: [Weapon.PHASERS, Weapon.MISSILES], nuclear: true, electronics: Electronics.STANDARD },
+      cost: sumCosts(CHASSIS_BUILD_COST[Chassis.BIPOD], WEAPON_BUILD_COST[Weapon.PHASERS], WEAPON_BUILD_COST[Weapon.MISSILES], NUCLEAR_BUILD_COST, ELECTRONICS_BUILD_COST) },
+    { config: { chassis: Chassis.BIPOD, weapons: [Weapon.PHASERS, Weapon.CANNON], electronics: Electronics.STANDARD },
+      cost: sumCosts(CHASSIS_BUILD_COST[Chassis.BIPOD], WEAPON_BUILD_COST[Weapon.PHASERS], WEAPON_BUILD_COST[Weapon.CANNON], ELECTRONICS_BUILD_COST) },
+    // Single-weapon options
+    { config: { chassis: Chassis.BIPOD,    weapons: [Weapon.PHASERS],  nuclear: true, electronics: Electronics.STANDARD },
       cost: sumCosts(CHASSIS_BUILD_COST[Chassis.BIPOD], WEAPON_BUILD_COST[Weapon.PHASERS], NUCLEAR_BUILD_COST, ELECTRONICS_BUILD_COST) },
-    { config: { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS,  electronics: Electronics.STANDARD },
+    { config: { chassis: Chassis.BIPOD,    weapons: [Weapon.PHASERS],  electronics: Electronics.STANDARD },
       cost: sumCosts(CHASSIS_BUILD_COST[Chassis.BIPOD], WEAPON_BUILD_COST[Weapon.PHASERS], ELECTRONICS_BUILD_COST) },
-    { config: { chassis: Chassis.ANTIGRAV, weapon: Weapon.MISSILES, electronics: Electronics.STANDARD },
+    { config: { chassis: Chassis.ANTIGRAV, weapons: [Weapon.MISSILES], electronics: Electronics.STANDARD },
       cost: sumCosts(CHASSIS_BUILD_COST[Chassis.ANTIGRAV], WEAPON_BUILD_COST[Weapon.MISSILES], ELECTRONICS_BUILD_COST) },
-    { config: { chassis: Chassis.TRACKS,   weapon: Weapon.CANNON,   electronics: Electronics.STANDARD },
+    { config: { chassis: Chassis.TRACKS,   weapons: [Weapon.CANNON],   electronics: Electronics.STANDARD },
       cost: sumCosts(CHASSIS_BUILD_COST[Chassis.TRACKS], WEAPON_BUILD_COST[Weapon.CANNON], ELECTRONICS_BUILD_COST) },
-    { config: { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS },
+    { config: { chassis: Chassis.BIPOD,    weapons: [Weapon.PHASERS] },
       cost: sumCosts(CHASSIS_BUILD_COST[Chassis.BIPOD], WEAPON_BUILD_COST[Weapon.PHASERS]) },
-    { config: { chassis: Chassis.ANTIGRAV, weapon: Weapon.MISSILES },
+    { config: { chassis: Chassis.ANTIGRAV, weapons: [Weapon.MISSILES] },
       cost: sumCosts(CHASSIS_BUILD_COST[Chassis.ANTIGRAV], WEAPON_BUILD_COST[Weapon.MISSILES]) },
-    { config: { chassis: Chassis.TRACKS,   weapon: Weapon.CANNON },
+    { config: { chassis: Chassis.TRACKS,   weapons: [Weapon.CANNON] },
       cost: sumCosts(CHASSIS_BUILD_COST[Chassis.TRACKS], WEAPON_BUILD_COST[Weapon.CANNON]) },
     { config: { chassis: Chassis.ANTIGRAV },
       cost: CHASSIS_BUILD_COST[Chassis.ANTIGRAV] },

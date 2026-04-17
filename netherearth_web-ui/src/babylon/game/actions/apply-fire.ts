@@ -1,7 +1,7 @@
 import { ObjectType } from '../core/warmap';
 import { Direction } from '../core/warmap';
 import type { WarMap, RobotObject } from '../core/warmap';
-import { WEAPON_DAMAGE, WEAPON_RANGE, calcDamageFalloff } from '../../data/robot';
+import { Weapon, WEAPON_DAMAGE, WEAPON_RANGE, WEAPON_COOLDOWN, calcDamageFalloff } from '../../data/robot';
 import { spawnProjectile } from '../mechanics/projectile';
 
 function directionToward(fromX: number, fromY: number, toX: number, toY: number): Direction {
@@ -15,14 +15,14 @@ export function applyFire(
     robot: RobotObject,
     targetId: string,
     warMap: WarMap,
+    weapon: Weapon,
 ): boolean {
-    robot.lastFiredAt = warMap.tick ?? 0;
+    robot.weaponReadyAt = (warMap.tick ?? 0) + (WEAPON_COOLDOWN[weapon] ?? 3);
     const target = warMap.objects.find(
         (o): o is RobotObject => o.id === targetId && o.type === ObjectType.ROBOT,
     );
     if (target) {
-        const weapon = robot.robotConfig?.weapon;
-        if (weapon && target.health !== undefined) {
+        if (target.health !== undefined) {
             const baseDmg  = WEAPON_DAMAGE[weapon] ?? 0;
             const maxRange = WEAPON_RANGE[weapon]  ?? 1;
             const dist     = Math.abs(target.x - robot.x) + Math.abs(target.y - robot.y);
@@ -30,7 +30,7 @@ export function applyFire(
             target.health  = Math.max(0, target.health - dmg);
         }
         target.facing = directionToward(target.x, target.y, robot.x, robot.y);
-        spawnProjectile(warMap, robot, target);
+        spawnProjectile(warMap, robot, target, weapon);
     }
     return true;
 }

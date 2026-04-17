@@ -44,10 +44,10 @@ describe('canAfford', () => {
 // ─── BUILD_OPTIONS costs ──────────────────────────────────────────────────────
 
 describe('BUILD_OPTIONS costs', () => {
-    it('full-kit option costs bipod + phasers + nuclear + electronics', () => {
+    it('full-kit option costs bipod + phasers + missiles + nuclear + electronics', () => {
         const full = BUILD_OPTIONS[0];
         expect(full.config.chassis).toBe(Chassis.BIPOD);
-        expect(full.config.weapon).toBe(Weapon.PHASERS);
+        expect(full.config.weapons).toContain(Weapon.PHASERS);
         expect(full.config.nuclear).toBe(true);
         expect(full.config.electronics).toBe(Electronics.STANDARD);
         expect(full.cost).toMatchObject({
@@ -61,7 +61,7 @@ describe('BUILD_OPTIONS costs', () => {
     it('cheapest option is tracks-only chassis', () => {
         const cheapest = BUILD_OPTIONS[BUILD_OPTIONS.length - 1];
         expect(cheapest.config.chassis).toBe(Chassis.TRACKS);
-        expect(cheapest.config.weapon).toBeUndefined();
+        expect(cheapest.config.weapons ?? []).toHaveLength(0);
         expect(cheapest.cost).toEqual({ chassis: 1 });
     });
 });
@@ -115,7 +115,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
         res[Owner.RED].electronics = 1;
         tickBuild(map, res);
         const robots = map.objects.filter(o => o.type === ObjectType.ROBOT) as RobotObject[];
-        expect(robots[0].robotConfig?.weapon).toBe(Weapon.CANNON);
+        expect(robots[0].robotConfig?.weapons).toContain(Weapon.CANNON);
         expect(robots[0].robotConfig?.electronics).toBe(Electronics.STANDARD);
     });
 
@@ -243,7 +243,7 @@ describe('chooseBuildOption — resource-aware selection', () => {
         const res = { ...createResources(), chassis: 1 };
         const option = chooseBuildOption(res);
         expect(option?.config.chassis).toBe(Chassis.TRACKS);
-        expect(option?.config.weapon).toBeUndefined();
+        expect(option?.config.weapons ?? []).toHaveLength(0);
     });
 
     it('prefers bipod+phaser over tracks when phasers are plentiful', () => {
@@ -251,7 +251,7 @@ describe('chooseBuildOption — resource-aware selection', () => {
         const res = { ...createResources(), chassis: 3, phasers: 10, electronics: 1 };
         const option = chooseBuildOption(res);
         expect(option?.config.chassis).toBe(Chassis.BIPOD);
-        expect(option?.config.weapon).toBe(Weapon.PHASERS);
+        expect(option?.config.weapons).toContain(Weapon.PHASERS);
     });
 
     it('prefers nuclear bipod when nuclear stockpile is large', () => {
@@ -265,13 +265,13 @@ describe('chooseBuildOption — resource-aware selection', () => {
         const res = { ...createResources(), chassis: 2, missiles: 10, electronics: 1 };
         const option = chooseBuildOption(res);
         expect(option?.config.chassis).toBe(Chassis.ANTIGRAV);
-        expect(option?.config.weapon).toBe(Weapon.MISSILES);
+        expect(option?.config.weapons).toContain(Weapon.MISSILES);
     });
 
     it('prefers tracks+cannon over bare tracks when cannons are plentiful', () => {
         const res = { ...createResources(), chassis: 1, cannons: 10 };
         const option = chooseBuildOption(res);
-        expect(option?.config.weapon).toBe(Weapon.CANNON);
+        expect(option?.config.weapons).toContain(Weapon.CANNON);
     });
 
     it('prefers option with electronics when electronics stockpile is large', () => {

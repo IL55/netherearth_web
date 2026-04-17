@@ -6,9 +6,9 @@ import { Owner } from '../../../game/types/owner';
 import { Chassis, Weapon, Electronics } from '../../../data/robot';
 import { makeEnv } from '../../test-utils';
 
-const cannon   = { chassis: Chassis.TRACKS,   weapon: Weapon.CANNON,   electronics: Electronics.STANDARD };
-const missiles = { chassis: Chassis.ANTIGRAV, weapon: Weapon.MISSILES, electronics: Electronics.STANDARD };
-const phasers  = { chassis: Chassis.BIPOD,    weapon: Weapon.PHASERS,  nuclear: true, electronics: Electronics.STANDARD };
+const cannon   = { chassis: Chassis.TRACKS,   weapons: [Weapon.CANNON],   electronics: Electronics.STANDARD };
+const missiles = { chassis: Chassis.ANTIGRAV, weapons: [Weapon.MISSILES], electronics: Electronics.STANDARD };
+const phasers  = { chassis: Chassis.BIPOD,    weapons: [Weapon.PHASERS],  nuclear: true, electronics: Electronics.STANDARD };
 const scout    = { chassis: Chassis.ANTIGRAV };
 
 describe('placeRobot', () => {

@@ -1,11 +1,14 @@
 import * as BABYLON from '@babylonjs/core';
 import {
     setManualControl, setRobotGoal, getGoalLabel, getRobotDescription, setMoveGoal,
-    buildDirectionAction, buildFireAction, getRobotHealthPercent,
+    buildDirectionAction, buildFireAction, buildFireActionForWeapon, getRobotHealthPercent,
 } from './robot-control-logic';
+import { WEAPON_RENDER_ORDER } from '../../data/robot';
+import type { Weapon } from '../../data/robot';
 import { ORDERABLE_GOALS, GOAL_LABELS } from './constants';
 import { Direction } from '../../game/core/warmap';
 import type { RobotObject, WarMap } from '../../game/core/warmap';
+import { ActionType } from '../../game/actions';
 import type { RobotAction } from '../../game/actions';
 
 const PANEL_STYLE: Partial<CSSStyleDeclaration> = {
@@ -63,9 +66,11 @@ export class RobotControl3D {
     private moveFwdBtn: HTMLButtonElement;
     private moveBwdBtn: HTMLButtonElement;
     private detonateBtn: HTMLButtonElement;
+    private weaponBtnsContainer!: HTMLDivElement;
     private keyHandler: ((e: KeyboardEvent) => void) | null = null;
     private keyUpHandler: ((e: KeyboardEvent) => void) | null = null;
     private heldDirection: Direction | null = null;
+    private weaponKeys: Weapon[] = [];
 
     constructor(
         scene: BABYLON.Scene,
@@ -212,7 +217,10 @@ export class RobotControl3D {
         dpad.appendChild(arrowBtn('→', Direction.S));
         this.manualView.appendChild(dpad);
 
-        this.manualView.appendChild(makeBtn('FIRE  [Space]', '#ffa726', () => this.dispatchFire()));
+        this.manualView.appendChild(makeBtn('FIRE BEST  [Space]', '#ffa726', () => this.dispatchFire()));
+
+        this.weaponBtnsContainer = document.createElement('div');
+        this.manualView.appendChild(this.weaponBtnsContainer);
 
         this.detonateBtn = makeBtn('DETONATE A-BOMB  [X]', '#ef5350', () => this.dispatchDetonate());
         this.manualView.appendChild(this.detonateBtn);
@@ -236,6 +244,12 @@ export class RobotControl3D {
         if (action) this.onAction(action);
     }
 
+    private dispatchFireWeapon(weapon: Weapon): void {
+        if (!this.currentRobot) return;
+        const action = buildFireActionForWeapon(this.currentRobot, this.warMap, weapon);
+        if (action) this.onAction(action);
+    }
+
     private dispatchDetonate(): void {
         if (!this.currentRobot?.robotConfig?.nuclear) return;
         this.onAction({ type: ActionType.DETONATE });
@@ -253,6 +267,15 @@ export class RobotControl3D {
                 case 'ArrowDown':  e.preventDefault(); this.heldDirection = Direction.E; break;
                 case 'Space':      if (!e.repeat) { e.preventDefault(); this.dispatchFire(); } break;
                 case 'KeyX':       if (!e.repeat) { e.preventDefault(); this.dispatchDetonate(); } break;
+                case 'Digit1': case 'Digit2': case 'Digit3': {
+                    if (!e.repeat) {
+                        e.preventDefault();
+                        const idx = parseInt(e.code.replace('Digit', ''), 10) - 1;
+                        const w = this.weaponKeys[idx];
+                        if (w) this.dispatchFireWeapon(w);
+                    }
+                    break;
+                }
             }
         };
         this.keyUpHandler = (e: KeyboardEvent) => {
@@ -310,15 +333,27 @@ export class RobotControl3D {
     private showManualView(): void {
         if (!this.currentRobot) return;
         setManualControl(this.currentRobot);
-        this.attachKeys();
-        
-        // Show or hide detonate button based on robot equipment
-        if (this.currentRobot.robotConfig?.nuclear) {
-            this.detonateBtn.style.display = 'block';
-        } else {
-            this.detonateBtn.style.display = 'none';
+
+        // Build per-weapon fire buttons in render order
+        this.weaponBtnsContainer.innerHTML = '';
+        this.weaponKeys = [];
+        const robotWeapons = new Set(this.currentRobot.robotConfig?.weapons ?? []);
+        let keyIndex = 1;
+        for (const w of WEAPON_RENDER_ORDER) {
+            if (!robotWeapons.has(w)) continue;
+            const label = `FIRE ${w.toUpperCase()}  [${keyIndex}]`;
+            const weapon = w;
+            this.weaponBtnsContainer.appendChild(
+                makeBtn(label, '#ce93d8', () => this.dispatchFireWeapon(weapon)),
+            );
+            this.weaponKeys.push(weapon);
+            keyIndex++;
         }
-        
+
+        // Show or hide detonate button based on robot equipment
+        this.detonateBtn.style.display = this.currentRobot.robotConfig?.nuclear ? 'block' : 'none';
+
+        this.attachKeys();
         this.mainView.style.display = 'none';
         this.goalView.style.display = 'none';
         this.manualView.style.display = 'block';

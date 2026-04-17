@@ -12,7 +12,7 @@ import type { WarMap, WarObject, RobotObject } from '../core/warmap';
 import type { OccupancyMap } from '../core/occupancy';
 import { isOccupied, isLOSBlocked } from '../core/occupancy';
 import { ActionType, RotateDir, type RobotAction } from '../actions';
-import { SIGHT_RANGE, WEAPON_RANGE, WEAPON_COOLDOWN } from '../../data/robot';
+import { Weapon, SIGHT_RANGE, WEAPON_RANGE, WEAPON_DAMAGE } from '../../data/robot';
 import { dirDelta, CW_DIRS } from './nav';
 
 // Nearest living enemy robot adjacent (within ~1.5 units) with unblocked LOS.
@@ -82,18 +82,28 @@ function scanForwardEnemy(
         : closest;
 }
 
+// Selects the highest-damage weapon among those that can reach the given distance.
+// Returns null if no weapon is in range.
+function selectWeapon(weapons: Weapon[], dist: number): Weapon | null {
+    const inRange = weapons.filter(w => dist <= (WEAPON_RANGE[w] ?? 0));
+    if (inRange.length === 0) return null;
+    return inRange.reduce((best, w) =>
+        (WEAPON_DAMAGE[w] ?? 0) > (WEAPON_DAMAGE[best] ?? 0) ? w : best
+    );
+}
+
 // Returns a combat action (fire / advance / idle) when an enemy is in sight; undefined otherwise.
 export function fightAction(
     robot: RobotObject,
     warMap: WarMap,
     occupancy: OccupancyMap,
 ): RobotAction | undefined {
-    const weapon     = robot.robotConfig?.weapon;
+    const weapons    = robot.robotConfig?.weapons ?? [];
     const sightRange = robot.robotConfig?.electronics ? SIGHT_RANGE[robot.robotConfig.electronics] : 0;
-    if (!weapon || sightRange <= 0) return undefined;
+    if (weapons.length === 0 || sightRange <= 0) return undefined;
 
     const facing = robot.facing ?? Direction.N;
-    
+
     // 1. Check for adjacent enemies first (they override forward-only scanning)
     let enemy = scanAdjacentEnemy(robot, warMap, occupancy);
     if (enemy) {
@@ -103,7 +113,7 @@ export function fightAction(
         const targetDir = Math.abs(dx) > Math.abs(dy)
             ? (dx > 0 ? Direction.E : Direction.W)
             : (dy > 0 ? Direction.S : Direction.N);
-            
+
         if (facing !== targetDir) {
             const steps = (CW_DIRS.indexOf(targetDir) - CW_DIRS.indexOf(facing) + 4) % 4;
             return { type: ActionType.ROTATE, direction: steps <= 2 ? RotateDir.RIGHT : RotateDir.LEFT };
@@ -116,25 +126,29 @@ export function fightAction(
 
     if (!enemy) return undefined;
 
-    const dist      = Math.abs(enemy.x - robot.x) + Math.abs(enemy.y - robot.y);
-    const weapRange = WEAPON_RANGE[weapon] ?? 0;
+    const dist     = Math.abs(enemy.x - robot.x) + Math.abs(enemy.y - robot.y);
+    const maxRange = Math.max(0, ...weapons.map(w => WEAPON_RANGE[w] ?? 0));
+    const tick     = warMap.tick ?? 0;
+    const selected = selectWeapon(weapons, dist);
 
-    if (dist <= weapRange) {
-        const cooldown  = WEAPON_COOLDOWN[weapon] ?? 3;
-        const inFlight  = warMap.projectiles?.some(p => p.ownerId === robot.id) ?? false;
-        const lastFired = robot.lastFiredAt ?? -(cooldown + 1);
-        if (!inFlight && (warMap.tick ?? 0) - lastFired >= cooldown) {
-            return { type: ActionType.FIRE, targetId: enemy.id };
+    if (selected !== null) {
+        const inFlight = warMap.projectiles?.some(p => p.ownerId === robot.id) ?? false;
+        if (!inFlight && tick >= (robot.weaponReadyAt ?? 0)) {
+            return { type: ActionType.FIRE, targetId: enemy.id, weapon: selected };
         }
+        // In range but reloading — idle (don't advance into melee)
+        return { type: ActionType.IDLE };
     }
 
-    // Enemy visible but out of range or reloading — step toward it
-    const { dx, dy } = dirDelta(facing);
-    const nx = robot.x + dx;
-    const ny = robot.y + dy;
-    if (nx >= 0 && ny >= 0 && nx < warMap.width && ny < warMap.height
-            && !isOccupied(occupancy, nx, ny, robot.id)) {
-        return { type: ActionType.MOVE, direction: facing };
+    // Enemy visible but out of range — step toward it
+    if (dist > maxRange) {
+        const { dx, dy } = dirDelta(facing);
+        const nx = robot.x + dx;
+        const ny = robot.y + dy;
+        if (nx >= 0 && ny >= 0 && nx < warMap.width && ny < warMap.height
+                && !isOccupied(occupancy, nx, ny, robot.id)) {
+            return { type: ActionType.MOVE, direction: facing };
+        }
     }
 
     return { type: ActionType.IDLE };

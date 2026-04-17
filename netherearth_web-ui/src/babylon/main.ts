@@ -10,7 +10,7 @@ import { Renderer } from './view/map/renderer';
 import { ProjectileRenderer } from './view/map/projectile-renderer';
 import { GameHud } from './view/hud/hud';
 import { createWarMap, Owner, RobotGoal } from './game/core/warmap';
-import { robotConfigs, calcHealth } from './data/robot';
+import { robotConfigs, calcHealth, Chassis, Weapon, Electronics } from './data/robot';
 import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';
 import { attachShipControls } from './controls/ship';
@@ -46,15 +46,23 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const goals: RobotGoal[] = [RobotGoal.ATTACK_ROBOTS, RobotGoal.CAPTURE_FACTORY, RobotGoal.CAPTURE_WARBASE, RobotGoal.DEFEND];
   const configValues = Object.values(robotConfigs);
+  const fullEquipConfig = {
+    chassis: Chassis.TRACKS,
+    weapons: [Weapon.CANNON, Weapon.MISSILES, Weapon.PHASERS],
+    nuclear: true,
+    electronics: Electronics.STANDARD,
+  };
   for (let x = 0; x < mapData.width; x++) {
+    const isShipRobot = x === 0;
+    const robotConfig = isShipRobot ? fullEquipConfig : configValues[x % configValues.length];
     warMap.objects.push({
       id: `init_robot_${x}`,
       type: ObjectType.ROBOT,
       x,
       y: 14,
       owner: x % 2 === 0 ? Owner.RED : Owner.BLUE,
-      robotConfig: configValues[x % configValues.length],
-      health: calcHealth(configValues[x % configValues.length]),
+      robotConfig,
+      health: calcHealth(robotConfig),
       facing: Direction.W,
       goal: goals[x % goals.length],
       ai: RobotAI.SIMPLE,

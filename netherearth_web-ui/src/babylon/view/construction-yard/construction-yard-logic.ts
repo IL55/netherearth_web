@@ -124,7 +124,7 @@ export function buildRobotConfig(selection: BuildSelection): RobotConfig | null 
     const config: RobotConfig = { chassis };
     if (selection.weapon) {
         const weapon = PART_TO_WEAPON[selection.weapon];
-        if (weapon) config.weapon = weapon;
+        if (weapon) config.weapons = [weapon];
     }
     if (selection.nuclear)     config.nuclear = true;
     if (selection.electronics) config.electronics = Electronics.STANDARD;

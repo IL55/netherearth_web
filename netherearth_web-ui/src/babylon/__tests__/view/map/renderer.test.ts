@@ -21,7 +21,7 @@ function makeRobot(id: string, x: number, y: number): RobotObject {
     return {
         id, type: ObjectType.ROBOT, x, y, owner: Owner.RED,
         facing: Direction.E,
-        robotConfig: { chassis: Chassis.TRACKS, weapon: Weapon.CANNON, electronics: Electronics.STANDARD },
+        robotConfig: { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON], electronics: Electronics.STANDARD },
     };
 }
 

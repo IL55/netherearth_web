@@ -21,7 +21,7 @@ function advanceGameTicks(n: number): void {
 }
 
 function makeNukeRobot(id: string, x: number, y: number, goal: RobotGoal): RobotObject {
-    const cfg = { chassis: Chassis.TRACKS, weapon: Weapon.CANNON, electronics: Electronics.STANDARD, nuclear: true };
+    const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON], electronics: Electronics.STANDARD, nuclear: true };
     return {
         id, type: ObjectType.ROBOT, x, y, owner: Owner.RED,
         facing: Direction.E, goal,

@@ -9,7 +9,7 @@ import { ObjectType, RobotGoal, Owner, RobotAI, Direction } from '../../../game/
 import type { WarMap, RobotObject } from '../../../game/core/warmap';
 import { startClock } from '../../../game/clock';
 import { createOwnerResources } from '../../../game/resources';
-import { Chassis, Weapon, Electronics, calcHealth } from '../../../data/robot';
+import { Chassis, Weapon, Electronics, calcHealth, WEAPON_RANGE } from '../../../data/robot';
 import { SUB_TICKS } from '../../../game/mechanics/projectile';
 import { ActionType, type RobotAction } from '../../../game/actions';
 
@@ -22,7 +22,7 @@ function advanceGameTicks(n: number): void {
 }
 
 function makeRobot(id: string, x: number, y: number, owner: Owner, facing: Direction): RobotObject {
-    const cfg = { chassis: Chassis.TRACKS, weapon: Weapon.CANNON, electronics: Electronics.STANDARD };
+    const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON], electronics: Electronics.STANDARD };
     return {
         id, type: ObjectType.ROBOT, x, y, owner, facing,
         goal: RobotGoal.ATTACK_ROBOTS,
@@ -120,7 +120,7 @@ describe('scenario: manual fire action applied via clock', () => {
 
         const blueInitialHealth = blue.health!;
         let pendingAction: RobotAction | null =
-            { type: ActionType.FIRE, targetId: 'blue' };
+            { type: ActionType.FIRE, targetId: 'blue', weapon: Weapon.CANNON };
 
         const clock = startClock(
             warMap, () => {}, createOwnerResources(), undefined, TICK_MS,

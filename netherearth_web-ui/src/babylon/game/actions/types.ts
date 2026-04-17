@@ -1,5 +1,6 @@
 import { RotateDir } from '../types/rotate-dir';
 import type { Direction } from '../core/warmap';
+import type { Weapon } from '../../data/robot';
 
 export type { Direction };
 export { RotateDir };
@@ -20,7 +21,7 @@ export enum ActionType {
 export type RobotAction =
     | { type: ActionType.MOVE;   direction: Direction }
     | { type: ActionType.ROTATE; direction: RotateDir }
-    | { type: ActionType.FIRE;   targetId: string }
+    | { type: ActionType.FIRE;   targetId: string; weapon: Weapon }
     | { type: ActionType.DETONATE }
     | { type: ActionType.IDLE };
 

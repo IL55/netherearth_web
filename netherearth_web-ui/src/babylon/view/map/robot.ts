@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll } from '../shared/scene-utils';
-import { Chassis, Weapon, Electronics } from '../../data/robot';
+import { Chassis, Weapon, Electronics, WEAPON_RENDER_ORDER } from '../../data/robot';
 import type { RobotConfig } from '../../data/robot';
 import { Owner } from '../../game/types/owner';
 
@@ -81,9 +81,10 @@ export const placeRobot = (
     if (!chassis) return;
     let topY = placePart(chassis, tx, 1, tz, rotation);
 
-    if (config.weapon) {
-        const weapon = models.get(prefix + WEAPON_MODEL[config.weapon]);
-        if (weapon) topY = placePart(weapon, tx, topY, tz, rotation);
+    for (const w of WEAPON_RENDER_ORDER) {
+        if (!(config.weapons ?? []).includes(w)) continue;
+        const model = models.get(prefix + WEAPON_MODEL[w]);
+        if (model) topY = placePart(model, tx, topY, tz, rotation);
     }
 
     if (config.nuclear) {

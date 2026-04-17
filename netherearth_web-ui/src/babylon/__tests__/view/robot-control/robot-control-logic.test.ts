@@ -184,7 +184,7 @@ describe('getRobotDescription', () => {
     });
 
     it('shows weapon when present', () => {
-        const desc = getRobotDescription({ chassis: Chassis.BIPOD, weapon: Weapon.PHASERS });
+        const desc = getRobotDescription({ chassis: Chassis.BIPOD, weapons: [Weapon.PHASERS] });
         expect(desc.toLowerCase()).toContain('phasers');
     });
 
@@ -248,7 +248,7 @@ describe('getRobotHealthPercent', () => {
     });
 
     it('returns 100 at full health', () => {
-        const cfg = { chassis: Chassis.TRACKS, weapon: Weapon.CANNON };
+        const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
         const robot: RobotObject = {
             ...makeRobot('r1', 0, 0),
             robotConfig: cfg,
@@ -264,7 +264,7 @@ describe('getRobotHealthPercent', () => {
     });
 
     it('returns roughly 50 at half health', () => {
-        const cfg = { chassis: Chassis.TRACKS, weapon: Weapon.CANNON };
+        const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
         const max = calcHealth(cfg);
         const robot: RobotObject = {
             ...makeRobot('r1', 0, 0),

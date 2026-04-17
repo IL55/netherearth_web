@@ -51,7 +51,7 @@ export interface RobotObject extends ObjectBase {
     goal?: RobotGoal;
     ai?: RobotAI;
     health?: number;
-    lastFiredAt?: number;
+    weaponReadyAt?: number;
     lastMovedAt?: number;
     lastRotatedAt?: number;
     dyingTicks?: number;

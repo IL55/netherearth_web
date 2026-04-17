@@ -14,7 +14,7 @@ function makeWarMap(...robots: RobotObject[]): WarMap {
 }
 
 function makeRobotWithGoal(id: string, x: number, y: number): RobotObject {
-    const cfg = { chassis: Chassis.TRACKS, weapon: Weapon.CANNON };
+    const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
     return {
         id,
         type: ObjectType.ROBOT,

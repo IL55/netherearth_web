@@ -2,7 +2,8 @@ import { ObjectType, RobotGoal, Owner, Direction, CW_DIRS } from '../../game/cor
 import type { WarMap, RobotObject } from '../../game/core/warmap';
 import type { ShipState } from '../../game/ship/types';
 import { ActionType, RotateDir, type RobotAction } from '../../game/actions';
-import { calcHealth } from '../../data/robot';
+import { calcHealth, WEAPON_RANGE, WEAPON_DAMAGE } from '../../data/robot';
+import type { Weapon } from '../../data/robot';
 import { HOVER_DISTANCE, HOVER_HEIGHT, ORDERABLE_GOALS, GOAL_LABELS } from './constants';
 
 // ─── Life / health ────────────────────────────────────────────────────────────
@@ -98,10 +99,8 @@ export function buildDirectionAction(robot: RobotObject, targetDir: Direction): 
     return { type: ActionType.ROTATE, direction: steps <= 2 ? RotateDir.RIGHT : RotateDir.LEFT };
 }
 
-/**
- * Returns a FIRE action targeting the nearest live enemy robot, or null if none exist.
- */
-export function buildFireAction(robot: RobotObject, warMap: WarMap): RobotAction | null {
+/** Finds the nearest live enemy robot, or null if none exist. */
+function findNearestEnemy(robot: RobotObject, warMap: WarMap): { target: RobotObject; dist: number } | null {
     let nearest: RobotObject | null = null;
     let nearestDist = Infinity;
     for (const obj of warMap.objects) {
@@ -111,8 +110,35 @@ export function buildFireAction(robot: RobotObject, warMap: WarMap): RobotAction
         const dist = Math.abs(obj.x - robot.x) + Math.abs(obj.y - robot.y);
         if (dist < nearestDist) { nearest = obj as RobotObject; nearestDist = dist; }
     }
-    if (!nearest) return null;
-    return { type: ActionType.FIRE, targetId: nearest.id };
+    return nearest ? { target: nearest, dist: nearestDist } : null;
+}
+
+/**
+ * Returns a FIRE action using the best available weapon (highest damage in range,
+ * falling back to highest damage overall). Returns null if no enemies or weapons.
+ */
+export function buildFireAction(robot: RobotObject, warMap: WarMap): RobotAction | null {
+    const weapons = robot.robotConfig?.weapons ?? [];
+    if (weapons.length === 0) return null;
+    const enemy = findNearestEnemy(robot, warMap);
+    if (!enemy) return null;
+
+    const inRange = weapons.filter((w: Weapon) => enemy.dist <= (WEAPON_RANGE[w] ?? 0));
+    const weapon = inRange.length > 0
+        ? inRange.reduce((best: Weapon, w: Weapon) => (WEAPON_DAMAGE[w] ?? 0) > (WEAPON_DAMAGE[best] ?? 0) ? w : best)
+        : weapons.reduce((best: Weapon, w: Weapon) => (WEAPON_DAMAGE[w] ?? 0) > (WEAPON_DAMAGE[best] ?? 0) ? w : best);
+
+    return { type: ActionType.FIRE, targetId: enemy.target.id, weapon };
+}
+
+/**
+ * Returns a FIRE action using the specified weapon, targeting the nearest enemy.
+ * Returns null if no enemy exists.
+ */
+export function buildFireActionForWeapon(robot: RobotObject, warMap: WarMap, weapon: Weapon): RobotAction | null {
+    const enemy = findNearestEnemy(robot, warMap);
+    if (!enemy) return null;
+    return { type: ActionType.FIRE, targetId: enemy.target.id, weapon };
 }
 
 /** Assigns one of the orderable goals to the robot, clearing any waypoint position. */
@@ -128,12 +154,15 @@ export function setMoveGoal(robot: RobotObject, forward: boolean, distance: numb
     robot.goalPosition = { x: robot.x + dx, y: robot.y };
 }
 
-/** Short description of the robot's loadout (chassis + primary weapon). */
+/** Short description of the robot's loadout (chassis + weapons). */
 export function getRobotDescription(config: RobotObject['robotConfig']): string {
     if (!config) return 'Unknown Robot';
     const chassis = config.chassis.charAt(0).toUpperCase() + config.chassis.slice(1);
-    const weapon = config.weapon
-        ? config.weapon.charAt(0).toUpperCase() + config.weapon.slice(1)
-        : config.nuclear ? 'Nuclear' : 'Unarmed';
-    return `${chassis} / ${weapon}`;
+    const parts: string[] = [];
+    for (const w of config.weapons ?? []) {
+        parts.push(w.charAt(0).toUpperCase() + w.slice(1));
+    }
+    if (config.nuclear) parts.push('Nuclear');
+    if (parts.length === 0) parts.push('Unarmed');
+    return `${chassis} / ${parts.join(' + ')}`;
 }
