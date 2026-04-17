@@ -92,6 +92,53 @@ describe('scenario: neutral factory capture', () => {
     });
 });
 
+// ─── Warbase capture with navigation ──────────────────────────────────────────
+
+describe('scenario: warbase capture with navigation', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it('BLUE robot navigates precisely to warbase capture zone and captures it', () => {
+        // Red warbase at (10, 10). Capture zone offset is dx: 3.5, dy: 2.0
+        // So capture spot is exactly at (13.5, 12.0).
+        const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 10, y: 10, owner: Owner.RED };
+        const zone = CAPTURE_ZONES['warbase']!;
+        
+        // Place robot 2 cells EAST of the exact capture spot so it's not inside the warbase structure
+        // Exact capture spot: (13.5, 12.0)
+        const startX = warbase.x + zone.dx + 2; // 15.5
+        const startY = warbase.y + zone.dy;     // 12.0
+        const robot = makeRobot('r1', startX, startY, Owner.BLUE, RobotGoal.CAPTURE_WARBASE);
+        robot.facing = Direction.W; // Face towards the capture spot
+
+        const warMap: WarMap = { width: 30, height: 30, objects: [warbase, robot], projectiles: [] };
+        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+
+        // Before advancing, check robot's starting position.
+        expect(robot.x).toBe(15.5);
+        expect(robot.y).toBe(12.0);
+
+        // Distance is 2 cells = 8 moves. Each move is 0.25 cells. 
+        // MOVE_COOLDOWN is 2 ticks. 8 moves = 16 ticks.
+        // We advance enough time to ensure it reaches the spot.
+        advanceGameTicks(30);
+
+        // Verify robot precisely reached the capture spot, no more "half cell early"
+        expect(robot.x).toBe(13.5);
+        expect(robot.y).toBe(12.0);
+        
+        // Currently, it shouldn't be captured yet
+        expect(warbase.owner).toBe(Owner.RED);
+
+        // Advance 3 days to complete the warbase capture (ticks: 3 * DAY_TICKS)
+        advanceGameTicks(3 * DAY_TICKS);
+        clock.stop();
+
+        // The base is successfully captured!
+        expect(warbase.owner).toBe(Owner.BLUE);
+    });
+});
+
 // ─── Enemy factory capture ────────────────────────────────────────────────────
 
 describe('scenario: enemy factory capture', () => {

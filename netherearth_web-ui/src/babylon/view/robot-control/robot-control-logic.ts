@@ -134,31 +134,26 @@ function findNearestEnemy(robot: RobotObject, warMap: WarMap): { target: RobotOb
 }
 
 /**
- * Returns a FIRE action using the best available weapon (highest damage in range,
- * falling back to highest damage overall). Returns null if no enemies or weapons.
+ * Returns a FIRE action using the best available weapon (highest damage). 
+ * TargetId is omitted to fire straight ahead. Returns null if no weapons.
  */
 export function buildFireAction(robot: RobotObject, warMap: WarMap): RobotAction | null {
     const weapons = robot.robotConfig?.weapons ?? [];
     if (weapons.length === 0) return null;
-    const enemy = findNearestEnemy(robot, warMap);
-    if (!enemy) return null;
+    
+    // Always select the highest damage weapon for manual fire
+    const weapon = weapons.reduce((best: Weapon, w: Weapon) => 
+        (WEAPON_DAMAGE[w] ?? 0) > (WEAPON_DAMAGE[best] ?? 0) ? w : best
+    );
 
-    const inRange = weapons.filter((w: Weapon) => enemy.dist <= (WEAPON_RANGE[w] ?? 0));
-    const weapon = inRange.length > 0
-        ? inRange.reduce((best: Weapon, w: Weapon) => (WEAPON_DAMAGE[w] ?? 0) > (WEAPON_DAMAGE[best] ?? 0) ? w : best)
-        : weapons.reduce((best: Weapon, w: Weapon) => (WEAPON_DAMAGE[w] ?? 0) > (WEAPON_DAMAGE[best] ?? 0) ? w : best);
-
-    return { type: ActionType.FIRE, targetId: enemy.target.id, weapon };
+    return { type: ActionType.FIRE, weapon };
 }
 
 /**
- * Returns a FIRE action using the specified weapon, targeting the nearest enemy.
- * Returns null if no enemy exists.
+ * Returns a FIRE action using the specified weapon straight ahead.
  */
 export function buildFireActionForWeapon(robot: RobotObject, warMap: WarMap, weapon: Weapon): RobotAction | null {
-    const enemy = findNearestEnemy(robot, warMap);
-    if (!enemy) return null;
-    return { type: ActionType.FIRE, targetId: enemy.target.id, weapon };
+    return { type: ActionType.FIRE, weapon };
 }
 
 /** Assigns one of the orderable goals to the robot, clearing any waypoint position. */

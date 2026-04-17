@@ -43,15 +43,15 @@ describe('isInCaptureZone', () => {
         expect(isInCaptureZone(robot, factory)).toBe(true);
     });
 
-    it('returns true when robot is within Chebyshev radius 0.5', () => {
+    it('returns true when robot is within Chebyshev radius 0.1', () => {
         const factory = makeFactory();
-        const robot = makeRobot('r', 6.4, 8.4, Owner.RED); // max(0.4, 0.4)=0.4 ≤ 0.5
+        const robot = makeRobot('r', 6.05, 8.05, Owner.RED); // max(0.05, 0.05) <= 0.1
         expect(isInCaptureZone(robot, factory)).toBe(true);
     });
 
     it('returns false when robot is just outside radius', () => {
         const factory = makeFactory();
-        const robot = makeRobot('r', 6.6, 8, Owner.RED); // |6.6-6|=0.6 > 0.5
+        const robot = makeRobot('r', 6.2, 8.0, Owner.RED); // dx=0.2 > 0.1
         expect(isInCaptureZone(robot, factory)).toBe(false);
     });
 

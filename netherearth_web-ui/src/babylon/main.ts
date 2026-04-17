@@ -39,9 +39,35 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const mapData = await loadMap('/maps/small1.map');
   const mapBegin = new BABYLON.Vector3(0, 0, 0);
 
-  debugLoadMap(mapData, scene, mapBegin);
+  // debugLoadMap(mapData, scene, mapBegin);
 
   const warMap = createWarMap(mapData);
+
+  // ─── Compass text tiles ────────────────────────────────────────────────────
+  const createCompassText = (text: string, tx: number, ty: number) => {
+    const plane = BABYLON.MeshBuilder.CreatePlane(`compass_${text}`, { width: 3, height: 1 }, scene);
+    plane.position = new BABYLON.Vector3(mapBegin.x + tx, 1.5, mapBegin.z + ty);
+    plane.rotation.x = Math.PI / 2; // Flat on the ground
+    // No Y rotation so text is readable from the default camera angle
+    
+    const texture = new BABYLON.DynamicTexture(`dt_${text}`, { width: 300, height: 100 }, scene, true);
+    texture.hasAlpha = true;
+    texture.drawText(text, null, null, 'bold 48px monospace', 'white', 'rgba(0, 0, 0, 0.5)', true);
+    
+    const material = new BABYLON.StandardMaterial(`mat_${text}`, scene);
+    material.diffuseTexture = texture;
+    material.specularColor = new BABYLON.Color3(0, 0, 0); // avoid glare
+    material.emissiveColor = new BABYLON.Color3(1, 1, 1); // glow slightly so it's always readable
+    plane.material = material;
+  };
+
+  // North/South near fences (y=0 and y=63)
+  createCompassText("NORTH", mapData.width / 2, 1.5);
+  createCompassText("SOUTH", mapData.width / 2, mapData.height - 2.5);
+  // East/West in the middle vertically
+  createCompassText("WEST", 1.5, mapData.height / 2);
+  createCompassText("EAST", mapData.width - 2.5, mapData.height / 2);
+
   warMap.objects.filter(o => o.type === ObjectType.FACTORY).forEach(o => { o.owner = Owner.BLUE; });
 
   const goals: RobotGoal[] = [RobotGoal.ATTACK_ROBOTS, RobotGoal.CAPTURE_FACTORY, RobotGoal.CAPTURE_WARBASE, RobotGoal.DEFEND];
@@ -60,11 +86,11 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       type: ObjectType.ROBOT,
       x,
       y: 14,
-      owner: x % 2 === 0 ? Owner.RED : Owner.BLUE,
+      owner: Owner.RED,
       robotConfig,
       health: calcHealth(robotConfig),
-      facing: x % 2 === 0 ? Direction.E : Direction.W,
-      goal: goals[x % goals.length],
+      facing: Direction.E,
+      goal: RobotGoal.DEFEND,
       ai: RobotAI.SIMPLE,
     });
   }

@@ -12,8 +12,8 @@ interface CaptureZone {
 // Factory: open slot at (xo=1, yo=1) in C-shaped layout, 1 day to capture.
 // Warbase: right-side gap between (xo=3,yo=1) and (xo=3,yo=3), 3 days to capture.
 export const CAPTURE_ZONES: Partial<Record<string, CaptureZone>> = {
-    factory: { dx: 1,   dy: 1,   radius: 0.5, ticks: 1 * DAY_TICKS },
-    warbase: { dx: 3.5, dy: 2.0, radius: 0.5, ticks: 3 * DAY_TICKS },
+    factory: { dx: 1,   dy: 1,   radius: 0.1, ticks: 1 * DAY_TICKS },
+    warbase: { dx: 3.5, dy: 2.0, radius: 0.1, ticks: 3 * DAY_TICKS },
 };
 
 export function isInCaptureZone(robot: RobotObject, structure: WarObject): boolean {

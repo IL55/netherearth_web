@@ -24,7 +24,7 @@ export function applyAction(
     if (action.type === ActionType.IDLE) return false;
     const tick = warMap.tick ?? 0;
     if (action.type === ActionType.ROTATE) return applyRotate(robot, action.direction, tick);
-    if (action.type === ActionType.FIRE)   return applyFire(robot, action.targetId, warMap, action.weapon);
+    if (action.type === ActionType.FIRE)   return applyFire(robot, action.targetId, warMap, occupancy, action.weapon);
     if (action.type === ActionType.DETONATE) return applyNuclear(robot, warMap);
     return applyMove(robot, action.direction, warMap, occupancy, tick);
 }

@@ -21,7 +21,7 @@ export enum ActionType {
 export type RobotAction =
     | { type: ActionType.MOVE;   direction: Direction }
     | { type: ActionType.ROTATE; direction: RotateDir }
-    | { type: ActionType.FIRE;   targetId: string; weapon: Weapon }
+    | { type: ActionType.FIRE;   targetId?: string; weapon: Weapon }
     | { type: ActionType.DETONATE }
     | { type: ActionType.IDLE };
 
