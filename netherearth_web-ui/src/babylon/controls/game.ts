@@ -8,7 +8,7 @@ export const attachGameControls = (
     warMap: WarMap,
     onUpdate: () => void,
 ) => {
-    scene.onKeyboardObservable.add((kbInfo) => {
+    const observer = scene.onKeyboardObservable.add((kbInfo) => {
         if (kbInfo.type !== BABYLON.KeyboardEventTypes.KEYDOWN) return;
 
         switch (kbInfo.event.key) {
@@ -21,4 +21,7 @@ export const attachGameControls = (
             }
         }
     });
+    return () => {
+        if (observer) scene.onKeyboardObservable.remove(observer);
+    };
 };

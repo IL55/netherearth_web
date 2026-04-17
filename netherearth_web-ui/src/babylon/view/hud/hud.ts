@@ -120,6 +120,11 @@ export class GameHud {
             </table>`;
     }
 
+    dispose(): void {
+        this.resourcesEl.remove();
+        this.minimapCanvas.remove();
+    }
+
     private updateMinimap(warMap: WarMap): void {
         // Rotated 90° CW: canvas width = mapHeight, canvas height = mapWidth
         const cw = warMap.height * CELL;

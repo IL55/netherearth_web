@@ -1,22 +1,45 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { Engine } from '@babylonjs/core';
+import { onMounted, onUnmounted, ref } from 'vue';
+import { Engine, Scene } from '@babylonjs/core';
 import { createScene } from './babylon/main';
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 
+let engine: Engine | null = null;
+let scene: Scene | null = null;
+let disposeScene: (() => void) | null = null;
+let resizeListener: (() => void) | null = null;
+
 onMounted(async () => {
   if (canvas.value) {
-    const engine = new Engine(canvas.value, true);
-    const scene = await createScene(engine, canvas.value);
+    engine = new Engine(canvas.value, true);
+    const result = await createScene(engine, canvas.value);
+    scene = result.scene;
+    disposeScene = result.dispose;
 
     engine.runRenderLoop(() => {
-      scene.render();
+      scene?.render();
     });
 
-    window.addEventListener('resize', () => {
-      engine.resize();
-    });
+    resizeListener = () => {
+      engine?.resize();
+    };
+    window.addEventListener('resize', resizeListener);
+  }
+});
+
+onUnmounted(() => {
+  if (resizeListener) {
+    window.removeEventListener('resize', resizeListener);
+  }
+  if (engine) {
+    engine.stopRenderLoop();
+  }
+  if (disposeScene) {
+    disposeScene();
+  }
+  if (engine) {
+    engine.dispose();
   }
 });
 </script>

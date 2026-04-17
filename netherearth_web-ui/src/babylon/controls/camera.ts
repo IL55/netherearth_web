@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 
 export const attachCameraControls = (scene: BABYLON.Scene, camera: BABYLON.ArcRotateCamera) => {
-    scene.onKeyboardObservable.add((kbInfo) => {
+    const observer = scene.onKeyboardObservable.add((kbInfo) => {
         switch (kbInfo.type) {
             case BABYLON.KeyboardEventTypes.KEYDOWN:
                 switch (kbInfo.event.key) {
@@ -15,4 +15,7 @@ export const attachCameraControls = (scene: BABYLON.Scene, camera: BABYLON.ArcRo
                 break;
         }
     });
+    return () => {
+        if (observer) scene.onKeyboardObservable.remove(observer);
+    };
 };

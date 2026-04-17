@@ -79,4 +79,11 @@ export class RobotControlTrigger {
         this.pendingManualAction = null;
         return action;
     }
+
+    public dispose(): void {
+        if (this.robotControl) {
+            this.robotControl.dispose();
+            this.robotControl = null;
+        }
+    }
 }

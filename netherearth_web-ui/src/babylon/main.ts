@@ -26,7 +26,7 @@ import { RobotControlTrigger } from './view/robot-control';
 import { GameOverScreen } from './view/game-over';
 import { checkVictory } from './game/mechanics/victory';
 
-export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<BABYLON.Scene> => {
+export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<{ scene: BABYLON.Scene, dispose: () => void }> => {
   const scene = new BABYLON.Scene(engine);
 
   const light = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);
@@ -90,9 +90,9 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   // Remove default keyboard inputs (arrow keys, etc.) from the camera
   camera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput");
 
-  attachCameraControls(scene, camera);
-  attachGameControls(scene, warMap, () => renderer.render(warMap));
-  attachShipControls(scene, shipInput);
+  const removeCameraControls = attachCameraControls(scene, camera);
+  const removeGameControls = attachGameControls(scene, warMap, () => renderer.render(warMap));
+  const removeShipControls = attachShipControls(scene, shipInput);
   const ownerResources = createOwnerResources();
 
   // Give both teams a starter set of each resource for testing the construction yard
@@ -140,5 +140,18 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   }, ownerResources, ship, 100, () => constructionYardTrigger.isOpen(), () => robotControlTrigger.getTriggeredRobotId(),
     () => robotControlTrigger.takePendingAction());
 
-  return scene;
+  return {
+    scene,
+    dispose: () => {
+      clock.stop();
+      gameOverScreen.dispose();
+      hud.dispose();
+      robotControlTrigger.dispose();
+      constructionYardTrigger.dispose();
+      removeCameraControls();
+      removeGameControls();
+      removeShipControls();
+      camera.detachControl();
+    }
+  };
 };

@@ -45,4 +45,11 @@ export class ConstructionYardTrigger {
     public isOpen(): boolean {
         return this.isConstructionYardOpen;
     }
+
+    public dispose(): void {
+        if (this.constructionYard) {
+            this.constructionYard.dispose();
+            this.constructionYard = null;
+        }
+    }
 }
