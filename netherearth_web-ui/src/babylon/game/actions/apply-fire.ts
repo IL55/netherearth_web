@@ -97,7 +97,16 @@ export function applyFire(
     occupancy: OccupancyMap,
     weapon: Weapon,
 ): boolean {
-    robot.weaponReadyAt = (warMap.tick ?? 0) + (WEAPON_COOLDOWN[weapon] ?? 3);
+    const tick = warMap.tick ?? 0;
+    
+    // Cannot fire if a projectile is still in the air
+    const inFlight = warMap.projectiles?.some(p => p.ownerId === robot.id) ?? false;
+    if (inFlight) return false;
+    
+    // Cannot fire if weapon is still reloading
+    if (tick < (robot.weaponReadyAt ?? 0)) return false;
+
+    robot.weaponReadyAt = tick + (WEAPON_COOLDOWN[weapon] ?? 3);
     const maxRange = WEAPON_RANGE[weapon] ?? 1;
 
     // Fire perfectly straight along the axis the robot is facing, 
