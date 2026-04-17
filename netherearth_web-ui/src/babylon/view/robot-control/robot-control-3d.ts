@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
 import {
-    setManualControl, setRobotGoal, getGoalLabel, getRobotDescription, setMoveGoal,
+    setManualControl, setRobotGoal, getGoalLabel, setMoveGoal,
     buildDirectionAction, buildFireAction, buildFireActionForWeapon, getRobotHealthPercent,
 } from './robot-control-logic';
 import { WEAPON_RENDER_ORDER } from '../../data/robot';
@@ -55,7 +55,6 @@ export class RobotControl3D {
     private warMap: WarMap;
     private currentRobot: RobotObject | null = null;
     private panel: HTMLDivElement;
-    private descEl: HTMLDivElement;
     private healthEl: HTMLDivElement;
     private goalEl: HTMLDivElement;
     private mainView: HTMLDivElement;
@@ -98,9 +97,6 @@ export class RobotControl3D {
         title.style.marginBottom = '2px';
         title.textContent = 'ROBOT CONTROL';
         this.panel.appendChild(title);
-
-        this.descEl = document.createElement('div');
-        this.panel.appendChild(this.descEl);
 
         this.healthEl = document.createElement('div');
         this.panel.appendChild(this.healthEl);
@@ -375,7 +371,6 @@ export class RobotControl3D {
 
     public open(robot: RobotObject): void {
         this.currentRobot = robot;
-        this.descEl.textContent = getRobotDescription(robot.robotConfig);
         this.goalEl.textContent = this.goalText();
         this.updateDisplay();
         this.showMainView();

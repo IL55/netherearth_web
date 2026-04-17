@@ -11,8 +11,8 @@ import {
     isRobotAlive,
     getRobotHealthPercent,
 } from '../../../view/robot-control/robot-control-logic';
-import { ORDERABLE_GOALS, HOVER_DISTANCE, HOVER_HEIGHT } from '../../../view/robot-control/constants';
-import { Chassis, Weapon, Electronics, calcHealth } from '../../../data/robot';
+import { ORDERABLE_GOALS, HOVER_DISTANCE } from '../../../view/robot-control/constants';
+import { Chassis, Weapon, Electronics, calcHealth, calcRobotHeight } from '../../../data/robot';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -20,8 +20,10 @@ function makeShip(x: number, y: number, height = 1.5): ShipState {
     return { x, y, height };
 }
 
+const DEFAULT_CONFIG = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON], electronics: Electronics.STANDARD };
+
 function makeRobot(id: string, x: number, y: number, owner = Owner.RED, goal = RobotGoal.ATTACK_ROBOTS): RobotObject {
-    return { id, type: ObjectType.ROBOT, x, y, owner, goal };
+    return { id, type: ObjectType.ROBOT, x, y, owner, goal, robotConfig: DEFAULT_CONFIG };
 }
 
 function makeWarMap(...robots: RobotObject[]): WarMap {
@@ -36,23 +38,26 @@ describe('findRobotUnderShip', () => {
         expect(findRobotUnderShip(warMap, makeShip(5, 5), Owner.RED)).toBeNull();
     });
 
-    it('returns null when ship is too high', () => {
-        const warMap = makeWarMap(makeRobot('r1', 5, 5));
-        expect(findRobotUnderShip(warMap, makeShip(5, 5, HOVER_HEIGHT + 0.1), Owner.RED)).toBeNull();
+    it('returns null when ship is above the robot height', () => {
+        const robot = makeRobot('r1', 5, 5);
+        const robotH = calcRobotHeight(DEFAULT_CONFIG);
+        const warMap = makeWarMap(robot);
+        expect(findRobotUnderShip(warMap, makeShip(5, 5, robotH + 0.1), Owner.RED)).toBeNull();
     });
 
-    it('returns robot when ship is directly over it at trigger height', () => {
+    it('returns robot when ship is at exactly the robot height', () => {
         const robot = makeRobot('r1', 5, 5);
+        const robotH = calcRobotHeight(DEFAULT_CONFIG);
         const warMap = makeWarMap(robot);
-        const result = findRobotUnderShip(warMap, makeShip(5, 5, HOVER_HEIGHT), Owner.RED);
+        const result = findRobotUnderShip(warMap, makeShip(5, 5, robotH), Owner.RED);
         expect(result).toBe(robot);
     });
 
     it('returns robot within HOVER_DISTANCE (Chebyshev)', () => {
         const robot = makeRobot('r1', 5, 5);
         const warMap = makeWarMap(robot);
-        // Exactly at boundary
-        const ship = makeShip(5 + HOVER_DISTANCE, 5 + HOVER_DISTANCE);
+        // Exactly at boundary, ship at robot's own floor height
+        const ship = makeShip(5 + HOVER_DISTANCE, 5 + HOVER_DISTANCE, calcRobotHeight(DEFAULT_CONFIG));
         expect(findRobotUnderShip(warMap, ship, Owner.RED)).toBe(robot);
     });
 

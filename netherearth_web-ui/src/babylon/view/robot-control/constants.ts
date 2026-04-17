@@ -4,7 +4,7 @@ export const RC_LAYER_MASK = 0x20000000;
 export const RC_FONT = "bold 70px Arial";
 
 /** Trigger conditions for ship → robot interaction. */
-export const HOVER_DISTANCE = 0.1;  // Chebyshev radius in game tiles — ship must be almost on top of robot
+export const HOVER_DISTANCE = 0.6;  // Chebyshev radius in game tiles — ship must be over the robot tile
 export const HOVER_HEIGHT   = 2.0;  // max ship height to trigger
 
 /** Goals the player can assign via "CHANGE ORDER". */

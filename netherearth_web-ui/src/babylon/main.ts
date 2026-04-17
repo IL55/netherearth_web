@@ -10,7 +10,7 @@ import { Renderer } from './view/map/renderer';
 import { ProjectileRenderer } from './view/map/projectile-renderer';
 import { GameHud } from './view/hud/hud';
 import { createWarMap, Owner, RobotGoal } from './game/core/warmap';
-import { robotConfigs, calcHealth, Chassis, Weapon, Electronics } from './data/robot';
+import { robotConfigs, calcHealth, calcRobotHeight, Chassis, Weapon, Electronics } from './data/robot';
 import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';
 import { attachShipControls } from './controls/ship';
@@ -22,7 +22,7 @@ import { ShipRenderer } from './view/map/ship-renderer';
 import { buildOccupancy } from './game/core/occupancy';
 
 import { ConstructionYardTrigger } from './view/construction-yard';
-import { RobotControlTrigger, HOVER_HEIGHT } from './view/robot-control';
+import { RobotControlTrigger } from './view/robot-control';
 import { GameOverScreen } from './view/game-over';
 import { checkVictory } from './game/mechanics/victory';
 
@@ -63,7 +63,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       owner: x % 2 === 0 ? Owner.RED : Owner.BLUE,
       robotConfig,
       health: calcHealth(robotConfig),
-      facing: Direction.W,
+      facing: x % 2 === 0 ? Direction.E : Direction.W,
       goal: goals[x % goals.length],
       ai: RobotAI.SIMPLE,
     });
@@ -106,14 +106,12 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
     ship.height = 1.5;
   });
 
-  const robotControlTrigger = new RobotControlTrigger(scene, mapData.width, () => {
-    ship.height = HOVER_HEIGHT + 0.5;
-  });
+  const robotControlTrigger = new RobotControlTrigger(scene, mapData.width, () => {});
 
   const gameOverScreen = new GameOverScreen(() => {});
 
   const clock = startClock(warMap, () => {
-    const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y }));
+    const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y, height: r.robotConfig ? calcRobotHeight(r.robotConfig) : undefined }));
     // We fetch the current complete structures from occupancy to be precise about collisions (walls, factories, warbases)
     const occ = buildOccupancy(warMap, ship);
     if (!robotControlTrigger.isOpen()) {

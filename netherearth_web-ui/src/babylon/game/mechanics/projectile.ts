@@ -1,7 +1,7 @@
 
 import { WeaponType } from "../core/warmap";
 import type { WarMap, RobotObject } from '../core/warmap';
-import { Weapon } from '../../data/robot';
+import { Weapon, WEAPON_RANGE } from '../../data/robot';
 
 // How much progress advances per sub-tick (5 sub-ticks = full travel at normal speed).
 export const SUB_TICKS = 5;
@@ -22,12 +22,23 @@ export function spawnProjectile(warMap: WarMap, shooter: RobotObject, target: Ro
         weapon === Weapon.PHASERS  ? WeaponType.PHASER  :
         weapon === Weapon.MISSILES ? WeaponType.MISSILE : WeaponType.CANNON;
 
+    // Cap the visual endpoint at WEAPON_RANGE cells from the shooter so the
+    // projectile beam never flies further than the weapon's design range,
+    // even when the target is out of range (damage is applied before this call).
+    const maxRange = WEAPON_RANGE[weapon] ?? 1;
+    const dx = target.x - shooter.x;
+    const dy = target.y - shooter.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const scale = dist > maxRange ? maxRange / dist : 1;
+    const toX = shooter.x + dx * scale;
+    const toY = shooter.y + dy * scale;
+
     warMap.projectiles ??= [];
     warMap.projectiles.push({
         id:         `proj_${nextId++}`,
         weaponType,
         fromX: shooter.x, fromY: shooter.y,
-        toX:   target.x,  toY:   target.y,
+        toX,   toY,
         progress:   0,
         step:       WEAPON_STEP[weaponType] ?? STEP_NORMAL,
         ownerId:    shooter.id,

@@ -126,16 +126,17 @@ describe('Ship Movement', () => {
         expect(ship.x).toBeCloseTo(5.0 + BASE_SPEED, 5);
     });
 
-    it('should be blocked by robots if flying low', () => {
-        const robs = [{ x: 6, y: 5 }];
+    it('moves through a robot tile laterally — floor height prevents descent into it', () => {
+        // Robots no longer block lateral movement; the floor height system keeps the ship
+        // above the robot's visual top. Lateral blocking was removed because it prevented
+        // the ship from approaching close enough to trigger robot control.
+        const robs = [{ x: 6, y: 5, height: 1.5 }];
         ship = { x: 5.0, y: 5, height: MIN_HEIGHT };
         input.right = true;
 
-        // Next position: x=5.05. Distance to robot(6) is 0.95.
-        // ROBOT_COLLISION_DISTANCE is 1.0. So 0.95 < 1.0 -> blocked!
         tickShip(ship, input, mapWidth, mapHeight, [], robs);
 
-        expect(ship.x).toBe(5.0); // blocked
+        expect(ship.x).toBeCloseTo(5.0 + BASE_SPEED, 5); // not blocked laterally
     });
 
     it('should fly over robots if high enough', () => {

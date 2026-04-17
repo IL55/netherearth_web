@@ -101,7 +101,7 @@ export const ELECTRONICS_HEIGHT: Record<Electronics, number> = {
     [Electronics.STANDARD]: 0.2,
 };
 
-export const NUCLEAR_HEIGHT = 0.3;
+export const NUCLEAR_HEIGHT = 0.6;
 
 // ─── Damage falloff & health ──────────────────────────────────────────────────
 
@@ -120,13 +120,17 @@ export function calcHealth(config: RobotConfig): number {
     return Math.max(1, Math.min(100, total));
 }
 
+// Clearance added above the estimated stack height so the ship never clips into the top part.
+// The hardcoded part heights are approximations; actual 3D bounding boxes can be larger.
+const ROBOT_HEIGHT_CLEARANCE = 0.4;
+
 // Calculate the total physical height of the robot based on its configured parts
 export function calcRobotHeight(config: RobotConfig): number {
     let total = CHASSIS_HEIGHT[config.chassis] ?? 0.4;
     for (const w of config.weapons ?? []) total += WEAPON_HEIGHT[w] ?? 0.3;
     if (config.nuclear)     total += NUCLEAR_HEIGHT;
     if (config.electronics) total += ELECTRONICS_HEIGHT[config.electronics] ?? 0.2;
-    return total;
+    return total + ROBOT_HEIGHT_CLEARANCE;
 }
 
 // ─── Preset configs ───────────────────────────────────────────────────────────

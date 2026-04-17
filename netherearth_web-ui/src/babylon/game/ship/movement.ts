@@ -1,7 +1,6 @@
 import type { ShipState, ShipInput, ShipObstacle } from './types';
-import { BASE_SPEED, MAX_SPEED, ACCEL, ASCEND_SPEED, DESCENT_SPEED, MIN_HEIGHT, MAX_HEIGHT } from './constants';
+import { BASE_SPEED, MAX_SPEED, ACCEL, ASCEND_SPEED, DESCENT_SPEED, MAX_HEIGHT } from './constants';
 import { hitsObstacle, getFloorHeight } from './collision';
-import { ROBOT_COLLISION_DISTANCE, ROBOT_HEIGHT } from '../core/occupancy';
 
 export function tickShip(
     ship: ShipState,
@@ -33,13 +32,10 @@ export function tickShip(
     const checkCollision = (nx: number, ny: number) => {
         if (nx < 0 || nx > mapWidth - 1 || ny < 0 || ny > mapHeight - 1) return true;
         if (hitsObstacle(nx, ny, ship.height, obstacles)) return true;
-        return robots.some(r => {
-            const h = r.height ?? ROBOT_HEIGHT;
-            if (ship.height < h) {
-                return Math.max(Math.abs(r.x - nx), Math.abs(r.y - ny)) < ROBOT_COLLISION_DISTANCE;
-            }
-            return false;
-        });
+        return false;
+        // Robots do not block lateral movement — the floor height system (getFloorHeight)
+        // prevents the ship from descending into a robot's volume. Lateral blocking caused
+        // the ship to stop 1 tile away from robots, making control triggering unreachable.
     };
 
     // Check axes independently so the ship can slide along walls.

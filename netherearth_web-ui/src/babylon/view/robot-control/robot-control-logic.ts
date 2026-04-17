@@ -2,9 +2,10 @@ import { ObjectType, RobotGoal, Owner, Direction, CW_DIRS } from '../../game/cor
 import type { WarMap, RobotObject } from '../../game/core/warmap';
 import type { ShipState } from '../../game/ship/types';
 import { ActionType, RotateDir, type RobotAction } from '../../game/actions';
-import { calcHealth, WEAPON_RANGE, WEAPON_DAMAGE } from '../../data/robot';
+import { calcHealth, calcRobotHeight, WEAPON_RANGE, WEAPON_DAMAGE } from '../../data/robot';
+import { ROBOT_HEIGHT } from '../../game/core/occupancy';
 import type { Weapon } from '../../data/robot';
-import { HOVER_DISTANCE, HOVER_HEIGHT, ORDERABLE_GOALS, GOAL_LABELS } from './constants';
+import { HOVER_DISTANCE, ORDERABLE_GOALS, GOAL_LABELS } from './constants';
 
 // ─── Life / health ────────────────────────────────────────────────────────────
 
@@ -36,21 +37,23 @@ export function getRobotHealthPercent(robot: RobotObject): number {
  * or null if none qualifies.
  *
  * Proximity uses Chebyshev distance so diagonal approach works naturally.
- * Height must be at or below HOVER_HEIGHT (ship flying low, not ascending).
+ * The ship must be at or below the robot's own calcRobotHeight — the same
+ * value the physics uses as the floor, so any robot the ship rests on triggers.
  */
 export function findRobotUnderShip(
     warMap: WarMap,
     ship: ShipState,
     owner: Owner,
 ): RobotObject | null {
-    if (ship.height > HOVER_HEIGHT) return null;
     for (const obj of warMap.objects) {
         if (obj.type !== ObjectType.ROBOT) continue;
         if (obj.owner !== owner) continue;
         if ((obj as RobotObject).dyingTicks !== undefined) continue;
         const dx = Math.abs(ship.x - obj.x);
         const dy = Math.abs(ship.y - obj.y);
-        if (Math.max(dx, dy) <= HOVER_DISTANCE) return obj as RobotObject;
+        if (Math.max(dx, dy) > HOVER_DISTANCE) continue;
+        const robotHeight = (obj as RobotObject).robotConfig ? calcRobotHeight((obj as RobotObject).robotConfig!) : ROBOT_HEIGHT;
+        if (ship.height <= robotHeight) return obj as RobotObject;
     }
     return null;
 }
@@ -99,18 +102,35 @@ export function buildDirectionAction(robot: RobotObject, targetDir: Direction): 
     return { type: ActionType.ROTATE, direction: steps <= 2 ? RotateDir.RIGHT : RotateDir.LEFT };
 }
 
-/** Finds the nearest live enemy robot, or null if none exist. */
+const FACING_VECTOR: Record<Direction, { dx: number; dy: number }> = {
+    [Direction.E]: {  dx: 1,  dy: 0 },
+    [Direction.W]: {  dx: -1, dy: 0 },
+    [Direction.S]: {  dx: 0,  dy: 1 },
+    [Direction.N]: {  dx: 0,  dy: -1 },
+};
+
+/**
+ * Finds the nearest live enemy robot in the robot's forward half-plane.
+ * Returns null if no enemy is ahead — the robot must rotate to face one first.
+ */
 function findNearestEnemy(robot: RobotObject, warMap: WarMap): { target: RobotObject; dist: number } | null {
-    let nearest: RobotObject | null = null;
-    let nearestDist = Infinity;
+    const fv = FACING_VECTOR[robot.facing ?? Direction.E];
+    let best: RobotObject | null = null;
+    let bestDist = Infinity;
+
     for (const obj of warMap.objects) {
         if (obj.type !== ObjectType.ROBOT) continue;
         if (obj.owner === robot.owner) continue;
         if ((obj as RobotObject).dyingTicks !== undefined) continue;
-        const dist = Math.abs(obj.x - robot.x) + Math.abs(obj.y - robot.y);
-        if (dist < nearestDist) { nearest = obj as RobotObject; nearestDist = dist; }
+        const dx = obj.x - robot.x;
+        const dy = obj.y - robot.y;
+        // dot product > 0 means enemy is in the forward half-plane
+        if (dx * fv.dx + dy * fv.dy <= 0) continue;
+        const dist = Math.abs(dx) + Math.abs(dy);
+        if (dist < bestDist) { best = obj as RobotObject; bestDist = dist; }
     }
-    return nearest ? { target: nearest, dist: nearestDist } : null;
+
+    return best ? { target: best, dist: bestDist } : null;
 }
 
 /**
@@ -152,6 +172,36 @@ export function setMoveGoal(robot: RobotObject, forward: boolean, distance: numb
     const dx = forward ? dir * distance : -dir * distance;
     robot.goal = forward ? RobotGoal.MOVE_FORWARD : RobotGoal.MOVE_BACKWARD;
     robot.goalPosition = { x: robot.x + dx, y: robot.y };
+}
+
+// ─── Ship height management ───────────────────────────────────────────────────
+
+/**
+ * Gap between the robot's visual top and the ship's underside while the
+ * control panel is open. The same gap is applied as an upward jump on exit
+ * so the ship clears the robot before tickShip resumes descent.
+ */
+export const HOVER_GAP = 0.5;
+
+/**
+ * Sets ship.height so the ship hovers exactly HOVER_GAP above the robot's
+ * calcRobotHeight. Called both when the control panel opens and each tick
+ * while it remains open (so the ship follows the robot if it moves).
+ */
+export function setHoverHeight(
+    ship: { height: number },
+    robot: RobotObject,
+): void {
+    ship.height = (robot.robotConfig ? calcRobotHeight(robot.robotConfig) : ROBOT_HEIGHT) + HOVER_GAP;
+}
+
+/**
+ * Bumps ship.height by HOVER_GAP when the player exits robot control.
+ * Gives the ship a small upward nudge so it doesn't immediately clip back
+ * into the robot's top part before tickShip resumes control of descent.
+ */
+export function applyExitBump(ship: { height: number }): void {
+    ship.height += HOVER_GAP;
 }
 
 /** Short description of the robot's loadout (chassis + weapons). */
