@@ -35,6 +35,8 @@ export {
 
 export type { Projectile, NavState };
 
+export type WarObject = RobotObject | MapObject;
+
 // All non-robot map objects (tiles, structures, walls)
 export type StructureType = Exclude<ObjectType, ObjectType.ROBOT>;
 
@@ -70,13 +72,12 @@ export interface MapObject extends ObjectBase {
     lastBuiltAt?: number;
 }
 
-export type WarObject = RobotObject | MapObject;
-
 export interface WarMap {
     width: number;
     height: number;
-    objects: WarObject[];
-    tick?: number;
-    projectiles?: Projectile[];
-    killCounts?: Record<string, number>;
+    tiles: MapObject[];
+    robots: RobotObject[];
+    tick: number;
+    projectiles: Projectile[];
+    killCounts: Record<string, number>;
 }

@@ -51,7 +51,7 @@ describe('nav basic: no position bounce', () => {
         const robot  = makeRobot(2, 5);
         const map: WarMap = {
             width: 15, height: 10,
-            objects: [makeFactory(10, 5), makeWall(5, 5), robot],
+            tiles: [makeFactory(10, 5), makeWall(5, 5)], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
@@ -80,7 +80,7 @@ describe('nav basic: clears single wall quickly', () => {
         const robot  = makeRobot(2, 5);
         const map: WarMap = {
             width: 15, height: 10,
-            objects: [makeFactory(10, 5), makeWall(5, 5), robot],
+            tiles: [makeFactory(10, 5), makeWall(5, 5)], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
@@ -107,7 +107,7 @@ describe('nav basic: exits corner dead end', () => {
         const robot = makeRobot(2, 5);
         const map: WarMap = {
             width: 15, height: 10,
-            objects: [makeFactory(10, 5), makeWall(5, 5), makeWall(5, 4), robot],
+            tiles: [makeFactory(10, 5), makeWall(5, 5), makeWall(5, 4)], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 

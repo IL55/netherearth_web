@@ -15,7 +15,7 @@ import { HOVER_DISTANCE, ORDERABLE_GOALS, GOAL_LABELS } from './constants';
  */
 export function isRobotAlive(warMap: WarMap, robotId: string | null): boolean {
     if (!robotId) return false;
-    const obj = warMap.objects.find(o => o.id === robotId) as RobotObject | undefined;
+    const obj = warMap.robots.find(o => o.id === robotId);
     return !!obj && obj.dyingTicks === undefined;
 }
 
@@ -44,15 +44,14 @@ export function findRobotUnderShip(
     ship: ShipState,
     owner: Owner,
 ): RobotObject | null {
-    for (const obj of warMap.objects) {
-        if (obj.type !== ObjectType.ROBOT) continue;
+    for (const obj of warMap.robots) {
         if (obj.owner !== owner) continue;
-        if ((obj as RobotObject).dyingTicks !== undefined) continue;
+        if (obj.dyingTicks !== undefined) continue;
         const dx = Math.abs(ship.x - obj.x);
         const dy = Math.abs(ship.y - obj.y);
         if (Math.max(dx, dy) > HOVER_DISTANCE) continue;
-        const robotHeight = calcRobotHeight((obj as RobotObject).robotConfig);
-        if (ship.height <= robotHeight) return obj as RobotObject;
+        const robotHeight = calcRobotHeight(obj.robotConfig);
+        if (ship.height <= robotHeight) return obj;
     }
     return null;
 }
@@ -117,10 +116,9 @@ function findNearestEnemy(robot: RobotObject, warMap: WarMap): { target: RobotOb
     let best: RobotObject | null = null;
     let bestDist = Infinity;
 
-    for (const obj of warMap.objects) {
-        if (obj.type !== ObjectType.ROBOT) continue;
+    for (const obj of warMap.robots) {
         if (obj.owner === robot.owner) continue;
-        if ((obj as RobotObject).dyingTicks !== undefined) continue;
+        if (obj.dyingTicks !== undefined) continue;
         const dx = obj.x - robot.x;
         const dy = obj.y - robot.y;
         // dot product > 0 means enemy is in the forward half-plane

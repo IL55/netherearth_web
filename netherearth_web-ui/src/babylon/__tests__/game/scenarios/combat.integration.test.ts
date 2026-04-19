@@ -31,8 +31,9 @@ function makeRobot(id: string, x: number, y: number, owner: Owner, facing: Direc
     };
 }
 
-function makeWarMap(...robots: RobotObject[]): WarMap {
-    return { width: 30, height: 30, objects: [...robots], projectiles: [] };
+
+function makeWarMap(...robots: any[]): WarMap {
+    return { width: 30, height: 30, tiles: [], robots, projectiles: [], killCounts: {}, tick: 0 };
 }
 
 // ─── Health reduction ─────────────────────────────────────────────────────────
@@ -81,7 +82,7 @@ describe('scenario: robot death lifecycle', () => {
         advanceGameTicks(5);
         clock.stop();
 
-        const blueInMap = warMap.objects.find(o => o.id === 'blue') as RobotObject | undefined;
+        const blueInMap = warMap.robots.find(o => o.id === 'blue');
         if (blueInMap) {
             // Still in map but dying
             expect(blueInMap.dyingTicks).toBeGreaterThan(0);
@@ -103,7 +104,7 @@ describe('scenario: robot death lifecycle', () => {
         advanceGameTicks(20);
         clock.stop();
 
-        expect(warMap.objects.find(o => o.id === 'blue')).toBeUndefined();
+        expect(warMap.robots.find(o => o.id === 'blue')).toBeUndefined();
     });
 });
 

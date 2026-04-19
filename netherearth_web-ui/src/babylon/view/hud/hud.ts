@@ -147,7 +147,7 @@ export class GameHud {
             cy: Math.floor(mx) * CELL,
         });
 
-        for (const obj of warMap.objects) {
+        for (const obj of warMap.tiles) {
             const color = ownerColor(obj.owner);
             ctx.fillStyle = color;
 
@@ -172,12 +172,15 @@ export class GameHud {
                 ctx.fillStyle = C_FENCE;
                 const {cx, cy} = toCanvas(obj.x, obj.y);
                 ctx.fillRect(cx, cy, CELL, CELL);
-            } else if (obj.type === ObjectType.ROBOT) {
-                const {cx, cy} = toCanvas(obj.x, obj.y);
-                ctx.beginPath();
-                ctx.arc(cx + CELL / 2, cy + CELL / 2, CELL / 2 - 0.5, 0, Math.PI * 2);
-                ctx.fill();
             }
+        }
+        for (const obj of warMap.robots) {
+            const color = ownerColor(obj.owner);
+            ctx.fillStyle = color;
+            const {cx, cy} = toCanvas(obj.x, obj.y);
+            ctx.beginPath();
+            ctx.arc(cx + CELL / 2, cy + CELL / 2, CELL / 2 - 0.5, 0, Math.PI * 2);
+            ctx.fill();
         }
     }
 }

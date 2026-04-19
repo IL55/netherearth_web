@@ -46,7 +46,7 @@ export function createOwnerResources(): OwnerResources {
 export function tickResources(warMap: WarMap, ownerResources: OwnerResources, tick: number): void {
     if (tick === 0 || tick % DAY_TICKS !== 0) return;
 
-    for (const obj of warMap.objects) {
+    for (const obj of warMap.tiles) {
         if (obj.owner !== Owner.RED && obj.owner !== Owner.BLUE) continue;
         const res = ownerResources[obj.owner];
 

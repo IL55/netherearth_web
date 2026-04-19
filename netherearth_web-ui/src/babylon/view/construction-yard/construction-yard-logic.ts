@@ -137,7 +137,7 @@ export function buildRobotConfig(selection: BuildSelection): RobotConfig | null 
 export function isSpawnOccupied(warMap: WarMap, owner: Owner): boolean {
     const zone = CAPTURE_ZONES['warbase'];
     if (!zone) return true;
-    const warbase = warMap.objects.find(
+    const warbase = warMap.tiles.find(
         o => o.type === ObjectType.WARBASE && o.owner === owner,
     );
     if (!warbase) return true;
@@ -163,7 +163,7 @@ export function spawnManualRobot(
     const zone = CAPTURE_ZONES['warbase'];
     if (!zone) return false;
 
-    const warbase = warMap.objects.find(
+    const warbase = warMap.tiles.find(
         o => o.type === ObjectType.WARBASE && o.owner === owner,
     );
     if (!warbase) return false;
@@ -187,6 +187,6 @@ export function spawnManualRobot(
         nav: { moveOutTarget: { x: spawnX + 4, y: spawnY } },
     };
 
-    warMap.objects.push(robot);
+    warMap.robots.push(robot);
     return true;
 }

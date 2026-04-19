@@ -7,10 +7,10 @@ import { Chassis, Weapon, calcHealth } from '../../data/robot';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function makeWarMap(...robots: RobotObject[]): WarMap {
+function makeWarMap(...robots: any[]): WarMap {
     // Neutral factory at (15, 5) — gives CAPTURE_NEUTRAL_FACTORY robots a clear target
     const factory = { id: 'f1', type: ObjectType.FACTORY as const, x: 15, y: 5, subtype: 'cannons' as const };
-    return { width: 20, height: 20, objects: [factory, ...robots], projectiles: [] };
+    return { width: 20, height: 20, tiles: [factory], robots, projectiles: [], killCounts: {}, tick: 0 };
 }
 
 function makeRobotWithGoal(id: string, x: number, y: number): RobotObject {

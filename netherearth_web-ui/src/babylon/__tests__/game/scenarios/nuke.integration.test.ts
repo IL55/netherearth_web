@@ -39,7 +39,7 @@ describe('NUKE_FACTORY goal', () => {
     it('robot moves closer to an enemy factory over time', () => {
         const factory: MapObject = { id: 'f1', type: ObjectType.FACTORY, x: 10, y: 5, owner: Owner.BLUE };
         const robot = makeNukeRobot('r1', 0, 5, RobotGoal.NUKE_FACTORY);
-        const warMap: WarMap = { width: 20, height: 20, objects: [factory, robot], projectiles: [] };
+        const warMap: WarMap = { width: 20, height: 20, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         const startX = robot.x;
         const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
@@ -53,7 +53,7 @@ describe('NUKE_FACTORY goal', () => {
     it('does not navigate toward a friendly factory', () => {
         const friendlyFactory: MapObject = { id: 'f1', type: ObjectType.FACTORY, x: 10, y: 5, owner: Owner.RED };
         const robot = makeNukeRobot('r1', 5, 5, RobotGoal.NUKE_FACTORY);
-        const warMap: WarMap = { width: 20, height: 20, objects: [friendlyFactory, robot], projectiles: [] };
+        const warMap: WarMap = { width: 20, height: 20, tiles: [friendlyFactory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         const startX = robot.x;
         const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
@@ -72,7 +72,7 @@ describe('NUKE_WARBASE goal', () => {
     it('robot moves closer to an enemy warbase over time', () => {
         const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 15, y: 5, owner: Owner.BLUE };
         const robot = makeNukeRobot('r1', 0, 5, RobotGoal.NUKE_WARBASE);
-        const warMap: WarMap = { width: 20, height: 20, objects: [warbase, robot], projectiles: [] };
+        const warMap: WarMap = { width: 20, height: 20, tiles: [warbase], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         const startX = robot.x;
         const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
@@ -85,7 +85,7 @@ describe('NUKE_WARBASE goal', () => {
     it('does not navigate toward a friendly warbase', () => {
         const friendlyWarbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 10, y: 5, owner: Owner.RED };
         const robot = makeNukeRobot('r1', 5, 5, RobotGoal.NUKE_WARBASE);
-        const warMap: WarMap = { width: 20, height: 20, objects: [friendlyWarbase, robot], projectiles: [] };
+        const warMap: WarMap = { width: 20, height: 20, tiles: [friendlyWarbase], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         const startX = robot.x;
         const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
@@ -103,7 +103,7 @@ describe('tickBuild — nuclear robot gets nuke goal', () => {
 
     it('assigns NUKE_FACTORY or NUKE_WARBASE to a nuclear robot', () => {
         const wb: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 0, y: 0, owner: Owner.RED };
-        const warMap: WarMap = { width: 20, height: 20, objects: [wb], projectiles: [] };
+        const warMap: WarMap = { width: 20, height: 20, tiles: [wb], robots: [], projectiles: [], killCounts: {}, tick: 0 };
         const res = createOwnerResources();
         // Full nuclear kit cost
         const cost = {
@@ -116,7 +116,7 @@ describe('tickBuild — nuclear robot gets nuke goal', () => {
 
         tickBuild(warMap, res);
 
-        const robot = warMap.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
+        const robot = warMap.robots[0];
         expect(robot.robotConfig.nuclear).toBe(true);
         expect([RobotGoal.NUKE_FACTORY, RobotGoal.NUKE_WARBASE]).toContain(robot.goal);
     });
@@ -124,14 +124,14 @@ describe('tickBuild — nuclear robot gets nuke goal', () => {
     it('alternates between NUKE_FACTORY and NUKE_WARBASE across successive builds', () => {
         const wb1: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 0, y: 0, owner: Owner.RED };
         const wb2: MapObject = { id: 'wb2', type: ObjectType.WARBASE, x: 0, y: 10, owner: Owner.RED };
-        const warMap: WarMap = { width: 20, height: 20, objects: [wb1, wb2], projectiles: [] };
+        const warMap: WarMap = { width: 20, height: 20, tiles: [wb1, wb2], robots: [], projectiles: [], killCounts: {}, tick: 0 };
         const res = createOwnerResources();
         res[Owner.RED].chassis = 6; res[Owner.RED].phasers = 6;
         res[Owner.RED].nuclear = 4; res[Owner.RED].electronics = 2;
 
         tickBuild(warMap, res);
 
-        const robots = warMap.objects.filter(o => o.type === ObjectType.ROBOT) as RobotObject[];
+        const robots = warMap.robots;
         expect(robots.length).toBe(2);
         const goals = robots.map(r => r.goal);
         expect(goals).toContain(RobotGoal.NUKE_FACTORY);

@@ -68,7 +68,7 @@ describe('open field: no obstacles', () => {
          */
         const factory = makeFactory('f0', 12, 5);
         const robot   = makeRobot({ id: 'r0', x: 2, y: 5 });
-        const map: WarMap = { width: 20, height: 12, objects: [factory, robot], tick: 0 };
+        const map: WarMap = { width: 20, height: 12, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         const tick = runUntilCapture(map, robot, factory, 200);
         expect(tick).toBeGreaterThanOrEqual(0);
@@ -93,7 +93,7 @@ describe('single wall: robot finds gap and reaches factory', () => {
         const robot   = makeRobot({ id: 'r0', x: 2, y: 5 });
         const map: WarMap = {
             width: 20, height: 12,
-            objects: [...walls, factory, robot],
+            tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
@@ -129,7 +129,7 @@ describe('bipod + mountain barrier', () => {
         });
         const map: WarMap = {
             width: 20, height: 12,
-            objects: [...mountains, factory, robot],
+            tiles: [...mountains, factory], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
@@ -146,7 +146,7 @@ describe('bipod + mountain barrier', () => {
         });
         const map: WarMap = {
             width: 20, height: 12,
-            objects: [...mountains, factory, robot],
+            tiles: [...mountains, factory], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
@@ -202,8 +202,8 @@ describe('boundary: robot stays within map bounds', () => {
             ...([5,6,7,8,9,10,11].map(x => makeWall(x, 8))),
         ];
         const map: WarMap = { width: 20, height: 10,
-            objects: [...walls, makeFactory('f0', 16, 5), makeRobot({ id: 'r0', x: 2, y: 5 })], tick: 0 };
-        const robot = map.objects.find(o => o.id === 'r0')! as RobotObject;
+            tiles: [...walls, makeFactory('f0', 16, 5)], robots: [makeRobot({ id: 'r0', x: 2, y: 5 })], projectiles: [], killCounts: {}, tick: 0 };
+        const robot = map.robots.find(o => o.id === 'r0')!;
 
         const { violated, minX } = checkBounds(map, robot, 400);
         expect(violated).toBe(false);
@@ -217,7 +217,7 @@ describe('boundary: robot stays within map bounds', () => {
         const factory = makeFactory('f0', 17, 5);
         const robot   = makeRobot({ id: 'r0', x: 10, y: 5 });
         const map: WarMap = { width: 20, height: 12,
-            objects: [...walls, factory, robot], tick: 0 };
+            tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         const { violated, maxX } = checkBounds(map, robot, 400);
         expect(violated).toBe(false);
@@ -231,7 +231,7 @@ describe('boundary: robot stays within map bounds', () => {
         const robot   = makeRobot({ id: 'r0', x: 6, y: 8,
             robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD } });
         const map: WarMap = { width: 15, height: 12,
-            objects: [...walls, factory, robot], tick: 0 };
+            tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         const { violated, minY } = checkBounds(map, robot, 400);
         expect(violated).toBe(false);
@@ -245,7 +245,7 @@ describe('boundary: robot stays within map bounds', () => {
         const robot   = makeRobot({ id: 'r0', x: 6, y: 3,
             robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD } });
         const map: WarMap = { width: 15, height: 12,
-            objects: [...walls, factory, robot], tick: 0 };
+            tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         const { violated, maxY } = checkBounds(map, robot, 400);
         expect(violated).toBe(false);
@@ -274,7 +274,7 @@ describe('factory capture: robot enters C-shaped slot', () => {
         });
         const map: WarMap = {
             width: 20, height: 12,
-            objects: [factory, robot],
+            tiles: [factory], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
@@ -294,7 +294,7 @@ describe('factory capture: robot enters C-shaped slot', () => {
         });
         const map: WarMap = {
             width: 20, height: 12,
-            objects: [factory, robot],
+            tiles: [factory], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 

@@ -30,9 +30,9 @@ export function leftOf (d: Direction): Direction { return ({ N:Direction.W, W:Di
 export function backOf (d: Direction): Direction { return ({ N:Direction.S, S:Direction.N, E:Direction.W, W:Direction.E } as Record<Direction,Direction>)[d]; }
 
 export function tileAt(warMap: WarMap, x: number, y: number): string {
-    return (warMap.objects.find(
-        (o): o is MapObject => o.type === ObjectType.TILE && o.x === Math.floor(x) && o.y === Math.floor(y),
-    ))?.subtype ?? TileSubtype.GRASS;
+    return warMap.tiles.find(
+        o => o.type === ObjectType.TILE && o.x === Math.floor(x) && o.y === Math.floor(y),
+    )?.subtype ?? TileSubtype.GRASS;
 }
 
 // True if the robot can step to (x, y): within bounds, terrain passable, not occupied.

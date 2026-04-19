@@ -25,10 +25,8 @@ export class ShipRenderer {
 
     render(ship: ShipState, warMap?: WarMap): void {
         if (warMap && this.shadowMesh) {
-            const shadowOccupied = warMap.objects.some(o =>
-                o.type !== ObjectType.TILE &&
-                Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5
-            );
+            const shadowOccupied = warMap.robots.some(o => Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5)
+                || warMap.tiles.some(o => o.type !== ObjectType.TILE && Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5);
             this.shadowMesh.isVisible = !shadowOccupied;
         }
 
@@ -121,10 +119,8 @@ export class ShipRenderer {
         this.shadowMesh = shadow;
         
         if (warMap) {
-            const shadowOccupied = warMap.objects.some(o =>
-                o.type !== ObjectType.TILE &&
-                Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5
-            );
+            const shadowOccupied = warMap.robots.some(o => Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5)
+                || warMap.tiles.some(o => o.type !== ObjectType.TILE && Math.max(Math.abs(o.x - ship.x), Math.abs(o.y - ship.y)) < 0.5);
             this.shadowMesh.isVisible = !shadowOccupied;
         }
     }

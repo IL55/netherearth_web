@@ -27,17 +27,22 @@ export function shouldDetonateNuclear(robot: RobotObject, warMap: WarMap, isStuc
 
     let hasValuableTarget = false;
 
-    for (const obj of warMap.objects) {
+    for (const obj of warMap.robots) {
         if (obj === robot) continue;
 
-        if (obj.type === ObjectType.ROBOT && obj.owner !== myOwner && obj.owner !== Owner.NEUTRAL) {
+        if (obj.owner !== myOwner && obj.owner !== Owner.NEUTRAL) {
             // Check if enemy robot is in 3x3 kill zone
             const chebyshev = Math.max(Math.abs(Math.round(obj.x) - rx), Math.abs(Math.round(obj.y) - ry));
             if (chebyshev <= 1) {
                 hasValuableTarget = true;
                 break;
             }
-        } else if (obj.type === ObjectType.FACTORY || obj.type === ObjectType.WARBASE) {
+        }
+    }
+
+    if (!hasValuableTarget) {
+        for (const obj of warMap.tiles) {
+            if (obj.type === ObjectType.FACTORY || obj.type === ObjectType.WARBASE) {
             // We consider destroying enemy or neutral structures as valuable.
             // Destroying our own structures is not valuable.
             if (obj.owner === myOwner) continue;
@@ -60,6 +65,7 @@ export function shouldDetonateNuclear(robot: RobotObject, warMap: WarMap, isStuc
                 hasValuableTarget = true;
                 break;
             }
+        }
         }
     }
 

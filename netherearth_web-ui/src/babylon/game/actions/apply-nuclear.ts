@@ -19,24 +19,28 @@ export function applyNuclear(robot: RobotObject, warMap: WarMap): boolean {
     const objectsToRemove: Set<string> = new Set();
     const newSandTiles: {x: number, y: number}[] = [];
 
-    for (const obj of warMap.objects) {
+    for (const obj of warMap.robots) {
         if (obj === robot) continue; // we will kill the detonating robot anyway
 
         const dx = Math.abs(Math.round(obj.x) - rx);
         const dy = Math.abs(Math.round(obj.y) - ry);
         const chebyshev = Math.max(dx, dy);
 
-        if (obj.type === ObjectType.ROBOT) {
-            if (chebyshev <= 1) {
-                // Inside 3x3 Kill Zone
-                obj.health = 0;
-            } else if (chebyshev <= 2) {
-                // Inside 5x5 Damage Zone
-                if (obj.health !== undefined) {
-                    obj.health = Math.max(0, Math.floor(obj.health / 2));
-                }
-            }
-        } else if (obj.type === ObjectType.FACTORY || obj.type === ObjectType.WARBASE) {
+        if (chebyshev <= 1) {
+            // Inside 3x3 Kill Zone
+            obj.health = 0;
+        } else if (chebyshev <= 2) {
+            // Inside 5x5 Damage Zone
+            obj.health = Math.max(0, Math.floor(obj.health / 2));
+        }
+    }
+
+    for (const obj of warMap.tiles) {
+        const dx = Math.abs(Math.round(obj.x) - rx);
+        const dy = Math.abs(Math.round(obj.y) - ry);
+        const chebyshev = Math.max(dx, dy);
+
+        if (obj.type === ObjectType.FACTORY || obj.type === ObjectType.WARBASE) {
             // Check if ANY block of the structure is within the 3x3 Kill Zone.
             // Factories and warbases are represented by the top-left coordinate, but they span multiple blocks.
             // A factory is roughly 2x3 blocks, a warbase is roughly 5x3 blocks.
@@ -91,11 +95,12 @@ export function applyNuclear(robot: RobotObject, warMap: WarMap): boolean {
     robot.robotConfig.nuclear = false; // it is used
 
     // Remove destroyed structures
-    warMap.objects = warMap.objects.filter(o => !objectsToRemove.has(o.id));
+    warMap.tiles = warMap.tiles.filter(o => !objectsToRemove.has(o.id));
+    warMap.robots = warMap.robots.filter(o => !objectsToRemove.has(o.id));
 
     // Turn tiles to sand
     for (const sand of newSandTiles) {
-        const tile = warMap.objects.find(o => o.type === ObjectType.TILE && o.x === sand.x && o.y === sand.y);
+        const tile = warMap.tiles.find(o => o.type === ObjectType.TILE && o.x === sand.x && o.y === sand.y);
         if (tile && 'subtype' in tile) {
             tile.subtype = 'S'; // TileSubtype.SAND
         }

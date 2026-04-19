@@ -55,10 +55,9 @@ function findRaycastHit(
     }
 
     // Check robots
-    for (const r of warMap.objects) {
-        if (r.type !== ObjectType.ROBOT) continue;
+    for (const r of warMap.robots) {
         if (r.id === robot.id) continue;
-        if ((r as RobotObject).dyingTicks !== undefined) continue;
+        if (r.dyingTicks !== undefined) continue;
 
         const rx = r.x;
         const ry = r.y;

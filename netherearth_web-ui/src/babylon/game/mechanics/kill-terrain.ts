@@ -18,9 +18,9 @@ function posKey(x: number, y: number): string {
 function tileAt(warMap: WarMap, x: number, y: number): MapObject | undefined {
     const rx = Math.round(x);
     const ry = Math.round(y);
-    return warMap.objects.find(
+    return warMap.tiles.find(
         o => o.type === ObjectType.TILE && Math.round(o.x) === rx && Math.round(o.y) === ry,
-    ) as MapObject | undefined;
+    );
 }
 
 export function recordKill(warMap: WarMap, robot: RobotObject): void {
@@ -45,6 +45,6 @@ export function recordKill(warMap: WarMap, robot: RobotObject): void {
             x: rx,
             y: ry,
         };
-        warMap.objects.push(wall);
+        warMap.tiles.push(wall);
     }
 }

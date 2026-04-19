@@ -13,8 +13,9 @@ import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
 import { Chassis, Weapon, Electronics } from '../../../data/robot';
 import { makeEnv } from '../../test-utils';
 
-function makeWarMap(...objects: WarObject[]): WarMap {
-    return { width: 10, height: 10, objects, projectiles: [], tick: 0 };
+
+function makeWarMap(...objects: any[]): WarMap {
+    return { width: 10, height: 10, tiles: objects.filter((o: any) => o.type !== ObjectType.ROBOT), robots: objects.filter((o: any) => o.type === ObjectType.ROBOT), projectiles: [], killCounts: {}, tick: 0 } as any;
 }
 
 function makeRobot(id: string, x: number, y: number): RobotObject {
@@ -22,11 +23,11 @@ function makeRobot(id: string, x: number, y: number): RobotObject {
         id, type: ObjectType.ROBOT, x, y, owner: Owner.RED,
         facing: Direction.E,
         robotConfig: { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON], electronics: Electronics.STANDARD },
-    };
+    } as RobotObject;
 }
 
 function makeFactory(id: string): WarObject {
-    return { id, type: ObjectType.FACTORY, x: 0, y: 0, subtype: 'cannons', owner: Owner.BLUE };
+    return { id, type: ObjectType.FACTORY, x: 0, y: 0, subtype: 'cannons', owner: Owner.BLUE } as WarObject;
 }
 
 // ─── Initial render ───────────────────────────────────────────────────────────
@@ -109,7 +110,7 @@ describe('Renderer — object removal', () => {
         renderer.render(warMap);
         const afterAdd = scene.transformNodes.length;
 
-        warMap.objects = [];
+        warMap.robots = [];
         renderer.render(warMap);
         expect(scene.transformNodes.length).toBeLessThan(afterAdd);
     });
@@ -120,7 +121,7 @@ describe('Renderer — object removal', () => {
         renderer.render(warMap);
         const afterAdd = scene.transformNodes.length;
 
-        warMap.objects = [];
+        warMap.tiles = [];
         renderer.render(warMap);
         expect(scene.transformNodes.length).toBeLessThan(afterAdd);
     });
@@ -147,7 +148,7 @@ describe('Renderer — re-render on state change', () => {
         const afterFirst = scene.transformNodes.length;
 
         // Simulate robot moving
-        robot.x = 6;
+        warMap.robots[0].x = 6;
         renderer.render(warMap);
 
         // Node count should be the same — old disposed, new created
@@ -160,7 +161,7 @@ describe('Renderer — re-render on state change', () => {
         renderer.render(warMap);
         const afterFirst = scene.transformNodes.length;
 
-        factory.owner = Owner.RED; // ownership flip
+        warMap.tiles[0].owner = Owner.RED; // ownership flip
         renderer.render(warMap);
 
         expect(scene.transformNodes.length).toBe(afterFirst);
@@ -216,7 +217,7 @@ describe('Renderer — missing model', () => {
         renderer.render(warMap);
         const after1 = scene.transformNodes.length;
 
-        robot.x = 1; // state change
+        warMap.robots[0].x = 1; // state change
         renderer.render(warMap);
         // Node count should not decrease (nothing was added, nothing to remove)
         expect(scene.transformNodes.length).toBe(after1);
@@ -247,7 +248,8 @@ describe('Renderer — id collision regression', () => {
     it('preset (init_robot_0) and built (robot_0) robots with distinct ids both remain rendered', () => {
         const preset = makeRobot('init_robot_0', 0, 14);
         const built  = makeRobot('robot_0',      5, 5);
-        renderer.render(makeWarMap(preset, built));
+        const map = makeWarMap(preset, built);
+        renderer.render(map);
         // Both robots contributed nodes — more than a single robot would add
         const env2 = makeEnv();
         const r2 = new Renderer(env2.models, env2.scene, new Vector3(0, 0, 0));

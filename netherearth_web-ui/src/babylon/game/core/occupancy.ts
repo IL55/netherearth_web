@@ -58,19 +58,18 @@ export interface OccupancyMap {
 export function buildOccupancy(warMap: WarMap, ship?: { x: number; y: number; height: number; }): OccupancyMap {
     const robots: RobotPos[] = [];
     const structures: StructureAABB[] = [];
-    for (const obj of warMap.objects) {
-        if (obj.type === ObjectType.ROBOT) {
-            const h = obj.robotConfig ? calcRobotHeight(obj.robotConfig) : ROBOT_HEIGHT;
-            robots.push({ id: obj.id, x: obj.x, y: obj.y, height: h });
-        } else {
-            const parts = STRUCTURE_PARTS[obj.type];
-            if (parts) {
-                for (const def of parts) {
-                    structures.push({ x0: obj.x + def.dx0, y0: obj.y + def.dy0, x1: obj.x + def.dx1, y1: obj.y + def.dy1, height: def.height ?? getStructureHeight(obj.type) });
-                }
-            } else if (isBlockingType(obj.type)) {
-                structures.push({ x0: obj.x + DEFAULT_AABB.dx0, y0: obj.y + DEFAULT_AABB.dy0, x1: obj.x + DEFAULT_AABB.dx1, y1: obj.y + DEFAULT_AABB.dy1, height: getStructureHeight(obj.type) });
+    for (const obj of warMap.robots) {
+        const h = calcRobotHeight(obj.robotConfig);
+        robots.push({ id: obj.id, x: obj.x, y: obj.y, height: h });
+    }
+    for (const obj of warMap.tiles) {
+        const parts = STRUCTURE_PARTS[obj.type];
+        if (parts) {
+            for (const def of parts) {
+                structures.push({ x0: obj.x + def.dx0, y0: obj.y + def.dy0, x1: obj.x + def.dx1, y1: obj.y + def.dy1, height: def.height ?? getStructureHeight(obj.type) });
             }
+        } else if (isBlockingType(obj.type)) {
+            structures.push({ x0: obj.x + DEFAULT_AABB.dx0, y0: obj.y + DEFAULT_AABB.dy0, x1: obj.x + DEFAULT_AABB.dx1, y1: obj.y + DEFAULT_AABB.dy1, height: getStructureHeight(obj.type) });
         }
     }
     return { robots, structures, ship };

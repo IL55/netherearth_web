@@ -36,8 +36,9 @@ function makeRobot(
     };
 }
 
-function makeMap(objects: WarObject[] = []): WarMap {
-    return { width: 20, height: 20, objects, projectiles: [], tick: 10 };
+
+function makeMap(objects: any[] = []): WarMap {
+    return { width: 20, height: 20, tiles: objects.filter((o: any) => o.type !== ObjectType.ROBOT), robots: objects.filter((o: any) => o.type === ObjectType.ROBOT), projectiles: [], killCounts: {}, tick: 0 } as any;
 }
 
 describe('fightAction', () => {

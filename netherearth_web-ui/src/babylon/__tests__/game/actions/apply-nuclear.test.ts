@@ -4,13 +4,9 @@ import { ObjectType, Owner } from '../../../game/core/warmap';
 import type { WarMap, MapObject, RobotObject } from '../../../game/core/warmap';
 import { Chassis } from '../../../data/robot';
 
+
 function createMapWithObjects(objects: Array<any>): WarMap {
-    return {
-        width: 10,
-        height: 10,
-        objects,
-        tick: 0,
-    };
+    return { width: 10, height: 10, tiles: objects.filter((o: any) => o.type !== ObjectType.ROBOT), robots: objects.filter((o: any) => o.type === ObjectType.ROBOT), projectiles: [], killCounts: {}, tick: 0 } as any;
 }
 
 describe('applyNuclear', () => {
@@ -77,9 +73,9 @@ describe('applyNuclear', () => {
         applyNuclear(detonator, warMap);
 
         // Wall should be removed
-        expect(warMap.objects.find(o => o.id === 'w1')).toBeUndefined();
+        expect(warMap.tiles.find(o => o.id === 'w1')).toBeUndefined();
         // Tile at x:4, y:5 should become 'S' (sand)
-        const updatedTile = warMap.objects.find(o => o.type === ObjectType.TILE && o.x === 4 && o.y === 5) as MapObject;
+        const updatedTile = warMap.tiles.find(o => o.type === ObjectType.TILE && o.x === 4 && o.y === 5) as MapObject;
         expect(updatedTile.subtype).toBe('S');
     });
 
@@ -102,11 +98,11 @@ describe('applyNuclear', () => {
         applyNuclear(detonator, warMap);
 
         // Factory should be removed entirely
-        expect(warMap.objects.find(o => o.id === 'f1')).toBeUndefined();
+        expect(warMap.tiles.find(o => o.id === 'f1')).toBeUndefined();
 
         // Its footprint should be converted to sand
-        const t1 = warMap.objects.find(o => o.id === 't_3_4') as MapObject;
-        const t2 = warMap.objects.find(o => o.id === 't_4_6') as MapObject;
+        const t1 = warMap.tiles.find(o => o.id === 't_3_4') as MapObject;
+        const t2 = warMap.tiles.find(o => o.id === 't_4_6') as MapObject;
         expect(t1.subtype).toBe('S');
         expect(t2.subtype).toBe('S');
     });

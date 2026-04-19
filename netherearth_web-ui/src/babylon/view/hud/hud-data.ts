@@ -33,9 +33,12 @@ function emptyStats(): OwnerStats {
 
 function ownerStats(warMap: WarMap, owner: Owner): OwnerStats {
     const s = emptyStats();
-    for (const obj of warMap.objects) {
+    for (const obj of warMap.robots) {
         if (obj.owner !== owner) continue;
-        if (obj.type === ObjectType.ROBOT)   { s.robots++;   continue; }
+        s.robots++;
+    }
+    for (const obj of warMap.tiles) {
+        if (obj.owner !== owner) continue;
         if (obj.type === ObjectType.WARBASE) { s.warbases++; continue; }
         if (obj.type === ObjectType.FACTORY && obj.subtype) {
             const key = obj.subtype as keyof OwnerStats;

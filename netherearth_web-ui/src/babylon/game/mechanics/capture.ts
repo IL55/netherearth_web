@@ -1,5 +1,5 @@
 import { ObjectType } from '../core/warmap';
-import type { WarMap, WarObject, RobotObject } from '../core/warmap';
+import type { WarMap, WarObject, RobotObject, MapObject } from '../core/warmap';
 import { DAY_TICKS } from '../resources';
 
 interface CaptureZone {
@@ -16,7 +16,7 @@ export const CAPTURE_ZONES: Partial<Record<string, CaptureZone>> = {
     warbase: { dx: 3.5, dy: 2.0, radius: 0.1, ticks: 3 * DAY_TICKS },
 };
 
-export function isInCaptureZone(robot: RobotObject, structure: WarObject): boolean {
+export function isInCaptureZone(robot: RobotObject, structure: MapObject): boolean {
     const zone = CAPTURE_ZONES[structure.type];
     if (!zone) return false;
     return (
@@ -31,11 +31,11 @@ export function isInCaptureZone(robot: RobotObject, structure: WarObject): boole
 // A robot in a structure's capture zone for CAPTURE_TICKS consecutive ticks captures it.
 // Any interruption (robot leaves or is a teammate) resets the counter.
 export function tickCapture(warMap: WarMap): void {
-    for (const obj of warMap.objects) {
+    for (const obj of warMap.tiles) {
         if (!CAPTURE_ZONES[obj.type]) continue;
 
-        const captor = warMap.objects.find(
-            r => r.type === ObjectType.ROBOT && r.owner !== obj.owner && isInCaptureZone(r, obj),
+        const captor = warMap.robots.find(
+            r => r.owner !== obj.owner && isInCaptureZone(r, obj),
         );
 
         if (captor) {

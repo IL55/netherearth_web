@@ -36,9 +36,9 @@ export class Renderer {
     ) {}
 
     render(warMap: WarMap): void {
-        const currentIds = new Set(warMap.objects.map(o => o.id));
+        const currentIds = new Set([...warMap.tiles, ...warMap.robots].map(o => o.id));
 
-        warMap.objects.forEach(obj => {
+        [...warMap.tiles, ...warMap.robots].forEach(obj => {
             const state = JSON.stringify(obj);
             if (this.stateCache.get(obj.id) === state) return; // unchanged, skip
 
@@ -90,7 +90,7 @@ export class Renderer {
             // Death blink: hide on odd ticks, show on even ticks
             if (obj.dyingTicks !== undefined && obj.dyingTicks % 2 === 1) return;
             if (obj.robotConfig) {
-                placeRobot(this.models, this.mapBegin, obj.x, obj.y, obj.robotConfig, obj.owner, directionToRotation(obj.facing ?? Direction.N));
+                placeRobot(this.models, this.mapBegin, obj.x, obj.y, obj.robotConfig, obj.owner, directionToRotation(obj.facing));
             }
         } else {
             // wall, fence, or any other placed model

@@ -29,11 +29,11 @@ function empty(): Resources {
 }
 
 function makeWarMap(withWarbase = true, warbaseOwner: Owner = Owner.RED): WarMap {
-    const objects: WarMap['objects'] = [];
+    const tiles: any[] = [];
     if (withWarbase) {
-        objects.push({ id: 'wb', type: ObjectType.WARBASE, x: 0, y: 0, owner: warbaseOwner });
+        tiles.push({ id: 'wb', type: ObjectType.WARBASE, x: 0, y: 0, owner: warbaseOwner });
     }
-    return { width: 20, height: 20, objects, projectiles: [] };
+    return { width: 20, height: 20, tiles, robots: [], projectiles: [], killCounts: {}, tick: 0 };
 }
 
 // ─── applyPartToggle ──────────────────────────────────────────────────────────
@@ -336,7 +336,7 @@ describe('spawnManualRobot', () => {
     it('returns false when no warbase exists', () => {
         const warMap = makeWarMap(false);
         expect(spawnManualRobot(warMap, cfg)).toBe(false);
-        expect(warMap.objects).toHaveLength(0);
+        expect(warMap.robots).toHaveLength(0);
     });
 
     it('returns false when warbase belongs to a different owner', () => {
@@ -347,7 +347,7 @@ describe('spawnManualRobot', () => {
     it('adds a robot to warMap on success', () => {
         const warMap = makeWarMap();
         expect(spawnManualRobot(warMap, cfg)).toBe(true);
-        const robots = warMap.objects.filter(o => o.type === ObjectType.ROBOT);
+        const robots = warMap.robots;
         expect(robots).toHaveLength(1);
     });
 
@@ -355,7 +355,7 @@ describe('spawnManualRobot', () => {
         const warMap = makeWarMap();
         // warbase at (0,0); CAPTURE_ZONES.warbase = { dx: 3.5, dy: 2.0 }
         spawnManualRobot(warMap, cfg);
-        const robot = warMap.objects.find(o => o.type === ObjectType.ROBOT)!;
+        const robot = warMap.robots[0];
         expect(robot.x).toBeCloseTo(3.5);
         expect(robot.y).toBeCloseTo(2.0);
     });
@@ -363,27 +363,28 @@ describe('spawnManualRobot', () => {
     it('gives the robot the supplied config', () => {
         const warMap = makeWarMap();
         spawnManualRobot(warMap, cfg);
-        const robot = warMap.objects.find(o => o.type === ObjectType.ROBOT)!;
+        const robot = warMap.robots[0];
         expect(robot.robotConfig).toEqual(cfg);
     });
 
     it('assigns the correct owner', () => {
         const warMap = makeWarMap();
         spawnManualRobot(warMap, cfg, Owner.RED);
-        const robot = warMap.objects.find(o => o.type === ObjectType.ROBOT)!;
+        const robot = warMap.robots[0];
         expect(robot.owner).toBe(Owner.RED);
     });
 
     it('returns false when spawn point is already occupied', () => {
         const warMap = makeWarMap();
         // Place a robot at the spawn location first
-        warMap.objects.push({
+        warMap.robots.push({
             id: 'blocker',
             type: ObjectType.ROBOT,
             x: 3.5,
             y: 2.0,
             owner: Owner.RED,
-        });
+            robotConfig: { chassis: Chassis.TRACKS },
+        } as any);
         expect(spawnManualRobot(warMap, cfg)).toBe(false);
     });
 
@@ -393,8 +394,8 @@ describe('spawnManualRobot', () => {
         const warMap2 = makeWarMap();
         spawnManualRobot(warMap1, cfg);
         spawnManualRobot(warMap2, cfg);
-        const robot1 = warMap1.objects.find(o => o.type === ObjectType.ROBOT)!;
-        const robot2 = warMap2.objects.find(o => o.type === ObjectType.ROBOT)!;
+        const robot1 = warMap1.robots[0];
+        const robot2 = warMap2.robots[0];
         expect(robot1.id).toBe('robot_manual_0');
         expect(robot2.id).toBe('robot_manual_1');
         expect(robot1.id).not.toBe(robot2.id);
@@ -423,15 +424,15 @@ describe('isSpawnOccupied', () => {
     it('returns true when a robot occupies the spawn point', () => {
         const warMap = makeWarMap(true, Owner.RED); // warbase at (0,0)
         // spawn = (0 + 3.5, 0 + 2.0) = (3.5, 2.0)
-        warMap.objects.push({ id: 'blocker', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.RED });
+        warMap.robots.push({ id: 'blocker', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.RED, robotConfig: { chassis: Chassis.TRACKS } } as any);
         expect(isSpawnOccupied(warMap, Owner.RED)).toBe(true);
     });
 
     it('returns false after the blocking robot is removed', () => {
         const warMap = makeWarMap(true, Owner.RED);
-        warMap.objects.push({ id: 'blocker', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.RED });
+        warMap.robots.push({ id: 'blocker', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.RED, robotConfig: { chassis: Chassis.TRACKS } } as any);
         expect(isSpawnOccupied(warMap, Owner.RED)).toBe(true);
-        warMap.objects = warMap.objects.filter(o => o.id !== 'blocker');
+        warMap.robots = warMap.robots.filter(o => o.id !== 'blocker');
         expect(isSpawnOccupied(warMap, Owner.RED)).toBe(false);
     });
 });

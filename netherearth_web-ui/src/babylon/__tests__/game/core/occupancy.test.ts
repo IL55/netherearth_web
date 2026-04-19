@@ -7,8 +7,10 @@ import { Chassis } from '../../../data/robot';
 
 const DEFAULT_ROBOT_CONFIG = { chassis: Chassis.TRACKS };
 
-function makeMap(objects: WarMap['objects']): WarMap {
-    return { width: 10, height: 10, objects };
+function makeMap(objects: any[]): WarMap {
+    const tiles = objects.filter(o => o.type !== ObjectType.ROBOT);
+    const robots = objects.filter(o => o.type === ObjectType.ROBOT);
+    return { width: 10, height: 10, tiles, robots, projectiles: [], killCounts: {}, tick: 0 };
 }
 
 const makeRobot = (partial: Pick<RobotObject, 'id'|'x'|'y'|'owner'>): RobotObject => ({

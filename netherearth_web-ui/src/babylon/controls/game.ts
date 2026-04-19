@@ -13,7 +13,7 @@ export const attachGameControls = (
 
         switch (kbInfo.event.key) {
             case 't': {
-                warMap.objects
+                warMap.tiles
                     .filter(o => o.type === ObjectType.FACTORY || o.type === ObjectType.WARBASE)
                     .forEach(o => cycleOwner(o));
                 onUpdate();

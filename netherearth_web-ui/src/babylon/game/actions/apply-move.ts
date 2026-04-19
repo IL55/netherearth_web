@@ -19,8 +19,8 @@ const DIR_DELTA: Record<Direction, { dx: number; dy: number }> = {
 };
 
 function getTileSubtype(warMap: WarMap, x: number, y: number): string {
-    const tile = warMap.objects.find(
-        (o): o is MapObject => o.type === ObjectType.TILE && o.x === Math.floor(x) && o.y === Math.floor(y),
+    const tile = warMap.tiles.find(
+        o => o.type === ObjectType.TILE && o.x === Math.floor(x) && o.y === Math.floor(y),
     );
     return tile?.subtype ?? TileSubtype.GRASS;
 }

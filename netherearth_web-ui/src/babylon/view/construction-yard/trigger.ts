@@ -17,7 +17,7 @@ export class ConstructionYardTrigger {
     ) {}
 
     public check(warMap: WarMap, ship: { x: number; y: number; height: number }): void {
-        const redWarbase = warMap.objects.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
+        const redWarbase = warMap.tiles.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
         if (redWarbase) {
             const hX = redWarbase.x + 1.5;
             const hY = redWarbase.y + 2;

@@ -8,8 +8,9 @@ import { Owner } from '../../../game/types/owner';
 import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
 import { Chassis, Electronics } from '../../../data/robot';
 
-function makeMap(objects: WarMap['objects'] = [], width = 20, height = 20): WarMap {
-    return { width, height, objects };
+
+function makeMap(objects: any[] = [], width = 20, height = 20): WarMap {
+    return { width, height, tiles: objects.filter((o: any) => o.type !== ObjectType.ROBOT), robots: objects.filter((o: any) => o.type === ObjectType.ROBOT), projectiles: [], killCounts: {}, tick: 0 } as any;
 }
 
 function makeRobot(id: string, x: number, y: number, facing: Direction.N | Direction.E | Direction.S | Direction.W = Direction.E): RobotObject {

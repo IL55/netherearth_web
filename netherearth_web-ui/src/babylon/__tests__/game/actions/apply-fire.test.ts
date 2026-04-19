@@ -14,7 +14,7 @@ describe('applyFire', () => {
     it('damages a specific target if targetId is provided (AI homing)', () => {
         const shooter = makeRobot('r1', 10, 10, Owner.RED, Direction.E);
         const target = makeRobot('r2', 12, 10, Owner.BLUE);
-        const warMap: WarMap = { width: 30, height: 30, objects: [shooter, target], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter, target], projectiles: [], killCounts: {}, tick: 0 };
         const occupancy = { robots: [], structures: [] };
 
         applyFire(shooter, 'r2', warMap, occupancy, Weapon.CANNON);
@@ -32,7 +32,7 @@ describe('applyFire', () => {
         // Enemy 2 is to the East (x=12, y=10)
         const targetEast = makeRobot('r3', 12, 10, Owner.BLUE);
         
-        const warMap: WarMap = { width: 30, height: 30, objects: [shooter, targetSouth, targetEast], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter, targetSouth, targetEast], projectiles: [], killCounts: {}, tick: 0 };
         const occupancy = { robots: [], structures: [] };
 
         // Fire without targetId
@@ -52,7 +52,7 @@ describe('applyFire', () => {
         // Enemy is to the North (x=10, y=8) -> Should not be hit
         const targetNorth = makeRobot('r2', 10, 8, Owner.BLUE);
         
-        const warMap: WarMap = { width: 30, height: 30, objects: [shooter, targetNorth], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter, targetNorth], projectiles: [], killCounts: {}, tick: 0 };
         const occupancy = { robots: [], structures: [] };
 
         applyFire(shooter, undefined, warMap, occupancy, Weapon.CANNON); // Cannon maxRange is 5
@@ -73,7 +73,7 @@ describe('applyFire', () => {
         // Further enemy at x=6
         const targetFar = makeRobot('r3', 6, 10, Owner.BLUE);
         
-        const warMap: WarMap = { width: 30, height: 30, objects: [shooter, targetClose, targetFar], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter, targetClose, targetFar], projectiles: [], killCounts: {}, tick: 0 };
         const occupancy = { robots: [], structures: [] };
 
         applyFire(shooter, undefined, warMap, occupancy, Weapon.CANNON);
@@ -88,7 +88,7 @@ describe('applyFire', () => {
         // Enemy is at x=14, well within cannon maxRange of 5
         const target = makeRobot('r2', 14, 10, Owner.BLUE);
         
-        const warMap: WarMap = { width: 30, height: 30, objects: [shooter, target], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter, target], projectiles: [], killCounts: {}, tick: 0 };
         
         // Add a wall structure perfectly blocking the line of sight at x=12
         const occupancy = { 
@@ -113,8 +113,9 @@ describe('applyFire', () => {
         const shooter = makeRobot('r1', 10, 10, Owner.RED, Direction.E);
         // Simulate a projectile already in the air owned by this shooter
         const warMap: WarMap = { 
-            width: 30, height: 30, objects: [shooter], 
-            projectiles: [{ id: 'p1', ownerId: 'r1', weaponType: 'cannon', fromX: 10, fromY: 10, toX: 15, toY: 10, progress: 0.5, step: 0.1 }] 
+            width: 30, height: 30, tiles: [], robots: [shooter], 
+            projectiles: [{ id: 'p1', ownerId: 'r1', weaponType: 'cannon', fromX: 10, fromY: 10, toX: 15, toY: 10, progress: 0.5, step: 0.1 }],
+            killCounts: {}, tick: 0
         };
         const occupancy = { robots: [], structures: [] };
 
@@ -130,7 +131,7 @@ describe('applyFire', () => {
         const shooter = makeRobot('r1', 10, 10, Owner.RED, Direction.E);
         shooter.weaponReadyAt = 100; // Weapon is ready at tick 100
         
-        const warMap: WarMap = { width: 30, height: 30, objects: [shooter], projectiles: [], tick: 95 }; // Current tick is 95
+        const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter], projectiles: [], killCounts: {}, tick: 95 }; // Current tick is 95
         const occupancy = { robots: [], structures: [] };
 
         const result = applyFire(shooter, undefined, warMap, occupancy, Weapon.CANNON);

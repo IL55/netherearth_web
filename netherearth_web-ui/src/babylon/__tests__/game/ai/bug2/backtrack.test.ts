@@ -103,7 +103,7 @@ describe('Backtrack: nearly-full-height wall, gap only at top', () => {
         const factory = makeFactory('f0', 16, 5);
         const robot   = makeRobot('r0', 8, 5);
         return {
-            map: { width: 20, height: 12, objects: [...walls, factory, robot], tick: 0 } as WarMap,
+            map: { width: 20, height: 12, tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 } as WarMap,
             robot,
         };
     }
@@ -161,7 +161,7 @@ describe('Backtrack: wall with gap at bottom (acceptable south-only detour)', ()
         const factory = makeFactory('f0', 16, 5);
         const robot   = makeRobot('r0', 8, 5);
         return {
-            map: { width: 20, height: 12, objects: [...walls, factory, robot], tick: 0 } as WarMap,
+            map: { width: 20, height: 12, tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 } as WarMap,
             robot,
         };
     }
@@ -207,7 +207,7 @@ describe('Backtrack: full-height wall causes perimeter loop', () => {
         const factory = makeFactory('f0', 16, 5);
         const robot   = makeRobot('r0', 5, 5);
         return {
-            map: { width: 20, height: 12, objects: [...walls, factory, robot], tick: 0 } as WarMap,
+            map: { width: 20, height: 12, tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 } as WarMap,
             robot,
         };
     }

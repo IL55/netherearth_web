@@ -13,8 +13,11 @@ import { Chassis, Weapon, Electronics } from '../../../data/robot';
 import { RobotGoal } from '../../../game/core/warmap';
 import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
 
-function makeMap(objects: WarMap['objects']): WarMap {
-    return { width: 20, height: 20, objects, tick: 0 };
+import { createWarMap } from '../../../game/core/utils';
+function makeMap(objects: any[]): WarMap {
+    const tiles = objects.filter(o => o.type !== ObjectType.ROBOT);
+    const robots = objects.filter(o => o.type === ObjectType.ROBOT);
+    return { width: 20, height: 20, tiles, robots, projectiles: [], killCounts: {}, tick: 0 };
 }
 
 function warbase(owner: Owner, x = 0, y = 0): WarObject {
@@ -73,7 +76,7 @@ describe('tickBuild — no resources', () => {
         const map = makeMap([warbase(Owner.RED)]);
         const res = createOwnerResources();
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(0);
+        expect(map.robots).toHaveLength(0);
     });
 
     it('does not build for NEUTRAL warbase', () => {
@@ -81,7 +84,7 @@ describe('tickBuild — no resources', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 10;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(0);
+        expect(map.robots).toHaveLength(0);
     });
 });
 
@@ -93,7 +96,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const robots = map.objects.filter(o => o.type === ObjectType.ROBOT) as RobotObject[];
+        const robots = map.robots;
         expect(robots).toHaveLength(1);
         expect(robots[0].robotConfig?.chassis).toBe(Chassis.TRACKS);
         expect(robots[0].owner).toBe(Owner.RED);
@@ -114,7 +117,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
         res[Owner.RED].cannons = 1;
         res[Owner.RED].electronics = 1;
         tickBuild(map, res);
-        const robots = map.objects.filter(o => o.type === ObjectType.ROBOT) as RobotObject[];
+        const robots = map.robots;
         expect(robots[0].robotConfig?.weapons).toContain(Weapon.CANNON);
         expect(robots[0].robotConfig?.electronics).toBe(Electronics.STANDARD);
     });
@@ -124,7 +127,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
+        const robot = map.robots[0];
         expect(robot.x).toBe(2 + 3.5); // warbase.x + zone.dx
         expect(robot.y).toBe(3 + 2.0); // warbase.y + zone.dy
     });
@@ -135,7 +138,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
+        const robot = map.robots[0];
         expect(validGoals).toContain(robot.goal);
     });
 
@@ -144,7 +147,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
         const res = createOwnerResources();
         res[Owner.BLUE].chassis = 1;
         tickBuild(map, res);
-        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
+        const robot = map.robots[0];
         expect(robot.owner).toBe(Owner.BLUE);
         expect(robot.ai).toBe(RobotAI.SIMPLE);
     });
@@ -158,7 +161,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
 
-        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
+        const robot = map.robots[0];
         expect(robot.facing).toBe(Direction.S); // Towards +y (South)
         expect(robot.nav?.moveOutTarget).toEqual({ x: 5.5, y: 5.0 + 4 });
     });
@@ -168,7 +171,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
+        const robot = map.robots[0];
         expect(robot.health).toBeGreaterThan(0);
     });
 });
@@ -183,7 +186,7 @@ describe('tickBuild — spawn blocked', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 5;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1); // only the original
+        expect(map.robots).toHaveLength(1); // only the original
     });
 
     it('does not build when an enemy robot occupies the spawn point (capturing)', () => {
@@ -193,7 +196,7 @@ describe('tickBuild — spawn blocked', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 5;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1);
+        expect(map.robots).toHaveLength(1);
     });
 });
 
@@ -202,7 +205,7 @@ describe('tickBuild — spawn blocked', () => {
 describe('tickBuild — multiple warbases', () => {
     it('does not build another robot until BUILD_COOLDOWN ticks have passed', () => {
         const map = makeMap([warbase(Owner.RED, 0, 0)]);
-        const warbaseObj = map.objects.find(o => o.type === ObjectType.WARBASE)!;
+        const warbaseObj = map.tiles.find(o => o.type === ObjectType.WARBASE)!;
         const res = createOwnerResources();
         // Give enough resources for multiple builds
         res[Owner.RED].chassis = 10;
@@ -210,26 +213,26 @@ describe('tickBuild — multiple warbases', () => {
         // Build first robot at tick 5
         map.tick = 5;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1);
+        expect(map.robots).toHaveLength(1);
         
         // Move the built robot out of the way so the spawn point is clear
-        const robot = map.objects.find(o => o.type === ObjectType.ROBOT)!;
+        const robot = map.robots[0];
         robot.x = 0; robot.y = 0;
 
         // Try to build another robot immediately (tick 6) - should fail because of cooldown
         map.tick = 6;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1);
+        expect(map.robots).toHaveLength(1);
 
         // Try to build one tick before cooldown finishes (tick 5 + 9 = 14)
         map.tick = 14;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1);
+        expect(map.robots).toHaveLength(1);
 
         // Build again exactly when cooldown is over (tick 5 + 10 = 15)
         map.tick = 15;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(2);
+        expect(map.robots).toHaveLength(2);
     });
 
     it('builds one robot per warbase in the same tick', () => {
@@ -239,7 +242,7 @@ describe('tickBuild — multiple warbases', () => {
         res[Owner.RED].chassis = 2;
         res[Owner.RED].cannons = 2;
         tickBuild(map, res);
-        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(2);
+        expect(map.robots).toHaveLength(2);
         expect(res[Owner.RED].chassis).toBe(0);
         expect(res[Owner.RED].cannons).toBe(0);
     });
@@ -254,7 +257,7 @@ describe('tickBuild — multiple warbases', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 3; // antigrav (2) + tracks (1)
         tickBuild(map, res);
-        const robots = map.objects.filter(o => o.type === ObjectType.ROBOT) as RobotObject[];
+        const robots = map.robots;
         // First robot: no fighters yet → ATTACK_ROBOTS (rule 1 baseline)
         // Second robot: 1 fighter / 1 total = 100 % ≥ 33 % → go capture neutral factory
         expect(robots.length).toBeGreaterThanOrEqual(2);
@@ -316,8 +319,10 @@ describe('chooseBuildOption — resource-aware selection', () => {
 
 // ─── chooseBuildGoal — context-aware goal strategy ────────────────────────────
 
-function makeWarMapForGoal(objects: WarMap['objects']): WarMap {
-    return { width: 20, height: 20, objects, tick: 0 };
+function makeWarMapForGoal(objects: any[]): WarMap {
+    const tiles = objects.filter(o => o.type !== ObjectType.ROBOT);
+    const robots = objects.filter(o => o.type === ObjectType.ROBOT);
+    return { width: 20, height: 20, tiles, robots, projectiles: [], killCounts: {}, tick: 0 };
 }
 
 function makeRobotWithGoal(id: string, goal: RobotGoal, owner = Owner.RED): RobotObject {
@@ -468,7 +473,7 @@ describe('tickBuild — robot id prefix', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const robot = map.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
+        const robot = map.robots[0];
         expect(robot).toBeDefined();
         expect(robot.id).toMatch(/^robot_\d+$/);
     });
@@ -488,8 +493,8 @@ describe('tickBuild — robot id prefix', () => {
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
         tickBuild(map, res);
-        const builtRobot = map.objects.find(
-            o => o.type === ObjectType.ROBOT && o.id !== 'init_robot_0'
+        const builtRobot = map.robots.find(
+            o => o.id !== 'init_robot_0'
         ) as RobotObject;
         expect(builtRobot).toBeDefined();
         expect(builtRobot.id).not.toBe('init_robot_0');

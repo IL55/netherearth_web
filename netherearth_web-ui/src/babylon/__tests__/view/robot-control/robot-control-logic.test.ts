@@ -33,8 +33,9 @@ function makeRobot(id: string, x: number, y: number, owner = Owner.RED, goal = R
     };
 }
 
-function makeWarMap(...robots: RobotObject[]): WarMap {
-    return { width: 20, height: 20, objects: [...robots], projectiles: [] };
+
+function makeWarMap(...robots: any[]): WarMap {
+    return { width: 20, height: 20, tiles: [], robots, projectiles: [], killCounts: {}, tick: 0 };
 }
 
 // ─── findRobotUnderShip ───────────────────────────────────────────────────────
@@ -98,7 +99,7 @@ describe('findRobotUnderShip', () => {
 
     it('ignores non-robot objects', () => {
         const factory = { id: 'f1', type: ObjectType.FACTORY as const, x: 5, y: 5, owner: Owner.RED };
-        const warMap: WarMap = { width: 20, height: 20, objects: [factory], projectiles: [] };
+        const warMap: WarMap = { width: 20, height: 20, tiles: [factory], robots: [], projectiles: [], killCounts: {}, tick: 0 };
         expect(findRobotUnderShip(warMap, makeShip(5, 5), Owner.RED)).toBeNull();
     });
 });
@@ -245,7 +246,7 @@ describe('isRobotAlive', () => {
         const robot = makeRobot('r1', 5, 5);
         const warMap = makeWarMap(robot);
         expect(isRobotAlive(warMap, 'r1')).toBe(true);
-        warMap.objects = [];
+        warMap.robots = [];
         expect(isRobotAlive(warMap, 'r1')).toBe(false);
     });
 });

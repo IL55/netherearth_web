@@ -21,8 +21,8 @@ function scanAdjacentEnemy(
     warMap: WarMap,
     occupancy: OccupancyMap,
 ): WarObject | undefined {
-    const enemies = warMap.objects.filter(
-        o => o.type === ObjectType.ROBOT && o.owner !== robot.owner && o.dyingTicks === undefined,
+    const enemies = warMap.robots.filter(
+        o => o.owner !== robot.owner && o.dyingTicks === undefined,
     );
 
     const adjacent = enemies.filter(e => {
@@ -54,8 +54,8 @@ function scanForwardEnemy(
     warMap: WarMap,
     occupancy: OccupancyMap,
 ): WarObject | undefined {
-    const enemies = warMap.objects.filter(
-        o => o.type === ObjectType.ROBOT && o.owner !== robot.owner && o.dyingTicks === undefined,
+    const enemies = warMap.robots.filter(
+        o => o.owner !== robot.owner && o.dyingTicks === undefined,
     );
 
     const inSight = enemies.filter(e => {

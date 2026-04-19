@@ -31,7 +31,7 @@ export class RobotControlTrigger {
             this.robotControl.close();
         } else if (this.isRobotControlOpen && this.robotControl) {
             // Keep ship above the controlled robot so it follows as the robot moves
-            const controlled = warMap.objects.find(o => o.id === this.triggeredRobotControlId) as RobotObject | undefined;
+            const controlled = warMap.robots.find(o => o.id === this.triggeredRobotControlId);
             if (controlled) {
                 ship.x = controlled.x;
                 ship.y = controlled.y;

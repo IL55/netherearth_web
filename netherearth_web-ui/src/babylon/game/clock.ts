@@ -58,20 +58,20 @@ function gameTick(
     warMap.tick = (warMap.tick ?? 0) + 1;
 
     // Step dying-robot countdown; remove those that have finished
-    for (const obj of warMap.objects) {
-        if (obj.type === ObjectType.ROBOT && obj.dyingTicks !== undefined) {
+    for (const obj of warMap.robots) {
+        if (obj.dyingTicks !== undefined) {
             obj.dyingTicks--;
         }
     }
-    warMap.objects = warMap.objects.filter(
-        o => o.type !== ObjectType.ROBOT || o.dyingTicks === undefined || o.dyingTicks > 0,
+    warMap.robots = warMap.robots.filter(
+        o => o.dyingTicks === undefined || o.dyingTicks > 0,
     );
 
     const occupancy = buildOccupancy(warMap, ship);
 
     // Run AI only for live (non-dying) robots
-    for (const obj of [...warMap.objects]) {
-        if (obj.type !== ObjectType.ROBOT || obj.dyingTicks !== undefined) continue;
+    for (const obj of [...warMap.robots]) {
+        if (obj.dyingTicks !== undefined) continue;
         if (obj.id === controlledRobotId) {
             const action = getManualAction();
             if (action) applyAction(obj, action, warMap, occupancy);
@@ -83,8 +83,8 @@ function gameTick(
     }
 
     // Start death animation for robots that just reached 0 health; record kill for terrain upgrade
-    for (const obj of warMap.objects) {
-        if (obj.type === ObjectType.ROBOT && (obj.health ?? 1) <= 0 && obj.dyingTicks === undefined) {
+    for (const obj of warMap.robots) {
+        if (obj.health <= 0 && obj.dyingTicks === undefined) {
             obj.dyingTicks = DEATH_BLINK_TICKS;
             recordKill(warMap, obj);
         }

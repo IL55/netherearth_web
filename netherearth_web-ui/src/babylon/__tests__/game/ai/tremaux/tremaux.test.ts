@@ -83,7 +83,7 @@ describe('Trémaux basic: no position bounce', () => {
         const robot = makeRobot('r0', 2, 5);
         const map: WarMap = {
             width: 15, height: 10,
-            objects: [makeFactory(10, 5), makeWall(5, 5), robot],
+            tiles: [makeFactory(10, 5), makeWall(5, 5)], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
@@ -112,7 +112,7 @@ describe('Trémaux basic: clears single wall quickly', () => {
         const robot = makeRobot('r0', 2, 5);
         const map: WarMap = {
             width: 15, height: 10,
-            objects: [makeFactory(10, 5), makeWall(5, 5), robot],
+            tiles: [makeFactory(10, 5), makeWall(5, 5)], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
@@ -132,7 +132,7 @@ describe('Trémaux basic: exits corner dead end', () => {
         const robot = makeRobot('r0', 2, 5);
         const map: WarMap = {
             width: 15, height: 10,
-            objects: [makeFactory(10, 5), makeWall(5, 5), makeWall(5, 4), robot],
+            tiles: [makeFactory(10, 5), makeWall(5, 5), makeWall(5, 4)], robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
@@ -153,7 +153,7 @@ describe('Trémaux: open field', () => {
     it('reaches factory capture zone within 200 ticks', () => {
         const factory = makeFactory(12, 5);
         const robot   = makeRobot('r0', 2, 5);
-        const map: WarMap = { width: 20, height: 12, objects: [factory, robot], tick: 0 };
+        const map: WarMap = { width: 20, height: 12, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         expect(runUntilCapture(map, robot, factory, 200)).toBeGreaterThanOrEqual(0);
     });
 });
@@ -165,7 +165,7 @@ describe('Trémaux: single wall — robot finds gap', () => {
         const walls   = [2,3,4,5,6,7,8].map(y => makeWall(8, y));
         const factory = makeFactory(14, 5);
         const robot   = makeRobot('r0', 2, 5);
-        const map: WarMap = { width: 20, height: 12, objects: [...walls, factory, robot], tick: 0 };
+        const map: WarMap = { width: 20, height: 12, tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         expect(runUntilCapture(map, robot, factory, 400)).toBeGreaterThanOrEqual(0);
     });
 });
@@ -179,7 +179,7 @@ describe('Trémaux: bipod + mountain barrier', () => {
         const robot     = makeRobot('r0', 2, 5, {
             robotConfig: { chassis: Chassis.BIPOD, electronics: Electronics.STANDARD, navAlgo: NavAlgo.TREMAUX },
         });
-        const map: WarMap = { width: 20, height: 12, objects: [...mountains, factory, robot], tick: 0 };
+        const map: WarMap = { width: 20, height: 12, tiles: [...mountains, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         expect(runUntilCapture(map, robot, factory, 600)).toBeGreaterThanOrEqual(0);
     });
 });
@@ -195,7 +195,7 @@ describe('Trémaux: U-shaped dead end', () => {
         ];
         const factory = makeFactory(16, 5);
         const robot   = makeRobot('r0', 2, 5);
-        const map: WarMap = { width: 20, height: 10, objects: [...walls, factory, robot], tick: 0 };
+        const map: WarMap = { width: 20, height: 10, tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         const zone  = CAPTURE_ZONES['factory']!;
         const goalX = factory.x + zone.dx;
@@ -220,7 +220,7 @@ describe('Trémaux: factory capture', () => {
     it('robot actually captures the factory (owner changes)', () => {
         const factory = makeFactory(10, 4);
         const robot   = makeRobot('r0', 2, 5);
-        const map: WarMap = { width: 20, height: 12, objects: [factory, robot], tick: 0 };
+        const map: WarMap = { width: 20, height: 12, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
         let captured = false;
         for (let tick = 0; tick < 1000; tick++) {
@@ -246,7 +246,7 @@ describe('Trémaux: map boundaries', () => {
             ...[5,6,7,8,9,10,11].map(x => makeWall(x, 8)),
         ];
         const robot = makeRobot('r0', 2, 5);
-        const map: WarMap = { width: 20, height: 10, objects: [...walls, makeFactory(16, 5), robot], tick: 0 };
+        const map: WarMap = { width: 20, height: 10, tiles: [...walls, makeFactory(16, 5)], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         const { violated, minX } = checkBounds(map, robot, 500);
         expect(violated).toBe(false);
         expect(minX).toBeGreaterThanOrEqual(0);
@@ -255,7 +255,7 @@ describe('Trémaux: map boundaries', () => {
     it('top boundary: never exits y < 0', () => {
         const walls = [2,3,4,5,6,7,8,9,10].map(x => makeWall(x, 3));
         const robot = makeRobot('r0', 6, 8);
-        const map: WarMap = { width: 15, height: 12, objects: [...walls, makeFactory(6, 0), robot], tick: 0 };
+        const map: WarMap = { width: 15, height: 12, tiles: [...walls, makeFactory(6, 0)], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         const { violated, minY } = checkBounds(map, robot, 500);
         expect(violated).toBe(false);
         expect(minY).toBeGreaterThanOrEqual(0);
@@ -264,7 +264,7 @@ describe('Trémaux: map boundaries', () => {
     it('bottom boundary: never exits y >= height', () => {
         const walls = [2,3,4,5,6,7,8,9,10].map(x => makeWall(x, 7));
         const robot = makeRobot('r0', 6, 3);
-        const map: WarMap = { width: 15, height: 12, objects: [...walls, makeFactory(6, 10), robot], tick: 0 };
+        const map: WarMap = { width: 15, height: 12, tiles: [...walls, makeFactory(6, 10)], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         const { violated, maxY } = checkBounds(map, robot, 500);
         expect(violated).toBe(false);
         expect(maxY).toBeLessThanOrEqual(map.height - 1);

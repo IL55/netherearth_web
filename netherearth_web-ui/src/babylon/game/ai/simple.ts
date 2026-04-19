@@ -12,7 +12,7 @@ import { ObjectType } from '../core/warmap';
 import { RobotGoal } from '../core/warmap';
 import { CW_DIRS } from '../core/warmap';
 import { Direction } from '../core/warmap';
-import type { WarMap, WarObject, RobotObject } from '../core/warmap';
+import type { WarMap, WarObject, RobotObject, MapObject } from '../core/warmap';
 import type { OccupancyMap } from '../core/occupancy';
 import { ActionType, RotateDir, type RobotAction } from '../actions';
 import { CAPTURE_ZONES, isInCaptureZone } from '../mechanics/capture';
@@ -24,18 +24,22 @@ import { recordCell, tremauxDirs } from './tremaux';
 import { shouldDetonateNuclear } from './nuclear';
 
 function findTarget(robot: RobotObject, warMap: WarMap): WarObject | undefined {
-    const candidates = warMap.objects.filter(o => {
-        if (robot.goal === RobotGoal.ATTACK_ROBOTS)           return o.type === ObjectType.ROBOT   && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_FACTORY)         return o.type === ObjectType.FACTORY && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_ENEMY_FACTORY)   return o.type === ObjectType.FACTORY && !!o.owner && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_FACTORY) return o.type === ObjectType.FACTORY && !o.owner;
-        if (robot.goal === RobotGoal.CAPTURE_WARBASE)         return o.type === ObjectType.WARBASE && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_ENEMY_WARBASE)   return o.type === ObjectType.WARBASE && !!o.owner && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_WARBASE) return o.type === ObjectType.WARBASE && !o.owner;
-        if (robot.goal === RobotGoal.NUKE_FACTORY)            return o.type === ObjectType.FACTORY && !!o.owner && o.owner !== robot.owner;
-        if (robot.goal === RobotGoal.NUKE_WARBASE)            return o.type === ObjectType.WARBASE && !!o.owner && o.owner !== robot.owner;
-        return false;
-    });
+    let candidates: WarObject[] = [];
+    if (robot.goal === RobotGoal.ATTACK_ROBOTS) {
+        candidates = warMap.robots.filter(o => o.owner !== robot.owner);
+    } else {
+        candidates = warMap.tiles.filter(o => {
+            if (robot.goal === RobotGoal.CAPTURE_FACTORY)         return o.type === ObjectType.FACTORY && o.owner !== robot.owner;
+            if (robot.goal === RobotGoal.CAPTURE_ENEMY_FACTORY)   return o.type === ObjectType.FACTORY && !!o.owner && o.owner !== robot.owner;
+            if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_FACTORY) return o.type === ObjectType.FACTORY && !o.owner;
+            if (robot.goal === RobotGoal.CAPTURE_WARBASE)         return o.type === ObjectType.WARBASE && o.owner !== robot.owner;
+            if (robot.goal === RobotGoal.CAPTURE_ENEMY_WARBASE)   return o.type === ObjectType.WARBASE && !!o.owner && o.owner !== robot.owner;
+            if (robot.goal === RobotGoal.CAPTURE_NEUTRAL_WARBASE) return o.type === ObjectType.WARBASE && !o.owner;
+            if (robot.goal === RobotGoal.NUKE_FACTORY)            return o.type === ObjectType.FACTORY && !!o.owner && o.owner !== robot.owner;
+            if (robot.goal === RobotGoal.NUKE_WARBASE)            return o.type === ObjectType.WARBASE && !!o.owner && o.owner !== robot.owner;
+            return false;
+        });
+    }
     if (candidates.length === 0) return undefined;
     return candidates.reduce((best, c) => {
         const d  = Math.abs(c.x - robot.x) + Math.abs(c.y - robot.y);
@@ -44,7 +48,7 @@ function findTarget(robot: RobotObject, warMap: WarMap): WarObject | undefined {
     });
 }
 
-function targetPos(target: WarObject): { x: number; y: number } {
+function targetPos(target: MapObject): { x: number; y: number } {
     const zone = CAPTURE_ZONES[target.type];
     if (zone) return { x: target.x + zone.dx, y: target.y + zone.dy };
     return { x: target.x, y: target.y };
@@ -105,12 +109,12 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
         const isNukeGoal = robot.goal === RobotGoal.NUKE_FACTORY || robot.goal === RobotGoal.NUKE_WARBASE;
 
         // Already in the capture zone — hold position to complete capture (not for nuke goals)
-        if (!isNukeGoal && CAPTURE_ZONES[target.type] && isInCaptureZone(robot, target)) {
+        if (!isNukeGoal && CAPTURE_ZONES[target.type] && isInCaptureZone(robot, target as MapObject)) {
             return { type: ActionType.IDLE };
         }
 
         // Nuke goals navigate to the structure center; capture goals use the capture slot
-        const pos = isNukeGoal ? { x: target.x, y: target.y } : targetPos(target);
+        const pos = isNukeGoal ? { x: target.x, y: target.y } : targetPos(target as MapObject);
         tx = pos.x;
         ty = pos.y;
     }

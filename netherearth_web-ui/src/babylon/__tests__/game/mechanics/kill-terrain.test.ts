@@ -5,12 +5,14 @@ import { Owner } from '../../../game/types/owner';
 import type { WarMap, RobotObject, MapObject } from '../../../game/core/warmap';
 import { Chassis } from '../../../data/robot';
 
+
 function makeMap(tileSubtype = 'G'): WarMap {
     return {
         width: 10, height: 10,
-        objects: [
+        tiles: [
             { id: 'tile_5_5', type: ObjectType.TILE, x: 5, y: 5, subtype: tileSubtype } as MapObject,
         ],
+        robots: [], projectiles: [], killCounts: {}, tick: 0
     };
 }
 
@@ -43,7 +45,7 @@ describe('recordKill — kill counting', () => {
 
     it('tracks different positions independently', () => {
         const map = makeMap();
-        map.objects.push({ id: 'tile_3_3', type: ObjectType.TILE, x: 3, y: 3, subtype: 'G' } as MapObject);
+        map.tiles.push({ id: 'tile_3_3', type: ObjectType.TILE, x: 3, y: 3, subtype: 'G' } as MapObject);
         recordKill(map, makeRobot(5, 5));
         recordKill(map, makeRobot(3, 3));
         expect(map.killCounts!['5,5']).toBe(1);
@@ -55,14 +57,14 @@ describe('recordKill — grass → sand (1st kill)', () => {
     it('changes grass tile to sand on first kill', () => {
         const map = makeMap('G');
         recordKill(map, makeRobot());
-        const tile = map.objects.find(o => o.type === ObjectType.TILE) as MapObject;
+        const tile = map.tiles.find(o => o.type === ObjectType.TILE) as MapObject;
         expect(tile.subtype).toBe('S');
     });
 
     it('does not change non-grass tile on first kill', () => {
         const map = makeMap('M');
         recordKill(map, makeRobot());
-        const tile = map.objects.find(o => o.type === ObjectType.TILE) as MapObject;
+        const tile = map.tiles.find(o => o.type === ObjectType.TILE) as MapObject;
         expect(tile.subtype).toBe('M');
     });
 });
@@ -72,7 +74,7 @@ describe('recordKill — sand → mountains (4th kill)', () => {
         const map = makeMap('G');
         // kill 1 → sand; kills 2-4 → mountains on 4th
         for (let i = 0; i < 4; i++) recordKill(map, makeRobot());
-        const tile = map.objects.find(o => o.type === ObjectType.TILE) as MapObject;
+        const tile = map.tiles.find(o => o.type === ObjectType.TILE) as MapObject;
         expect(tile.subtype).toBe('M');
     });
 
@@ -80,7 +82,7 @@ describe('recordKill — sand → mountains (4th kill)', () => {
         const map = makeMap('G');
         // Manually set to S2 after first kill
         recordKill(map, makeRobot()); // → S
-        const tile = map.objects.find(o => o.type === ObjectType.TILE) as MapObject;
+        const tile = map.tiles.find(o => o.type === ObjectType.TILE) as MapObject;
         tile.subtype = 'S2';
         // 3 more kills → mountains
         for (let i = 0; i < 3; i++) recordKill(map, makeRobot());
@@ -90,7 +92,7 @@ describe('recordKill — sand → mountains (4th kill)', () => {
     it('does not upgrade sand before 4th kill', () => {
         const map = makeMap('G');
         for (let i = 0; i < 3; i++) recordKill(map, makeRobot());
-        const tile = map.objects.find(o => o.type === ObjectType.TILE) as MapObject;
+        const tile = map.tiles.find(o => o.type === ObjectType.TILE) as MapObject;
         expect(tile.subtype).toBe('S');
     });
 });
@@ -99,7 +101,7 @@ describe('recordKill — mountains → wall (7th kill)', () => {
     it('adds a wall object on 7th kill', () => {
         const map = makeMap('G');
         for (let i = 0; i < 7; i++) recordKill(map, makeRobot());
-        const wall = map.objects.find(o => o.type === ObjectType.WALL1);
+        const wall = map.tiles.find(o => o.type === ObjectType.WALL1);
         expect(wall).toBeDefined();
         expect(wall!.x).toBe(5);
         expect(wall!.y).toBe(5);
@@ -108,21 +110,21 @@ describe('recordKill — mountains → wall (7th kill)', () => {
     it('does not add wall before 7th kill', () => {
         const map = makeMap('G');
         for (let i = 0; i < 6; i++) recordKill(map, makeRobot());
-        const wall = map.objects.find(o => o.type === ObjectType.WALL1);
+        const wall = map.tiles.find(o => o.type === ObjectType.WALL1);
         expect(wall).toBeUndefined();
     });
 
     it('adds only one wall (not multiple)', () => {
         const map = makeMap('G');
         for (let i = 0; i < 9; i++) recordKill(map, makeRobot());
-        const walls = map.objects.filter(o => o.type === ObjectType.WALL1);
+        const walls = map.tiles.filter(o => o.type === ObjectType.WALL1);
         expect(walls).toHaveLength(1);
     });
 });
 
 describe('recordKill — no tile at position', () => {
     it('does not throw when there is no tile at robot position', () => {
-        const map: WarMap = { width: 10, height: 10, objects: [] };
+        const map: WarMap = { width: 10, height: 10, tiles: [], robots: [], projectiles: [], killCounts: {}, tick: 0 };
         expect(() => recordKill(map, makeRobot())).not.toThrow();
     });
 });

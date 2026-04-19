@@ -6,7 +6,7 @@ import { Chassis } from '../../../data/robot';
 import { buildOccupancy } from '../../../game/core/occupancy';
 
 function createMapWithTiles(tiles: Array<{ x: number; y: number; subtype: string }>): WarMap {
-    const objects: MapObject[] = tiles.map(t => ({
+    const mapTiles: MapObject[] = tiles.map(t => ({
         id: `t_${t.x}_${t.y}`,
         type: ObjectType.TILE,
         x: t.x,
@@ -16,7 +16,9 @@ function createMapWithTiles(tiles: Array<{ x: number; y: number; subtype: string
     return {
         width: 10,
         height: 10,
-        objects,
+        tiles: mapTiles,
+        robots: [],
+        projectiles: [], killCounts: {},
         tick: 0,
     };
 }
@@ -44,7 +46,7 @@ describe('applyMove', () => {
             },
         };
 
-        warMap.objects.push(robot);
+        warMap.robots.push(robot);
         const occupancy = buildOccupancy(warMap);
 
         // Attempt to move East. The new position will be x=4.25.
@@ -76,7 +78,7 @@ describe('applyMove', () => {
             },
         };
 
-        warMap.objects.push(robot);
+        warMap.robots.push(robot);
         const occupancy = buildOccupancy(warMap);
 
         robot.nav = { slowCounter: 1 }; // Bipod has speed factor 0.5 on grass, make it move immediately

@@ -25,7 +25,7 @@ function advanceGameTicks(n: number): void {
 }
 
 function makeWarMap(warbase: MapObject): WarMap {
-    return { width: 30, height: 30, objects: [warbase], projectiles: [] };
+    return { width: 30, height: 30, tiles: [warbase], robots: [], projectiles: [], killCounts: {}, tick: 0 };
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ describe('scenario: warbase robot production', () => {
         advanceGameTicks(1);
         clock.stop();
 
-        const robots = warMap.objects.filter(o => o.type === ObjectType.ROBOT);
+        const robots = warMap.robots;
         expect(robots.length).toBe(1);
         expect(robots[0].owner).toBe(Owner.RED);
     });
@@ -61,7 +61,7 @@ describe('scenario: warbase robot production', () => {
         advanceGameTicks(1);
         clock.stop();
 
-        expect(warMap.objects.filter(o => o.type === ObjectType.ROBOT).length).toBe(0);
+        expect(warMap.robots.length).toBe(0);
     });
 
     it('deducts resources after spawn', () => {
@@ -98,7 +98,7 @@ describe('scenario: warbase robot production', () => {
             goal: RobotGoal.ATTACK_ROBOTS,
             ai: RobotAI.SIMPLE,
         };
-        warMap.objects.push(blocker);
+        warMap.robots.push(blocker as any);
 
         const resources = createOwnerResources();
         resources[Owner.RED].chassis = 10;
@@ -109,6 +109,6 @@ describe('scenario: warbase robot production', () => {
         clock.stop();
 
         // Only the blocker robot — no new spawn
-        expect(warMap.objects.filter(o => o.type === ObjectType.ROBOT).length).toBe(1);
+        expect(warMap.robots.length).toBe(1);
     });
 });

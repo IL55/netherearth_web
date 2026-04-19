@@ -5,12 +5,9 @@ import type { WarMap, MapObject, RobotObject } from '../../../game/core/warmap';
 import { Chassis } from '../../../data/robot';
 
 function createMapWithObjects(objects: Array<any>): WarMap {
-    return {
-        width: 10,
-        height: 10,
-        objects,
-        tick: 0,
-    };
+    const tiles = objects.filter(o => o.type !== ObjectType.ROBOT);
+    const robots = objects.filter(o => o.type === ObjectType.ROBOT);
+    return { width: 10, height: 10, tiles, robots, projectiles: [], killCounts: {}, tick: 0 };
 }
 
 describe('shouldDetonateNuclear', () => {

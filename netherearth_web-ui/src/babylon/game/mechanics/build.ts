@@ -106,14 +106,14 @@ const NUKE_GOALS: RobotGoal[] = [
  *     structures.
  */
 export function chooseBuildGoal(warMap: WarMap, owner: Owner): RobotGoal {
-    const neutralFactories = warMap.objects.filter(o => o.type === ObjectType.FACTORY && !o.owner).length;
-    const neutralWarbases  = warMap.objects.filter(o => o.type === ObjectType.WARBASE  && !o.owner).length;
-    const enemyFactories   = warMap.objects.filter(o => o.type === ObjectType.FACTORY && !!o.owner && o.owner !== owner).length;
-    const enemyWarbases    = warMap.objects.filter(o => o.type === ObjectType.WARBASE  && !!o.owner && o.owner !== owner).length;
+    const neutralFactories = warMap.tiles.filter(o => o.type === ObjectType.FACTORY && !o.owner).length;
+    const neutralWarbases  = warMap.tiles.filter(o => o.type === ObjectType.WARBASE  && !o.owner).length;
+    const enemyFactories   = warMap.tiles.filter(o => o.type === ObjectType.FACTORY && !!o.owner && o.owner !== owner).length;
+    const enemyWarbases    = warMap.tiles.filter(o => o.type === ObjectType.WARBASE  && !!o.owner && o.owner !== owner).length;
 
-    const myRobots = warMap.objects.filter(
-        o => o.type === ObjectType.ROBOT && o.owner === owner && (o as RobotObject).dyingTicks === undefined,
-    ) as RobotObject[];
+    const myRobots = warMap.robots.filter(
+        o => o.owner === owner && o.dyingTicks === undefined,
+    );
     const fighters = myRobots.filter(r => r.goal === RobotGoal.ATTACK_ROBOTS).length;
 
     // Rule 1: always maintain at least 1 fighter per 3 other robots
@@ -174,7 +174,7 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
 
     const occupancy = buildOccupancy(warMap);
 
-    for (const obj of warMap.objects) {
+    for (const obj of warMap.tiles) {
         if (obj.type !== ObjectType.WARBASE) continue;
         if (obj.owner !== Owner.RED && obj.owner !== Owner.BLUE) continue;
 
@@ -197,7 +197,7 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
         deductCost(resources, option.cost);
 
         // Find enemy warbase to determine the general move-out direction
-        const enemyWarbase = warMap.objects.find(
+        const enemyWarbase = warMap.tiles.find(
             o => o.type === ObjectType.WARBASE && o.owner && o.owner !== obj.owner
         );
         let outFacing = Direction.E;
@@ -237,7 +237,7 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
         };
         _builtCount++;
 
-        warMap.objects.push(robot);
+        warMap.robots.push(robot);
         // Register in occupancy so a second warbase on the same tick can't spawn at the same point.
         occupancy.robots.push({ id: robot.id, x: robot.x, y: robot.y, height: calcRobotHeight(option.config) });
     }

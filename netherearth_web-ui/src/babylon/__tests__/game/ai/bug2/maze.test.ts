@@ -66,7 +66,7 @@ function makeMap(): WarMap {
 
     return {
         width: 10, height: 6,
-        objects: [...walls, factory, robot],
+        tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {},
         tick: 0,
     };
 }
@@ -74,7 +74,7 @@ function makeMap(): WarMap {
 describe('anti-maze: robot escapes U-shaped dead end and reaches factory', () => {
     it('robot reaches factory capture zone within 500 ticks', () => {
         const map = makeMap();
-        const robot = map.objects.find(o => o.id === 'robot_0')! as RobotObject;
+        const robot = map.robots.find(o => o.id === 'robot_0')!;
 
         // Factory capture zone center
         const goalX = 8, goalY = 4;
@@ -96,7 +96,7 @@ describe('anti-maze: robot escapes U-shaped dead end and reaches factory', () =>
 
     it('stuckTicks rises to ≥3 when robot enters the dead end', () => {
         const map = makeMap();
-        const robot = map.objects.find(o => o.id === 'robot_0')! as RobotObject;
+        const robot = map.robots.find(o => o.id === 'robot_0')!;
 
         let maxStuck = 0;
         for (let tick = 0; tick < 60; tick++) {

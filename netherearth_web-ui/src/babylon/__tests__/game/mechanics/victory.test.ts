@@ -5,8 +5,9 @@ import { Owner } from '../../../game/types/owner';
 import { Chassis } from '../../../data/robot';
 import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
 
-function makeMap(...objects: WarObject[]): WarMap {
-    return { width: 10, height: 10, objects, projectiles: [] };
+
+function makeMap(...objects: any[]): WarMap {
+    return { width: 10, height: 10, tiles: objects.filter((o: any) => o.type !== ObjectType.ROBOT), robots: objects.filter((o: any) => o.type === ObjectType.ROBOT), projectiles: [], killCounts: {}, tick: 0 } as any;
 }
 
 function warbase(id: string, owner: Owner | undefined): WarObject {

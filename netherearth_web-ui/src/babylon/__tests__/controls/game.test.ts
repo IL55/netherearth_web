@@ -11,11 +11,13 @@ function makeEnv() {
     const warMap: WarMap = {
         width: 1,
         height: 1,
-        objects: [
-            { id: 'tile_0_0',  type: ObjectType.TILE,     x: 0, y: 0 },
-            { id: 'factory_0', type: ObjectType.FACTORY,  x: 1, y: 0, subtype: 'cannons' },
-            { id: 'warbase_0', type: ObjectType.WARBASE,  x: 2, y: 0 },
+        tiles: [
+            { id: 'tile_0_0',  type: ObjectType.TILE,     x: 0, y: 0 } as any,
+            { id: 'factory_0', type: ObjectType.FACTORY,  x: 1, y: 0, subtype: 'cannons' } as any,
+            { id: 'warbase_0', type: ObjectType.WARBASE,  x: 2, y: 0 } as any,
         ],
+        robots: [],
+        projectiles: [], killCounts: {}, tick: 0
     };
     return { engine, scene, warMap };
 }
@@ -45,8 +47,8 @@ describe('attachGameControls - t key cycles owner', () => {
 
     it('first press sets owner to 1 on all factories and warbases', () => {
         pressKey(scene, 't');
-        const factory = warMap.objects.find(o => o.id === 'factory_0')!;
-        const warbase = warMap.objects.find(o => o.id === 'warbase_0')!;
+        const factory = warMap.tiles.find(o => o.id === 'factory_0')!;
+        const warbase = warMap.tiles.find(o => o.id === 'warbase_0')!;
         expect(factory.owner).toBe(Owner.RED);
         expect(warbase.owner).toBe(Owner.RED);
     });
@@ -54,8 +56,8 @@ describe('attachGameControls - t key cycles owner', () => {
     it('second press sets owner to 2', () => {
         pressKey(scene, 't');
         pressKey(scene, 't');
-        const factory = warMap.objects.find(o => o.id === 'factory_0')!;
-        const warbase = warMap.objects.find(o => o.id === 'warbase_0')!;
+        const factory = warMap.tiles.find(o => o.id === 'factory_0')!;
+        const warbase = warMap.tiles.find(o => o.id === 'warbase_0')!;
         expect(factory.owner).toBe(Owner.BLUE);
         expect(warbase.owner).toBe(Owner.BLUE);
     });
@@ -64,8 +66,8 @@ describe('attachGameControls - t key cycles owner', () => {
         pressKey(scene, 't');
         pressKey(scene, 't');
         pressKey(scene, 't');
-        const factory = warMap.objects.find(o => o.id === 'factory_0')!;
-        const warbase = warMap.objects.find(o => o.id === 'warbase_0')!;
+        const factory = warMap.tiles.find(o => o.id === 'factory_0')!;
+        const warbase = warMap.tiles.find(o => o.id === 'warbase_0')!;
         expect(factory.owner).toBe(Owner.NEUTRAL);
         expect(warbase.owner).toBe(Owner.NEUTRAL);
     });
@@ -78,7 +80,7 @@ describe('attachGameControls - t key cycles owner', () => {
 
     it('does not affect tiles', () => {
         pressKey(scene, 't');
-        const tile = warMap.objects.find(o => o.id === 'tile_0_0')!;
+        const tile = warMap.tiles.find(o => o.id === 'tile_0_0')!;
         expect(tile.owner).toBeUndefined();
     });
 

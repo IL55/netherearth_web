@@ -45,7 +45,7 @@ describe('scenario: neutral factory capture', () => {
         // Place robot exactly in the capture slot
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.RED, RobotGoal.CAPTURE_NEUTRAL_FACTORY);
 
-        const warMap: WarMap = { width: 30, height: 30, objects: [factory, robot], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         // One full day of consecutive ticks
@@ -60,7 +60,7 @@ describe('scenario: neutral factory capture', () => {
         const zone = CAPTURE_ZONES['factory']!;
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.RED, RobotGoal.CAPTURE_NEUTRAL_FACTORY);
 
-        const warMap: WarMap = { width: 30, height: 30, objects: [factory, robot], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         // Half a day in capture zone
@@ -82,7 +82,7 @@ describe('scenario: neutral factory capture', () => {
         const zone = CAPTURE_ZONES['factory']!;
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.BLUE, RobotGoal.CAPTURE_FACTORY);
 
-        const warMap: WarMap = { width: 30, height: 30, objects: [factory, robot], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         advanceGameTicks(DAY_TICKS * 2);
@@ -111,7 +111,7 @@ describe('scenario: warbase capture with navigation', () => {
         const robot = makeRobot('r1', startX, startY, Owner.BLUE, RobotGoal.CAPTURE_WARBASE);
         robot.facing = Direction.W; // Face towards the capture spot
 
-        const warMap: WarMap = { width: 30, height: 30, objects: [warbase, robot], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [warbase], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         // Before advancing, check robot's starting position.
@@ -150,7 +150,7 @@ describe('scenario: enemy factory capture', () => {
         const zone = CAPTURE_ZONES['factory']!;
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.RED, RobotGoal.CAPTURE_FACTORY);
 
-        const warMap: WarMap = { width: 30, height: 30, objects: [factory, robot], projectiles: [] };
+        const warMap: WarMap = { width: 30, height: 30, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
         const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         advanceGameTicks(DAY_TICKS);

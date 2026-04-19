@@ -40,7 +40,7 @@ function warbase(x: number, y: number, owner: Owner): WarObject {
 }
 
 function makeSmall1Map(): WarMap {
-    const objects: WarObject[] = [
+    const tiles: any[] = [
         // Top and bottom border fences
         ...[0,1,2,3,4,5,6,7].map(x => fence(x, 0)),
         ...[0,1,2,3,4,5,6,7].map(x => fence(x, 63)),
@@ -58,12 +58,13 @@ function makeSmall1Map(): WarMap {
         warbase(0,   57, Owner.BLUE),
     ];
 
+    const robots: any[] = [];
     // Robots exactly as in main.ts: x=0..7, y=14, alternating owner, goals cycling
     const goals = [RobotGoal.ATTACK_ROBOTS, RobotGoal.CAPTURE_FACTORY, RobotGoal.CAPTURE_WARBASE, RobotGoal.DEFEND];
     const chassis = [Chassis.ANTIGRAV, Chassis.TRACKS, Chassis.BIPOD, Chassis.TRACKS,
                      Chassis.ANTIGRAV, Chassis.TRACKS, Chassis.BIPOD, Chassis.TRACKS];
     for (let x = 0; x < MAP_W; x++) {
-        objects.push({
+        robots.push({
             id: `robot_${x}`,
             type: ObjectType.ROBOT,
             x,
@@ -74,17 +75,17 @@ function makeSmall1Map(): WarMap {
             robotConfig: { chassis: chassis[x], electronics: Electronics.STANDARD },
             health: 100,
             ai: RobotAI.SIMPLE,
-        } as WarObject);
+        });
     }
 
-    return { width: MAP_W, height: MAP_H, objects, tick: 0 };
+    return { width: MAP_W, height: MAP_H, tiles, robots, projectiles: [], killCounts: {}, tick: 0 };
 }
 
 describe('small1.map full setup', () => {
 
     it('no robot ever exits map bounds over 500 ticks', () => {
         const map = makeSmall1Map();
-        const robots = map.objects.filter(isRobot);
+        const robots = map.robots;
 
         for (let tick = 0; tick < 500; tick++) {
             map.tick = tick;
@@ -104,9 +105,19 @@ describe('small1.map full setup', () => {
     it('antigrav robot with capture_factory goal reaches a factory capture zone within 400 ticks', () => {
         // Isolated robot — no other robots blocking, only factories and fences.
         // This replicates the antigrav robot cycling near factories seen in the screenshot.
+        const robot: RobotObject = {
+            id: 'r0', type: ObjectType.ROBOT,
+            x: 0.5, y: 14,
+            owner: Owner.RED,
+            facing: Direction.S,
+            goal: RobotGoal.CAPTURE_FACTORY,
+            robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
+            health: 100,
+            ai: RobotAI.SIMPLE,
+        };
         const map: WarMap = {
             width: MAP_W, height: MAP_H,
-            objects: [
+            tiles: [
                 ...[0,1,2,3,4,5,6,7].map(x => fence(x, 0)),
                 ...[0,1,2,3,4,5,6,7].map(x => fence(x, 63)),
                 factory(0, 10, 'electronics', Owner.BLUE),
@@ -115,23 +126,13 @@ describe('small1.map full setup', () => {
                 factory(4, 15, 'cannons',     Owner.BLUE),
                 factory(0, 20, 'phasers',     Owner.BLUE),
                 factory(4, 20, 'nuclear',     Owner.BLUE),
-                {
-                    id: 'r0', type: ObjectType.ROBOT,
-                    x: 0.5, y: 14,
-                    owner: Owner.RED,
-                    facing: Direction.S,
-                    goal: RobotGoal.CAPTURE_FACTORY,
-                    robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
-                    health: 100,
-                    ai: RobotAI.SIMPLE,
-                } as RobotObject,
-            ],
+            ] as any,
+            robots: [robot], projectiles: [], killCounts: {},
             tick: 0,
         };
 
-        const robot = map.objects.find(o => o.id === 'r0')! as RobotObject;
         const zone  = CAPTURE_ZONES['factory']!;
-        const factories = map.objects.filter(o => o.type === ObjectType.FACTORY);
+        const factories = map.tiles.filter(o => o.type === ObjectType.FACTORY);
 
         const trace: string[] = [];
         let reached = false;

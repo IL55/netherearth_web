@@ -68,7 +68,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   createCompassText("WEST", 1.5, mapData.height / 2);
   createCompassText("EAST", mapData.width - 2.5, mapData.height / 2);
 
-  warMap.objects.filter(o => o.type === ObjectType.FACTORY).forEach(o => { o.owner = Owner.BLUE; });
+  warMap.tiles.filter(o => o.type === ObjectType.FACTORY).forEach(o => { o.owner = Owner.BLUE; });
 
   const goals: RobotGoal[] = [RobotGoal.ATTACK_ROBOTS, RobotGoal.CAPTURE_FACTORY, RobotGoal.CAPTURE_WARBASE, RobotGoal.DEFEND];
   const configValues = Object.values(robotConfigs);
@@ -81,7 +81,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   for (let x = 0; x < mapData.width; x++) {
     const isShipRobot = x === 0;
     const robotConfig = isShipRobot ? fullEquipConfig : configValues[x % configValues.length];
-    warMap.objects.push({
+    warMap.robots.push({
       id: `init_robot_${x}`,
       type: ObjectType.ROBOT,
       x,
@@ -101,8 +101,8 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   renderer.render(warMap);
 
   // Place ship directly on the first RED robot so the control panel opens immediately.
-  const firstRedRobot = warMap.objects.find(o => o.type === ObjectType.ROBOT && o.owner === Owner.RED);
-  const redWarbase = warMap.objects.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
+  const firstRedRobot = warMap.robots.find(o => o.owner === Owner.RED);
+  const redWarbase = warMap.tiles.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
   const shipStartX = firstRedRobot ? firstRedRobot.x : (redWarbase ? redWarbase.x + 1.5 : mapData.width / 2);
   const shipStartY = firstRedRobot ? firstRedRobot.y : (redWarbase ? redWarbase.y + 2   : mapData.height / 2);
   const ship = { x: shipStartX, y: shipStartY, height: 1.5 };
@@ -137,7 +137,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const gameOverScreen = new GameOverScreen(() => {});
 
   bus.on('tick:sub', ({ warMap }) => {
-      const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y, height: r.robotConfig ? calcRobotHeight(r.robotConfig) : undefined }));
+      const robotsPositions = warMap.robots.map(r => ({ x: r.x, y: r.y, height: calcRobotHeight(r.robotConfig) }));
       const occ = buildOccupancy(warMap, ship);
       if (!robotControlTrigger.isOpen()) {
           tickShip(ship, shipInput, mapData.width, mapData.height, occ.structures, robotsPositions);

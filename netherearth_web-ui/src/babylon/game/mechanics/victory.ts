@@ -3,8 +3,8 @@ import { Owner } from '../types/owner';
 import type { WarMap } from '../core/warmap';
 
 function hasRobots(warMap: WarMap, owner: Owner): boolean {
-    return warMap.objects.some(
-        o => o.type === ObjectType.ROBOT && o.owner === owner && o.dyingTicks === undefined,
+    return warMap.robots.some(
+        o => o.owner === owner && o.dyingTicks === undefined,
     );
 }
 
@@ -18,7 +18,7 @@ function hasRobots(warMap: WarMap, owner: Owner): boolean {
  *     that could capture it.
  */
 export function checkVictory(warMap: WarMap): Owner | null {
-    const warbases = warMap.objects.filter(o => o.type === ObjectType.WARBASE);
+    const warbases = warMap.tiles.filter(o => o.type === ObjectType.WARBASE);
     if (warbases.length === 0) return null;
 
     // Condition 1: complete map control

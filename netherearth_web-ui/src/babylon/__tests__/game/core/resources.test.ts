@@ -4,15 +4,16 @@ import { DAY_TICKS, createOwnerResources, tickResources } from '../../../game/re
 import { Owner } from '../../../game/types/owner';
 import type { WarMap } from '../../../game/core/warmap';
 
-function makeMap(objects: WarMap['objects']): WarMap {
-    return { width: 10, height: 10, objects, tick: 0 };
+
+function makeMap(objects: any[]): WarMap {
+    return { width: 10, height: 10, tiles: objects.filter((o: any) => o.type !== ObjectType.ROBOT), robots: objects.filter((o: any) => o.type === ObjectType.ROBOT), projectiles: [], killCounts: {}, tick: 0 } as any;
 }
 
-function warbase(owner: Owner, id = 'wb'): WarMap['objects'][0] {
+function warbase(owner: Owner, id = 'wb'): any {
     return { id, type: ObjectType.WARBASE, x: 0, y: 0, owner };
 }
 
-function factory(subtype: string, owner: Owner, id = 'f'): WarMap['objects'][0] {
+function factory(subtype: string, owner: Owner, id = 'f'): any {
     return { id, type: ObjectType.FACTORY, x: 0, y: 0, subtype, owner };
 }
 

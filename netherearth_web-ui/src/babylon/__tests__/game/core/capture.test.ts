@@ -7,8 +7,9 @@ import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
 import { Direction, RobotGoal, RobotAI } from '../../../game/core/warmap';
 import { Chassis } from '../../../data/robot';
 
-function makeMap(objects: WarObject[]): WarMap {
-    return { width: 20, height: 20, objects };
+import { createWarMap } from '../../../game/core/utils';
+function makeMap(objects: any[]): WarMap {
+    return createWarMap({ objects, width: 20, height: 20 });
 }
 
 // Factory at (5,7): zone center = (6, 8), radius=0.5
@@ -78,7 +79,7 @@ describe('tickCapture — factory (1 day)', () => {
         const robot = makeRobot('r', 6, 8, Owner.RED);
         const map = makeMap([factory, robot]);
         tickCapture(map);
-        expect(factory.captureCounter).toBe(1);
+        expect(map.tiles[0].captureCounter).toBe(1);
     });
 
     it('does not increment when no robot is in zone', () => {
@@ -86,7 +87,7 @@ describe('tickCapture — factory (1 day)', () => {
         const robot = makeRobot('r', 0, 0, Owner.RED); // far away
         const map = makeMap([factory, robot]);
         tickCapture(map);
-        expect(factory.captureCounter ?? 0).toBe(0);
+        expect(map.tiles[0].captureCounter ?? 0).toBe(0);
     });
 
     it('does not increment for a friendly robot (same owner as factory)', () => {
@@ -94,7 +95,7 @@ describe('tickCapture — factory (1 day)', () => {
         const robot = makeRobot('r', 6, 8, Owner.RED); // same owner
         const map = makeMap([factory, robot]);
         tickCapture(map);
-        expect(factory.captureCounter ?? 0).toBe(0);
+        expect(map.tiles[0].captureCounter ?? 0).toBe(0);
     });
 
     it('captures factory after DAY_TICKS consecutive ticks', () => {
@@ -102,8 +103,8 @@ describe('tickCapture — factory (1 day)', () => {
         const robot = makeRobot('r', 6, 8, Owner.RED);
         const map = makeMap([factory, robot]);
         for (let i = 0; i < DAY_TICKS; i++) tickCapture(map);
-        expect(factory.owner).toBe(Owner.RED);
-        expect(factory.captureCounter).toBe(0);
+        expect(map.tiles[0].owner).toBe(Owner.RED);
+        expect(map.tiles[0].captureCounter).toBe(0);
     });
 
     it('resets counter if robot leaves zone before capture', () => {
@@ -112,10 +113,10 @@ describe('tickCapture — factory (1 day)', () => {
         const map = makeMap([factory, robot]);
         tickCapture(map); // counter = 1
         tickCapture(map); // counter = 2
-        robot.x = 0; robot.y = 0; // leave zone
+        map.robots[0].x = 0; map.robots[0].y = 0; // leave zone
         tickCapture(map); // counter resets to 0
-        expect(factory.captureCounter).toBe(0);
-        expect(factory.owner).toBe(Owner.NEUTRAL);
+        expect(map.tiles[0].captureCounter).toBe(0);
+        expect(map.tiles[0].owner).toBe(Owner.NEUTRAL);
     });
 
     it('does not capture after only DAY_TICKS-1 ticks', () => {
@@ -123,8 +124,8 @@ describe('tickCapture — factory (1 day)', () => {
         const robot = makeRobot('r', 6, 8, Owner.RED);
         const map = makeMap([factory, robot]);
         for (let i = 0; i < DAY_TICKS - 1; i++) tickCapture(map);
-        expect(factory.owner).toBe(Owner.NEUTRAL);
-        expect(factory.captureCounter).toBe(DAY_TICKS - 1);
+        expect(map.tiles[0].owner).toBe(Owner.NEUTRAL);
+        expect(map.tiles[0].captureCounter).toBe(DAY_TICKS - 1);
     });
 
     it('allows re-capture: owner changes from BLUE to RED after full hold', () => {
@@ -132,7 +133,7 @@ describe('tickCapture — factory (1 day)', () => {
         const robot = makeRobot('r', 6, 8, Owner.RED);
         const map = makeMap([factory, robot]);
         for (let i = 0; i < DAY_TICKS; i++) tickCapture(map);
-        expect(factory.owner).toBe(Owner.RED);
+        expect(map.tiles[0].owner).toBe(Owner.RED);
     });
 });
 
@@ -142,8 +143,8 @@ describe('tickCapture — warbase (3 days)', () => {
         const robot = makeRobot('r', 5.5, 7, Owner.RED);
         const map = makeMap([wb, robot]);
         for (let i = 0; i < 3 * DAY_TICKS - 1; i++) tickCapture(map);
-        expect(wb.owner).toBe(Owner.NEUTRAL);
-        expect(wb.captureCounter).toBe(3 * DAY_TICKS - 1);
+        expect(map.tiles[0].owner).toBe(Owner.NEUTRAL);
+        expect(map.tiles[0].captureCounter).toBe(3 * DAY_TICKS - 1);
     });
 
     it('captures warbase after 3*DAY_TICKS consecutive ticks', () => {
@@ -151,7 +152,7 @@ describe('tickCapture — warbase (3 days)', () => {
         const robot = makeRobot('r', 5.5, 7, Owner.RED);
         const map = makeMap([wb, robot]);
         for (let i = 0; i < 3 * DAY_TICKS; i++) tickCapture(map);
-        expect(wb.owner).toBe(Owner.RED);
-        expect(wb.captureCounter).toBe(0);
+        expect(map.tiles[0].owner).toBe(Owner.RED);
+        expect(map.tiles[0].captureCounter).toBe(0);
     });
 });
