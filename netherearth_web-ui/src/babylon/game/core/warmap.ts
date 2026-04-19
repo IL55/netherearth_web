@@ -46,11 +46,11 @@ export { Owner };
 export interface RobotObject extends ObjectBase {
     type: ObjectType.ROBOT;
     owner: Owner;
-    facing?: Direction;
-    robotConfig?: RobotConfig;
-    goal?: RobotGoal;
-    ai?: RobotAI;
-    health?: number;
+    facing: Direction;
+    robotConfig: RobotConfig;
+    goal: RobotGoal;
+    ai: RobotAI;
+    health: number;
     weaponReadyAt?: number;
     lastMovedAt?: number;
     lastRotatedAt?: number;

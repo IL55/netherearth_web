@@ -29,7 +29,7 @@ export function bug2Dirs(
     ty: number,
     distToGoal: number,
 ): Direction[] {
-    const facing = robot.facing ?? Direction.N;
+    const facing = robot.facing;
     const [primaryDir] = preferredDirs(robot, tx, ty);
     const { dx: pdx, dy: pdy } = dirDelta(primaryDir);
 

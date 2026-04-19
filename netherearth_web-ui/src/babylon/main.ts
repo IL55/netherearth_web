@@ -24,7 +24,7 @@ import { buildOccupancy } from './game/core/occupancy';
 import { ConstructionYardTrigger } from './view/construction-yard';
 import { RobotControlTrigger } from './view/robot-control';
 import { GameOverScreen } from './view/game-over';
-import { checkVictory } from './game/mechanics/victory';
+import { bus } from './game/event-bus';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<{ scene: BABYLON.Scene, dispose: () => void }> => {
   const scene = new BABYLON.Scene(engine);
@@ -136,35 +136,36 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const gameOverScreen = new GameOverScreen(() => {});
 
-  const clock = startClock(warMap, () => {
-    const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y, height: r.robotConfig ? calcRobotHeight(r.robotConfig) : undefined }));
-    // We fetch the current complete structures from occupancy to be precise about collisions (walls, factories, warbases)
-    const occ = buildOccupancy(warMap, ship);
-    if (!robotControlTrigger.isOpen()) {
-      tickShip(ship, shipInput, mapData.width, mapData.height, occ.structures, robotsPositions);
-    }
-
-    // ── Construction yard ────────────────────────────────────────────────────
-    constructionYardTrigger.check(warMap, ship);
-
-    // ── Robot control ────────────────────────────────────────────────────────
-    robotControlTrigger.check(warMap, ship, constructionYardTrigger.isOpen());
-
-    // ── Victory check ────────────────────────────────────────────────────────
-    if (!gameOverScreen.isVisible()) {
-      const winner = checkVictory(warMap);
-      if (winner !== null) {
-        clock.stop();
-        gameOverScreen.show(winner);
+  bus.on('tick:sub', ({ warMap }) => {
+      const robotsPositions = warMap.objects.filter(o => o.type === ObjectType.ROBOT).map(r => ({ x: r.x, y: r.y, height: r.robotConfig ? calcRobotHeight(r.robotConfig) : undefined }));
+      const occ = buildOccupancy(warMap, ship);
+      if (!robotControlTrigger.isOpen()) {
+          tickShip(ship, shipInput, mapData.width, mapData.height, occ.structures, robotsPositions);
       }
-    }
 
-    renderer.render(warMap);
-    projectileRenderer.render(warMap);
-    shipRenderer.render(ship, warMap);
-    hud.update(warMap);
-  }, ownerResources, ship, 100, () => constructionYardTrigger.isOpen(), () => robotControlTrigger.getTriggeredRobotId(),
-    () => robotControlTrigger.takePendingAction());
+      constructionYardTrigger.check(warMap, ship);
+      robotControlTrigger.check(warMap, ship, constructionYardTrigger.isOpen());
+
+      renderer.render(warMap);
+      projectileRenderer.render(warMap);
+      shipRenderer.render(ship, warMap);
+      hud.update(warMap);
+  });
+
+  bus.on('game:over', ({ winner }) => {
+      clock.stop();
+      gameOverScreen.show(winner);
+  });
+
+  const clock = startClock(
+      warMap,
+      ownerResources,
+      ship,
+      100,
+      () => constructionYardTrigger.isOpen(),
+      () => robotControlTrigger.getTriggeredRobotId(),
+      () => robotControlTrigger.takePendingAction(),
+  );
 
   return {
     scene,
@@ -178,6 +179,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       removeGameControls();
       removeShipControls();
       camera.detachControl();
+      bus.clear();
     }
   };
 };

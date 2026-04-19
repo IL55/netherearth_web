@@ -12,7 +12,7 @@ import type { WarMap, RobotObject } from '../core/warmap';
  * - MUST kill at least one enemy robot, or an enemy/neutral factory, or enemy/neutral warbase in the 3x3 kill zone.
  */
 export function shouldDetonateNuclear(robot: RobotObject, warMap: WarMap, isStuck: boolean = false): boolean {
-    if (!robot.robotConfig?.nuclear) return false;
+    if (!robot.robotConfig.nuclear) return false;
 
     // Check if we hit the random chance OR we're stuck
     // If not stuck, we only have a small random chance to consider blowing up.

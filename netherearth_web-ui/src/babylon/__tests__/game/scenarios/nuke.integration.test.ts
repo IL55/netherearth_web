@@ -42,7 +42,7 @@ describe('NUKE_FACTORY goal', () => {
         const warMap: WarMap = { width: 20, height: 20, objects: [factory, robot], projectiles: [] };
 
         const startX = robot.x;
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
         advanceGameTicks(10);
         clock.stop();
 
@@ -56,7 +56,7 @@ describe('NUKE_FACTORY goal', () => {
         const warMap: WarMap = { width: 20, height: 20, objects: [friendlyFactory, robot], projectiles: [] };
 
         const startX = robot.x;
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
         advanceGameTicks(10);
         clock.stop();
 
@@ -75,7 +75,7 @@ describe('NUKE_WARBASE goal', () => {
         const warMap: WarMap = { width: 20, height: 20, objects: [warbase, robot], projectiles: [] };
 
         const startX = robot.x;
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
         advanceGameTicks(10);
         clock.stop();
 
@@ -88,7 +88,7 @@ describe('NUKE_WARBASE goal', () => {
         const warMap: WarMap = { width: 20, height: 20, objects: [friendlyWarbase, robot], projectiles: [] };
 
         const startX = robot.x;
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
         advanceGameTicks(10);
         clock.stop();
 
@@ -117,7 +117,7 @@ describe('tickBuild — nuclear robot gets nuke goal', () => {
         tickBuild(warMap, res);
 
         const robot = warMap.objects.find(o => o.type === ObjectType.ROBOT) as RobotObject;
-        expect(robot.robotConfig?.nuclear).toBe(true);
+        expect(robot.robotConfig.nuclear).toBe(true);
         expect([RobotGoal.NUKE_FACTORY, RobotGoal.NUKE_WARBASE]).toContain(robot.goal);
     });
 

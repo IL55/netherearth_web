@@ -11,7 +11,7 @@ import type { WarMap, RobotObject, WarObject } from '../core/warmap';
  * - 5x5 Damage Zone: Any robot located within the 5x5 area (but outside the 3x3 kill zone) receives 50% damage.
  */
 export function applyNuclear(robot: RobotObject, warMap: WarMap): boolean {
-    if (!robot.robotConfig?.nuclear) return false;
+    if (!robot.robotConfig.nuclear) return false;
 
     const rx = Math.round(robot.x);
     const ry = Math.round(robot.y);

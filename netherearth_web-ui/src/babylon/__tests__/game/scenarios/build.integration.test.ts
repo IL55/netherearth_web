@@ -11,6 +11,7 @@ import type { WarMap, MapObject } from '../../../game/core/warmap';
 import { startClock } from '../../../game/clock';
 import { createOwnerResources } from '../../../game/resources';
 import { SUB_TICKS } from '../../../game/mechanics/projectile';
+import { RobotGoal, RobotAI, Direction } from '../../../game/core/warmap';
 import { _resetBuildState, CHASSIS_BUILD_COST, WEAPON_BUILD_COST } from '../../../game/mechanics/build';
 import { CAPTURE_ZONES } from '../../../game/mechanics/capture';
 import { Chassis, Weapon } from '../../../data/robot';
@@ -42,7 +43,7 @@ describe('scenario: warbase robot production', () => {
         resources[Owner.RED].chassis  = CHASSIS_BUILD_COST[Chassis.TRACKS].chassis!;
         resources[Owner.RED].cannons  = WEAPON_BUILD_COST[Weapon.CANNON].cannons!;
 
-        const clock = startClock(warMap, () => {}, resources, undefined, TICK_MS);
+        const clock = startClock(warMap, resources, undefined, TICK_MS);
         advanceGameTicks(1);
         clock.stop();
 
@@ -56,7 +57,7 @@ describe('scenario: warbase robot production', () => {
         const warMap = makeWarMap(warbase);
 
         // Empty resources — cannot afford anything
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
         advanceGameTicks(1);
         clock.stop();
 
@@ -71,7 +72,7 @@ describe('scenario: warbase robot production', () => {
         resources[Owner.RED].chassis = CHASSIS_BUILD_COST[Chassis.TRACKS].chassis!;
         resources[Owner.RED].cannons = WEAPON_BUILD_COST[Weapon.CANNON].cannons!;
 
-        const clock = startClock(warMap, () => {}, resources, undefined, TICK_MS);
+        const clock = startClock(warMap, resources, undefined, TICK_MS);
         advanceGameTicks(1);
         clock.stop();
 
@@ -91,6 +92,11 @@ describe('scenario: warbase robot production', () => {
             x: warbase.x + zone.dx,
             y: warbase.y + zone.dy,
             owner: Owner.RED,
+            facing: Direction.N,
+            health: 100,
+            robotConfig: { chassis: Chassis.TRACKS },
+            goal: RobotGoal.ATTACK_ROBOTS,
+            ai: RobotAI.SIMPLE,
         };
         warMap.objects.push(blocker);
 
@@ -98,7 +104,7 @@ describe('scenario: warbase robot production', () => {
         resources[Owner.RED].chassis = 10;
         resources[Owner.RED].cannons = 10;
 
-        const clock = startClock(warMap, () => {}, resources, undefined, TICK_MS);
+        const clock = startClock(warMap, resources, undefined, TICK_MS);
         advanceGameTicks(1);
         clock.stop();
 

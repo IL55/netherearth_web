@@ -20,11 +20,15 @@ function makeShip(height = 0): { height: number } {
     return { height };
 }
 
+import { RobotGoal, RobotAI } from '../../../game/core/warmap';
 function makeRobot(config: RobotObject['robotConfig']): RobotObject {
     return {
         id: 'r1', type: ObjectType.ROBOT, x: 0, y: 0,
         owner: Owner.RED, facing: Direction.E,
         robotConfig: config,
+        goal: RobotGoal.ATTACK_ROBOTS,
+        ai: RobotAI.SIMPLE,
+        health: 100,
     };
 }
 
@@ -56,14 +60,6 @@ describe('setHoverHeight', () => {
         expect(ship.height).toBe(calcRobotHeight(config) + HOVER_GAP);
     });
 
-    it('falls back to 1.0 + HOVER_GAP when robot has no config', () => {
-        const robot = makeRobot(undefined);
-        const ship = makeShip(0);
-
-        setHoverHeight(ship, robot);
-
-        expect(ship.height).toBe(1.0 + HOVER_GAP);
-    });
 
     it('overwrites any previous ship height', () => {
         const config = { chassis: Chassis.TRACKS };

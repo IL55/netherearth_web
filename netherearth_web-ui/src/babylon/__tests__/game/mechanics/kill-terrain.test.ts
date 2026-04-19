@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { recordKill } from '../../../game/mechanics/kill-terrain';
-import { ObjectType } from '../../../game/core/warmap';
+import { ObjectType, Direction, RobotGoal, RobotAI } from '../../../game/core/warmap';
 import { Owner } from '../../../game/types/owner';
 import type { WarMap, RobotObject, MapObject } from '../../../game/core/warmap';
+import { Chassis } from '../../../data/robot';
 
 function makeMap(tileSubtype = 'G'): WarMap {
     return {
@@ -13,8 +14,17 @@ function makeMap(tileSubtype = 'G'): WarMap {
     };
 }
 
+const DEFAULT_ROBOT_CONFIG = { chassis: Chassis.TRACKS };
+
 function makeRobot(x = 5, y = 5): RobotObject {
-    return { id: 'r1', type: ObjectType.ROBOT, x, y, owner: Owner.RED };
+    return {
+        id: 'r1', type: ObjectType.ROBOT, x, y, owner: Owner.RED,
+        facing: Direction.N,
+        health: 100,
+        robotConfig: DEFAULT_ROBOT_CONFIG,
+        goal: RobotGoal.ATTACK_ROBOTS,
+        ai: RobotAI.SIMPLE,
+    };
 }
 
 describe('recordKill — kill counting', () => {

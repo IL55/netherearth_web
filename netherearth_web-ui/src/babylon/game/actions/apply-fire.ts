@@ -26,7 +26,7 @@ function findRaycastHit(
     occupancy: OccupancyMap, 
     maxRange: number
 ): { dist: number, hitRobot?: RobotObject } {
-    const fv = FACING_VECTOR[robot.facing ?? Direction.E];
+    const fv = FACING_VECTOR[robot.facing];
     const sx = robot.x;
     const sy = robot.y;
     
@@ -123,7 +123,7 @@ export function applyFire(
     }
 
     // Always spawn a projectile going exactly straight, ending at `dist`
-    const fv = FACING_VECTOR[robot.facing ?? Direction.E];
+    const fv = FACING_VECTOR[robot.facing];
     const dummyTarget = {
         ...robot, // to satisfy RobotObject type
         x: robot.x + fv.dx * dist,

@@ -38,7 +38,7 @@ describe('startClock — controlled robot skips AI', () => {
     it('uncontrolled robot moves toward its goal', () => {
         const robot = makeRobotWithGoal('r1', 5, 5);
         const warMap = makeWarMap(robot);
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, 100, () => false, () => null);
+        const clock = startClock(warMap, createOwnerResources(), undefined, 100, () => false, () => null);
 
         const startX = robot.x;
         // 10 game ticks (each = 5 sub-ticks × 100 ms); factory is east at x=15
@@ -52,7 +52,7 @@ describe('startClock — controlled robot skips AI', () => {
         const robot = makeRobotWithGoal('r1', 5, 5);
         const warMap = makeWarMap(robot);
         const clock = startClock(
-            warMap, () => {}, createOwnerResources(), undefined, 100,
+            warMap, createOwnerResources(), undefined, 100,
             () => false,
             () => 'r1',   // always report r1 as controlled
         );
@@ -71,7 +71,7 @@ describe('startClock — controlled robot skips AI', () => {
         const warMap = makeWarMap(robot);
         let controlled = true;
         const clock = startClock(
-            warMap, () => {}, createOwnerResources(), undefined, 100,
+            warMap, createOwnerResources(), undefined, 100,
             () => false,
             () => controlled ? 'r1' : null,
         );

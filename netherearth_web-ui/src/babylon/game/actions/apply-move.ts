@@ -50,10 +50,10 @@ export function applyMove(
     occupancy: OccupancyMap,
     tick: number,
 ): boolean {
-    if ((robot.facing ?? Direction.N) !== direction) return false;
+    if (robot.facing !== direction) return false;
     if (tick - (robot.lastMovedAt ?? tick - MOVE_COOLDOWN) < MOVE_COOLDOWN) return false;
 
-    const chassis = robot.robotConfig?.chassis ?? Chassis.TRACKS;
+    const chassis = robot.robotConfig.chassis;
     const { dx, dy } = DIR_DELTA[direction];
     const tx = robot.x + dx;
     const ty = robot.y + dy;

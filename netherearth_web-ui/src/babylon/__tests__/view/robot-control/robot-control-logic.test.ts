@@ -13,6 +13,7 @@ import {
 } from '../../../view/robot-control/robot-control-logic';
 import { ORDERABLE_GOALS, HOVER_DISTANCE } from '../../../view/robot-control/constants';
 import { Chassis, Weapon, Electronics, calcHealth, calcRobotHeight } from '../../../data/robot';
+import { Direction, RobotAI } from '../../../game/core/warmap';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -23,7 +24,13 @@ function makeShip(x: number, y: number, height = 1.5): ShipState {
 const DEFAULT_CONFIG = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON], electronics: Electronics.STANDARD };
 
 function makeRobot(id: string, x: number, y: number, owner = Owner.RED, goal = RobotGoal.ATTACK_ROBOTS): RobotObject {
-    return { id, type: ObjectType.ROBOT, x, y, owner, goal, robotConfig: DEFAULT_CONFIG };
+    return {
+        id, type: ObjectType.ROBOT, x, y, owner, goal,
+        robotConfig: DEFAULT_CONFIG,
+        facing: Direction.N,
+        health: 100,
+        ai: RobotAI.SIMPLE,
+    };
 }
 
 function makeWarMap(...robots: RobotObject[]): WarMap {
@@ -125,7 +132,7 @@ describe('cycleRobotGoal', () => {
         const seen = new Set<RobotGoal>();
         for (let i = 0; i < ORDERABLE_GOALS.length; i++) {
             cycleRobotGoal(robot);
-            seen.add(robot.goal!);
+            seen.add(robot.goal);
         }
         expect(seen.size).toBe(ORDERABLE_GOALS.length);
     });
@@ -246,12 +253,6 @@ describe('isRobotAlive', () => {
 // ─── getRobotHealthPercent ────────────────────────────────────────────────────
 
 describe('getRobotHealthPercent', () => {
-    it('returns 0 when robotConfig is missing', () => {
-        const robot: RobotObject = { ...makeRobot('r1', 0, 0) };
-        delete (robot as any).robotConfig;
-        expect(getRobotHealthPercent(robot)).toBe(0);
-    });
-
     it('returns 100 at full health', () => {
         const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
         const robot: RobotObject = {

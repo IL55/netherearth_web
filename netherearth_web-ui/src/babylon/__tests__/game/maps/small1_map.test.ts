@@ -24,7 +24,7 @@ import { applyAction } from '../../../game/actions';
 import { buildOccupancy } from '../../../game/core/occupancy';
 import { CAPTURE_ZONES } from '../../../game/mechanics/capture';
 import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
-import { isRobot, RobotGoal, Owner } from '../../../game/core/warmap';
+import { isRobot, RobotGoal, Owner, RobotAI } from '../../../game/core/warmap';
 import { Chassis, Electronics } from '../../../data/robot';
 
 const MAP_W = 8, MAP_H = 64;
@@ -72,6 +72,8 @@ function makeSmall1Map(): WarMap {
             facing: Direction.S,
             goal: goals[x % goals.length],
             robotConfig: { chassis: chassis[x], electronics: Electronics.STANDARD },
+            health: 100,
+            ai: RobotAI.SIMPLE,
         } as WarObject);
     }
 
@@ -120,6 +122,8 @@ describe('small1.map full setup', () => {
                     facing: Direction.S,
                     goal: RobotGoal.CAPTURE_FACTORY,
                     robotConfig: { chassis: Chassis.ANTIGRAV, electronics: Electronics.STANDARD },
+                    health: 100,
+                    ai: RobotAI.SIMPLE,
                 } as RobotObject,
             ],
             tick: 0,
@@ -138,7 +142,7 @@ describe('small1.map full setup', () => {
             const action = simpleAI(robot, map, occ);
             applyAction(robot, action, map, occ);
 
-            trace.push(`t=${String(tick).padStart(3)} (${robot.x.toFixed(2)},${robot.y.toFixed(2)}) f=${robot.facing??Direction.N} ${robot.nav?.navMode??'goal'}`);
+            trace.push(`t=${String(tick).padStart(3)} (${robot.x.toFixed(2)},${robot.y.toFixed(2)}) f=${robot.facing} ${robot.nav?.navMode??'goal'}`);
 
             const inZone = factories.some(fac => {
                 const gx = fac.x + zone.dx, gy = fac.y + zone.dy;

@@ -178,7 +178,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
 describe('tickBuild — spawn blocked', () => {
     it('does not build when an own robot occupies the spawn point', () => {
         const wb = warbase(Owner.RED, 0, 0);
-        const blocker: RobotObject = { id: 'r1', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.RED };
+        const blocker: RobotObject = { id: 'r1', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.RED, facing: Direction.N, health: 100, robotConfig: { chassis: Chassis.TRACKS }, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE };
         const map = makeMap([wb, blocker]);
         const res = createOwnerResources();
         res[Owner.RED].chassis = 5;
@@ -188,7 +188,7 @@ describe('tickBuild — spawn blocked', () => {
 
     it('does not build when an enemy robot occupies the spawn point (capturing)', () => {
         const wb = warbase(Owner.RED, 0, 0);
-        const enemy: RobotObject = { id: 'r1', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.BLUE };
+        const enemy: RobotObject = { id: 'r1', type: ObjectType.ROBOT, x: 3.5, y: 2.0, owner: Owner.BLUE, facing: Direction.N, health: 100, robotConfig: { chassis: Chassis.TRACKS }, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE };
         const map = makeMap([wb, enemy]);
         const res = createOwnerResources();
         res[Owner.RED].chassis = 5;
@@ -321,7 +321,13 @@ function makeWarMapForGoal(objects: WarMap['objects']): WarMap {
 }
 
 function makeRobotWithGoal(id: string, goal: RobotGoal, owner = Owner.RED): RobotObject {
-    return { id, type: ObjectType.ROBOT, x: 0, y: 0, owner, goal };
+    return {
+        id, type: ObjectType.ROBOT, x: 0, y: 0, owner, goal,
+        facing: Direction.N,
+        health: 100,
+        robotConfig: { chassis: Chassis.TRACKS },
+        ai: RobotAI.SIMPLE,
+    };
 }
 
 describe('chooseBuildGoal — rule 1: maintain fighter baseline', () => {
@@ -444,7 +450,7 @@ describe('chooseBuildGoal — rule 3: late game, no neutrals left', () => {
 
     it('ignores dying robots when computing fighter ratio', () => {
         // 1 dying fighter + 1 live captor → dying one excluded → 0 live fighters → rule 1 fires
-        const dyingFighter: RobotObject = { id: 'r1', type: ObjectType.ROBOT, x: 0, y: 0, owner: Owner.RED, goal: RobotGoal.ATTACK_ROBOTS, dyingTicks: 3 };
+        const dyingFighter: RobotObject = { id: 'r1', type: ObjectType.ROBOT, x: 0, y: 0, owner: Owner.RED, goal: RobotGoal.ATTACK_ROBOTS, dyingTicks: 3, facing: Direction.N, health: 0, robotConfig: { chassis: Chassis.TRACKS }, ai: RobotAI.SIMPLE };
         const map = makeWarMapForGoal([
             dyingFighter,
             makeRobotWithGoal('r2', RobotGoal.CAPTURE_FACTORY),
@@ -474,6 +480,9 @@ describe('tickBuild — robot id prefix', () => {
             id: 'init_robot_0', type: ObjectType.ROBOT,
             x: 0, y: 14, owner: Owner.RED, facing: Direction.E,
             robotConfig: { chassis: Chassis.TRACKS },
+            health: 100,
+            goal: RobotGoal.DEFEND,
+            ai: RobotAI.SIMPLE,
         };
         const map = makeMap([wb, presetRobot]);
         const res = createOwnerResources();

@@ -24,10 +24,9 @@ export function isRobotAlive(warMap: WarMap, robotId: string | null): boolean {
  * Returns 0 if config is missing or max health is zero.
  */
 export function getRobotHealthPercent(robot: RobotObject): number {
-    if (!robot.robotConfig) return 0;
     const maxHealth = calcHealth(robot.robotConfig);
     if (!maxHealth) return 0;
-    return Math.max(0, Math.round(((robot.health ?? 0) / maxHealth) * 100));
+    return Math.max(0, Math.round((robot.health / maxHealth) * 100));
 }
 
 // ─── Detection ────────────────────────────────────────────────────────────────
@@ -52,7 +51,7 @@ export function findRobotUnderShip(
         const dx = Math.abs(ship.x - obj.x);
         const dy = Math.abs(ship.y - obj.y);
         if (Math.max(dx, dy) > HOVER_DISTANCE) continue;
-        const robotHeight = (obj as RobotObject).robotConfig ? calcRobotHeight((obj as RobotObject).robotConfig!) : ROBOT_HEIGHT;
+        const robotHeight = calcRobotHeight((obj as RobotObject).robotConfig);
         if (ship.height <= robotHeight) return obj as RobotObject;
     }
     return null;
@@ -65,7 +64,7 @@ export function findRobotUnderShip(
  * If the current goal is not in the list, starts from the beginning.
  */
 export function cycleRobotGoal(robot: RobotObject): void {
-    const idx = ORDERABLE_GOALS.indexOf(robot.goal ?? RobotGoal.ATTACK_ROBOTS);
+    const idx = ORDERABLE_GOALS.indexOf(robot.goal);
     robot.goal = ORDERABLE_GOALS[(idx + 1) % ORDERABLE_GOALS.length];
 }
 
@@ -96,7 +95,7 @@ export function getGoalLabel(goal: RobotGoal | undefined): string {
  * - Otherwise → ROTATE toward it (shortest path)
  */
 export function buildDirectionAction(robot: RobotObject, targetDir: Direction): RobotAction {
-    const facing = robot.facing ?? Direction.N;
+    const facing = robot.facing;
     if (facing === targetDir) return { type: ActionType.MOVE, direction: targetDir };
     const steps = (CW_DIRS.indexOf(targetDir) - CW_DIRS.indexOf(facing) + 4) % 4;
     return { type: ActionType.ROTATE, direction: steps <= 2 ? RotateDir.RIGHT : RotateDir.LEFT };
@@ -114,7 +113,7 @@ const FACING_VECTOR: Record<Direction, { dx: number; dy: number }> = {
  * Returns null if no enemy is ahead — the robot must rotate to face one first.
  */
 function findNearestEnemy(robot: RobotObject, warMap: WarMap): { target: RobotObject; dist: number } | null {
-    const fv = FACING_VECTOR[robot.facing ?? Direction.E];
+    const fv = FACING_VECTOR[robot.facing];
     let best: RobotObject | null = null;
     let bestDist = Infinity;
 
@@ -138,7 +137,7 @@ function findNearestEnemy(robot: RobotObject, warMap: WarMap): { target: RobotOb
  * TargetId is omitted to fire straight ahead. Returns null if no weapons.
  */
 export function buildFireAction(robot: RobotObject, warMap: WarMap): RobotAction | null {
-    const weapons = robot.robotConfig?.weapons ?? [];
+    const weapons = robot.robotConfig.weapons ?? [];
     if (weapons.length === 0) return null;
     
     // Always select the highest damage weapon for manual fire
@@ -187,7 +186,7 @@ export function setHoverHeight(
     ship: { height: number },
     robot: RobotObject,
 ): void {
-    ship.height = (robot.robotConfig ? calcRobotHeight(robot.robotConfig) : ROBOT_HEIGHT) + HOVER_GAP;
+    ship.height = calcRobotHeight(robot.robotConfig) + HOVER_GAP;
 }
 
 /**

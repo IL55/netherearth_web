@@ -98,11 +98,11 @@ export function fightAction(
     warMap: WarMap,
     occupancy: OccupancyMap,
 ): RobotAction | undefined {
-    const weapons    = robot.robotConfig?.weapons ?? [];
-    const sightRange = robot.robotConfig?.electronics ? SIGHT_RANGE[robot.robotConfig.electronics] : 0;
+    const weapons    = robot.robotConfig.weapons ?? [];
+    const sightRange = robot.robotConfig.electronics ? SIGHT_RANGE[robot.robotConfig.electronics] : 0;
     if (weapons.length === 0 || sightRange <= 0) return undefined;
 
-    const facing = robot.facing ?? Direction.N;
+    const facing = robot.facing;
 
     // 1. Check for adjacent enemies first (they override forward-only scanning)
     let enemy = scanAdjacentEnemy(robot, warMap, occupancy);

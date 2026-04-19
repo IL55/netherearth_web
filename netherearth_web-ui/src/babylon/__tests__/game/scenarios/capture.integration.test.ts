@@ -46,7 +46,7 @@ describe('scenario: neutral factory capture', () => {
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.RED, RobotGoal.CAPTURE_NEUTRAL_FACTORY);
 
         const warMap: WarMap = { width: 30, height: 30, objects: [factory, robot], projectiles: [] };
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         // One full day of consecutive ticks
         advanceGameTicks(DAY_TICKS);
@@ -61,7 +61,7 @@ describe('scenario: neutral factory capture', () => {
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.RED, RobotGoal.CAPTURE_NEUTRAL_FACTORY);
 
         const warMap: WarMap = { width: 30, height: 30, objects: [factory, robot], projectiles: [] };
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         // Half a day in capture zone
         advanceGameTicks(Math.floor(DAY_TICKS / 2));
@@ -83,7 +83,7 @@ describe('scenario: neutral factory capture', () => {
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.BLUE, RobotGoal.CAPTURE_FACTORY);
 
         const warMap: WarMap = { width: 30, height: 30, objects: [factory, robot], projectiles: [] };
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         advanceGameTicks(DAY_TICKS * 2);
         clock.stop();
@@ -112,7 +112,7 @@ describe('scenario: warbase capture with navigation', () => {
         robot.facing = Direction.W; // Face towards the capture spot
 
         const warMap: WarMap = { width: 30, height: 30, objects: [warbase, robot], projectiles: [] };
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         // Before advancing, check robot's starting position.
         expect(robot.x).toBe(15.5);
@@ -151,7 +151,7 @@ describe('scenario: enemy factory capture', () => {
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.RED, RobotGoal.CAPTURE_FACTORY);
 
         const warMap: WarMap = { width: 30, height: 30, objects: [factory, robot], projectiles: [] };
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         advanceGameTicks(DAY_TICKS);
         clock.stop();

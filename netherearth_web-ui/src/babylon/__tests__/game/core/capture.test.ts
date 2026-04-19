@@ -4,6 +4,8 @@ import { isInCaptureZone, tickCapture, CAPTURE_ZONES } from '../../../game/mecha
 import { DAY_TICKS } from '../../../game/resources';
 import { Owner } from '../../../game/types/owner';
 import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
+import { Direction, RobotGoal, RobotAI } from '../../../game/core/warmap';
+import { Chassis } from '../../../data/robot';
 
 function makeMap(objects: WarObject[]): WarMap {
     return { width: 20, height: 20, objects };
@@ -17,8 +19,16 @@ function makeFactory(x = 5, y = 7, owner: Owner = Owner.NEUTRAL): WarObject {
 function makeWarbase(x = 2, y = 5, owner: Owner = Owner.NEUTRAL): WarObject {
     return { id: 'wb', type: ObjectType.WARBASE, x, y, owner };
 }
+
 function makeRobot(id: string, x: number, y: number, owner: Owner): RobotObject {
-    return { id, type: ObjectType.ROBOT, x, y, owner };
+    return {
+        id, type: ObjectType.ROBOT, x, y, owner,
+        facing: Direction.N,
+        health: 100,
+        robotConfig: { chassis: Chassis.TRACKS },
+        goal: RobotGoal.ATTACK_ROBOTS,
+        ai: RobotAI.SIMPLE,
+    };
 }
 
 describe('CAPTURE_ZONES', () => {

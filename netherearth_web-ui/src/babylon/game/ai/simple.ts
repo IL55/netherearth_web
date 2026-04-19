@@ -70,7 +70,7 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
             robot.goalPosition = undefined;
             return { type: ActionType.IDLE };
         }
-        const facing = robot.facing ?? Direction.N;
+        const facing = robot.facing;
         const dirs = bug2Dirs(robot, warMap, occupancy, wx, wy,
             Math.abs(robot.x - wx) + Math.abs(robot.y - wy));
         for (const dir of dirs) {
@@ -115,13 +115,13 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
         ty = pos.y;
     }
 
-    const facing = robot.facing ?? Direction.N;
+    const facing = robot.facing;
 
     let dirsToTry: Direction[];
     if (isMoveOut) {
         // Just use greedy directions for the initial move out
         dirsToTry = bug2Dirs(robot, warMap, occupancy, tx, ty, Math.abs(robot.x - tx) + Math.abs(robot.y - ty));
-    } else if (robot.robotConfig?.navAlgo === NavAlgo.TREMAUX) {
+    } else if (robot.robotConfig.navAlgo === NavAlgo.TREMAUX) {
         recordCell(robot);
         dirsToTry = tremauxDirs(robot, warMap, occupancy, tx, ty);
     } else {

@@ -44,7 +44,7 @@ export function isPassable(
     y: number,
 ): boolean {
     if (x < 0 || y < 0 || x > warMap.width - 1 || y > warMap.height - 1) return false;
-    const chassis = robot.robotConfig?.chassis ?? Chassis.TRACKS;
+    const chassis = robot.robotConfig.chassis;
     
     const EPSILON = 0.01;
     const xMin = Math.ceil(x - 1 + EPSILON);

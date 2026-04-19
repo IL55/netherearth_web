@@ -47,10 +47,10 @@ describe('scenario: combat health reduction', () => {
         const blue = makeRobot('blue', 6, 5, Owner.BLUE, Direction.W);
         const warMap = makeWarMap(red, blue);
 
-        const redInitial  = red.health!;
-        const blueInitial = blue.health!;
+        const redInitial  = red.health;
+        const blueInitial = blue.health;
 
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
         // 20 game ticks — enough for at least one exchange of fire
         advanceGameTicks(20);
         clock.stop();
@@ -75,7 +75,7 @@ describe('scenario: robot death lifecycle', () => {
         blue.health = 1;
 
         const warMap = makeWarMap(red, blue);
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         // 5 ticks — red should fire at least once; blue health hits 0
         advanceGameTicks(5);
@@ -97,7 +97,7 @@ describe('scenario: robot death lifecycle', () => {
         blue.health = 1;
 
         const warMap = makeWarMap(red, blue);
-        const clock = startClock(warMap, () => {}, createOwnerResources(), undefined, TICK_MS);
+        const clock = startClock(warMap, createOwnerResources(), undefined, TICK_MS);
 
         // 20 ticks — enough for kill + full blink animation (6 ticks) to complete
         advanceGameTicks(20);
@@ -118,12 +118,12 @@ describe('scenario: manual fire action applied via clock', () => {
         const blue = makeRobot('blue', 7, 5, Owner.BLUE, Direction.W);
         const warMap = makeWarMap(red, blue);
 
-        const blueInitialHealth = blue.health!;
+        const blueInitialHealth = blue.health;
         let pendingAction: RobotAction | null =
             { type: ActionType.FIRE, targetId: 'blue', weapon: Weapon.CANNON };
 
         const clock = startClock(
-            warMap, () => {}, createOwnerResources(), undefined, TICK_MS,
+            warMap, createOwnerResources(), undefined, TICK_MS,
             () => false,
             () => 'red',        // red is under manual control
             () => { const a = pendingAction; pendingAction = null; return a; },
@@ -147,7 +147,7 @@ describe('scenario: manual fire action applied via clock', () => {
         let idx = 0;
 
         const clock = startClock(
-            warMap, () => {}, createOwnerResources(), undefined, TICK_MS,
+            warMap, createOwnerResources(), undefined, TICK_MS,
             () => false,
             () => 'red',
             () => moves[idx++] ?? null,

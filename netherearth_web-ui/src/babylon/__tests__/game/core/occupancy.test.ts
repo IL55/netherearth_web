@@ -1,16 +1,29 @@
-import { ObjectType } from '../../../game/core/warmap';
+import { ObjectType, Direction, RobotGoal, RobotAI } from '../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
 import { buildOccupancy, isOccupied, updateRobotPosition, ROBOT_COLLISION_DISTANCE } from '../../../game/core/occupancy';
 import { Owner } from '../../../game/types/owner';
-import type { WarMap } from '../../../game/core/warmap';
+import type { WarMap, RobotObject } from '../../../game/core/warmap';
+import { Chassis } from '../../../data/robot';
+
+const DEFAULT_ROBOT_CONFIG = { chassis: Chassis.TRACKS };
 
 function makeMap(objects: WarMap['objects']): WarMap {
     return { width: 10, height: 10, objects };
 }
 
+const makeRobot = (partial: Pick<RobotObject, 'id'|'x'|'y'|'owner'>): RobotObject => ({
+    type: ObjectType.ROBOT,
+    facing: Direction.N,
+    health: 100,
+    robotConfig: DEFAULT_ROBOT_CONFIG,
+    goal: RobotGoal.ATTACK_ROBOTS,
+    ai: RobotAI.SIMPLE,
+    ...partial,
+});
+
 describe('buildOccupancy', () => {
     it('stores robot exact positions', () => {
-        const map = makeMap([{ id: 'r1', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 2.75, y: 3.5 }]);
+        const map = makeMap([makeRobot({ id: 'r1', owner: Owner.NEUTRAL, x: 2.75, y: 3.5 })]);
         const occ = buildOccupancy(map);
         expect(occ.robots).toHaveLength(1);
         expect(occ.robots[0]).toMatchObject({ id: 'r1', x: 2.75, y: 3.5 });
@@ -54,33 +67,33 @@ describe('buildOccupancy', () => {
 
 describe('isOccupied — robots', () => {
     it('blocked when within ROBOT_COLLISION_DISTANCE of another robot', () => {
-        const map = makeMap([{ id: 'r1', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 3, y: 4 }]);
+        const map = makeMap([makeRobot({ id: 'r1', owner: Owner.NEUTRAL, x: 3, y: 4 })]);
         const occ = buildOccupancy(map);
         // 0.5 away — less than 1.0 → blocked
         expect(isOccupied(occ, 3.5, 4, 'other')).toBe(true);
     });
 
     it('not blocked at exactly ROBOT_COLLISION_DISTANCE away', () => {
-        const map = makeMap([{ id: 'r1', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 3, y: 4 }]);
+        const map = makeMap([makeRobot({ id: 'r1', owner: Owner.NEUTRAL, x: 3, y: 4 })]);
         const occ = buildOccupancy(map);
         // distance = 1.0 → NOT blocked (< 1.0 is the rule)
         expect(isOccupied(occ, 3 + ROBOT_COLLISION_DISTANCE, 4, 'other')).toBe(false);
     });
 
     it('not blocked beyond ROBOT_COLLISION_DISTANCE', () => {
-        const map = makeMap([{ id: 'r1', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 3, y: 4 }]);
+        const map = makeMap([makeRobot({ id: 'r1', owner: Owner.NEUTRAL, x: 3, y: 4 })]);
         const occ = buildOccupancy(map);
         expect(isOccupied(occ, 5, 4, 'other')).toBe(false);
     });
 
     it('robot does not block itself when excludeId is passed', () => {
-        const map = makeMap([{ id: 'r1', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 3, y: 4 }]);
+        const map = makeMap([makeRobot({ id: 'r1', owner: Owner.NEUTRAL, x: 3, y: 4 })]);
         const occ = buildOccupancy(map);
         expect(isOccupied(occ, 3.25, 4, 'r1')).toBe(false);  // same robot
     });
 
     it('blocks without excludeId (checks all robots)', () => {
-        const map = makeMap([{ id: 'r1', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 3, y: 4 }]);
+        const map = makeMap([makeRobot({ id: 'r1', owner: Owner.NEUTRAL, x: 3, y: 4 })]);
         const occ = buildOccupancy(map);
         expect(isOccupied(occ, 3.25, 4)).toBe(true);
     });
@@ -187,7 +200,7 @@ describe('factory capture slot — boundary-touching approach (MOVE_STEP=0.25)',
 
 describe('updateRobotPosition', () => {
     it('updates stored position so future checks use new coords', () => {
-        const map = makeMap([{ id: 'r1', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 1, y: 0 }]);
+        const map = makeMap([makeRobot({ id: 'r1', owner: Owner.NEUTRAL, x: 1, y: 0 })]);
         const occ = buildOccupancy(map);
 
         updateRobotPosition(occ, 'r1', 2, 0);
@@ -200,8 +213,8 @@ describe('updateRobotPosition', () => {
 
     it('two robots maintain 1.0 separation after movement', () => {
         const map = makeMap([
-            { id: 'r1', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 1, y: 0 },
-            { id: 'r2', type: ObjectType.ROBOT, owner: Owner.NEUTRAL, x: 3, y: 0 },
+            makeRobot({ id: 'r1', owner: Owner.NEUTRAL, x: 1, y: 0 }),
+            makeRobot({ id: 'r2', owner: Owner.NEUTRAL, x: 3, y: 0 }),
         ]);
         const occ = buildOccupancy(map);
         // r1 tries to move to 2.0 — distance to r2 (3,0) = 1.0 → NOT blocked

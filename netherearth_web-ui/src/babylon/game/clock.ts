@@ -11,6 +11,8 @@ import { tickResources, createOwnerResources, type OwnerResources } from './reso
 import { tickBuild } from './mechanics/build';
 import { recordKill } from './mechanics/kill-terrain';
 import { type ShipState } from './ship/index';
+import { bus } from './event-bus';
+import { checkVictory } from './mechanics/victory';
 
 export interface Clock {
     stop: () => void;
@@ -22,7 +24,6 @@ export interface Clock {
 // Default sub-tick interval is 100ms → game tick every 500ms.
 export function startClock(
     warMap: WarMap,
-    onTick: () => void,
     ownerResources: OwnerResources = createOwnerResources(),
     ship?: ShipState,
     subTickMs = 100,
@@ -35,9 +36,10 @@ export function startClock(
         if (isPaused()) return;
         if (subTick === 0) {
             gameTick(warMap, ownerResources, ship, getControlledRobotId(), getManualAction);
+            bus.emit({ type: 'tick:game', warMap });
         }
         advanceProjectiles(warMap);
-        onTick();
+        bus.emit({ type: 'tick:sub', warMap });
         subTick = (subTick + 1) % SUB_TICKS;
     }, subTickMs);
     return { stop: () => clearInterval(id) };
@@ -76,8 +78,7 @@ function gameTick(
             continue;
         }
 
-        const ai = obj.ai ?? 'simple';
-        const action: RobotAction = ai === RobotAI.SIMPLE ? simpleAI(obj, warMap, occupancy) : { type: ActionType.IDLE };
+        const action: RobotAction = obj.ai === RobotAI.SIMPLE ? simpleAI(obj, warMap, occupancy) : { type: ActionType.IDLE };
         applyAction(obj, action, warMap, occupancy);
     }
 
@@ -92,4 +93,9 @@ function gameTick(
     tickCapture(warMap);
     tickResources(warMap, ownerResources, warMap.tick ?? 0);
     tickBuild(warMap, ownerResources);
+
+    const winner = checkVictory(warMap);
+    if (winner !== null) {
+        bus.emit({ type: 'game:over', winner });
+    }
 }
