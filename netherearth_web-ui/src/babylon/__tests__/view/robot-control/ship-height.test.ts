@@ -9,18 +9,17 @@
  *               tickShip resumes automatic descent
  */
 import { describe, it, expect } from 'vitest';
-import { ObjectType, Owner, Direction } from '../../../game/core/warmap';
+import { ObjectType, Owner, Direction, RobotGoal, RobotAI } from '../../../game/core/warmap';
 import type { RobotObject } from '../../../game/core/warmap';
 import { Chassis, Weapon, Electronics, calcRobotHeight } from '../../../data/robot';
-import { setHoverHeight, applyExitBump, HOVER_GAP } from '../../../view/robot-control/robot-control-logic';
+import { setHoverHeight, applyExitBump } from '../../../view/robot-control/physics';
+import { HOVER_GAP } from '../../../view/robot-control/constants';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function makeShip(height = 0): { height: number } {
     return { height };
 }
-
-import { RobotGoal, RobotAI } from '../../../game/core/warmap';
 function makeRobot(config: RobotObject['robotConfig']): RobotObject {
     return {
         id: 'r1', type: ObjectType.ROBOT, x: 0, y: 0,

@@ -3,14 +3,20 @@ import { ObjectType, RobotGoal, Owner } from '../../../game/core/warmap';
 import type { WarMap, RobotObject } from '../../../game/core/warmap';
 import type { ShipState } from '../../../game/ship/types';
 import {
-    findRobotUnderShip,
-    cycleRobotGoal,
-    setManualControl,
     getGoalLabel,
     getRobotDescription,
     isRobotAlive,
     getRobotHealthPercent,
-} from '../../../view/robot-control/robot-control-logic';
+} from '../../../view/robot-control/queries';
+import {
+    cycleRobotGoal,
+    setManualControl,
+    setRobotGoal,
+    setMoveGoal,
+} from '../../../view/robot-control/mutations';
+import {
+    findRobotUnderShip,
+} from '../../../view/robot-control/physics';
 import { ORDERABLE_GOALS, HOVER_DISTANCE } from '../../../view/robot-control/constants';
 import { Chassis, Weapon, Electronics, calcHealth, calcRobotHeight } from '../../../data/robot';
 import { Direction, RobotAI } from '../../../game/core/warmap';
@@ -101,6 +107,36 @@ describe('findRobotUnderShip', () => {
         const factory = { id: 'f1', type: ObjectType.FACTORY as const, x: 5, y: 5, owner: Owner.RED };
         const warMap: WarMap = { width: 20, height: 20, tiles: [factory], robots: [], projectiles: [], killCounts: {}, tick: 0 };
         expect(findRobotUnderShip(warMap, makeShip(5, 5), Owner.RED)).toBeNull();
+    });
+});
+
+// ─── setRobotGoal ─────────────────────────────────────────────────────────────
+
+describe('setRobotGoal', () => {
+    it('sets the goal and clears goalPosition', () => {
+        const robot = makeRobot('r1', 0, 0, Owner.RED, RobotGoal.ATTACK_ROBOTS);
+        robot.goalPosition = { x: 10, y: 10 };
+        setRobotGoal(robot, RobotGoal.DEFEND);
+        expect(robot.goal).toBe(RobotGoal.DEFEND);
+        expect(robot.goalPosition).toBeUndefined();
+    });
+});
+
+// ─── setMoveGoal ──────────────────────────────────────────────────────────────
+
+describe('setMoveGoal', () => {
+    it('sets MOVE_FORWARD and adds dx to x position', () => {
+        const robot = makeRobot('r1', 5, 5, Owner.RED);
+        setMoveGoal(robot, RobotGoal.MOVE_FORWARD, 10);
+        expect(robot.goal).toBe(RobotGoal.MOVE_FORWARD);
+        expect(robot.goalPosition).toEqual({ x: 15, y: 5 });
+    });
+
+    it('sets MOVE_BACKWARD and subtracts dx from x position (if dx is negative)', () => {
+        const robot = makeRobot('r1', 5, 5, Owner.RED);
+        setMoveGoal(robot, RobotGoal.MOVE_BACKWARD, -10);
+        expect(robot.goal).toBe(RobotGoal.MOVE_BACKWARD);
+        expect(robot.goalPosition).toEqual({ x: -5, y: 5 });
     });
 });
 

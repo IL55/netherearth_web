@@ -3,7 +3,8 @@ import type { WarMap, RobotObject } from '../../game/core/warmap';
 import { ActionType } from '../../game/actions';
 import type { RobotAction } from '../../game/actions';
 import { RobotControl3D } from './robot-control-3d';
-import { findRobotUnderShip, isRobotAlive, setHoverHeight, applyExitBump } from './robot-control-logic';
+import { isRobotAlive } from './queries';
+import { findRobotUnderShip, setHoverHeight, applyExitBump } from './physics';
 import type * as BABYLON from '@babylonjs/core';
 
 export class RobotControlTrigger {

@@ -1,8 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
-import {
-    setManualControl, setRobotGoal, getGoalLabel, setMoveGoal,
-    buildDirectionAction, buildFireAction, buildFireActionForWeapon, getRobotHealthPercent,
-} from './robot-control-logic';
+import { getGoalLabel, getRobotHealthPercent } from './queries';
+import { buildDirectionAction, buildFireAction, buildFireActionForWeapon } from './actions';
+import { setManualControl, setRobotGoal, setMoveGoal } from './mutations';
 import { WEAPON_RENDER_ORDER } from '../../data/robot';
 import type { Weapon } from '../../data/robot';
 import { ORDERABLE_GOALS, GOAL_LABELS } from './constants';
@@ -150,7 +149,8 @@ export class RobotControl3D {
 
         this.moveFwdBtn = makeBtn('', '#66bb6a', () => {
             if (!this.currentRobot) return;
-            setMoveGoal(this.currentRobot, true, this.moveDistance);
+            const dx = (this.currentRobot.owner === Owner.RED ? 1 : -1) * this.moveDistance;
+            setMoveGoal(this.currentRobot, RobotGoal.MOVE_FORWARD, dx);
             this.goalEl.textContent = this.goalText();
             this.showMainView();
         });
@@ -158,7 +158,8 @@ export class RobotControl3D {
 
         this.moveBwdBtn = makeBtn('', '#ef9a9a', () => {
             if (!this.currentRobot) return;
-            setMoveGoal(this.currentRobot, false, this.moveDistance);
+            const dx = (this.currentRobot.owner === Owner.RED ? -1 : 1) * this.moveDistance;
+            setMoveGoal(this.currentRobot, RobotGoal.MOVE_BACKWARD, dx);
             this.goalEl.textContent = this.goalText();
             this.showMainView();
         });

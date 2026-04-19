@@ -23,7 +23,7 @@ import { ShipRenderer } from './view/map/ship-renderer';
 import { buildOccupancy } from './game/core/occupancy';
 
 import { ConstructionYardTrigger } from './view/construction-yard';
-import { RobotControlTrigger } from './view/robot-control';
+import { RobotControlTrigger } from './view/robot-control/trigger';
 import { GameOverScreen } from './view/game-over';
 import { bus } from './game/event-bus';
 
