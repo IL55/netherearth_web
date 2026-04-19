@@ -1,6 +1,9 @@
 import type { MapData } from '../../data/map';
 import { Owner } from '../types/owner';
 import { ObjectType } from '../types/object-type';
+import { Direction, RobotAI, RobotGoal } from './warmap';
+import { Chassis, calcHealth } from '../../data/robot';
+import type { RobotConfig } from '../../data/robot';
 import type { WarMap, RobotObject, MapObject, StructureType } from './warmap';
 
 export function isRobot(o: RobotObject | MapObject): o is RobotObject {
@@ -40,14 +43,12 @@ export function createWarMap(mapData: MapData): WarMap {
 
     mapData.objects.forEach((obj, i) => {
         if (obj.type === ObjectType.ROBOT) {
-            robots.push({
+            robots.push(spawnRobot({
                 id: `${obj.type}_${i}`,
-                type: ObjectType.ROBOT,
                 x: obj.x,
                 y: obj.y,
-                owner: obj.owner !== undefined ? obj.owner : Owner.NEUTRAL,
-                ...(obj.subtype ? { subtype: obj.subtype } : {}),
-            } as RobotObject);
+                owner: obj.owner,
+            }));
         } else {
             tiles.push({
                 id: `${obj.type}_${i}`,
@@ -97,4 +98,30 @@ export function cycleOwner(obj: RobotObject | MapObject): void {
     if (!obj.owner)                    obj.owner = Owner.RED;
     else if (obj.owner === Owner.RED)  obj.owner = Owner.BLUE;
     else                               obj.owner = Owner.NEUTRAL;
+}
+
+export function spawnRobot(params: {
+    id: string;
+    x: number;
+    y: number;
+    owner?: Owner;
+    facing?: Direction;
+    goal?: RobotGoal;
+    robotConfig?: RobotConfig;
+    ai?: RobotAI;
+    health?: number;
+}): RobotObject {
+    const config = params.robotConfig ?? { chassis: Chassis.TRACKS };
+    return {
+        id: params.id,
+        type: ObjectType.ROBOT,
+        x: params.x,
+        y: params.y,
+        owner: params.owner !== undefined ? params.owner : Owner.NEUTRAL,
+        facing: params.facing !== undefined ? params.facing : Direction.E,
+        goal: params.goal !== undefined ? params.goal : RobotGoal.DEFEND,
+        robotConfig: config,
+        health: params.health !== undefined ? params.health : calcHealth(config),
+        ai: params.ai !== undefined ? params.ai : RobotAI.SIMPLE,
+    };
 }

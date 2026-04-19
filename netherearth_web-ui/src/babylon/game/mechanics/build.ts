@@ -9,6 +9,7 @@ import { RobotGoal } from '../core/warmap';
 import type { OwnerResources, Resources } from '../resources';
 import { buildOccupancy, isOccupied } from '../core/occupancy';
 import { CAPTURE_ZONES } from './capture';
+import { spawnRobot } from '../core/utils';
 
 type Cost = Partial<Resources>;
 
@@ -218,23 +219,18 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
             }
         }
 
-        const robot: RobotObject = {
+        const robot = spawnRobot({
             id: `robot_${_builtCount}`,
-            type: ObjectType.ROBOT,
             x: spawnX,
             y: spawnY,
             owner: obj.owner,
             facing: outFacing,
             robotConfig: option.config,
-            health: calcHealth(option.config),
             goal: option.config.nuclear
                 ? NUKE_GOALS[_builtCount % NUKE_GOALS.length]
                 : chooseBuildGoal(warMap, obj.owner as Owner),
-            ai: RobotAI.SIMPLE,
-            nav: {
-                moveOutTarget: { x: tx, y: ty }
-            }
-        };
+        });
+        robot.nav = { moveOutTarget: { x: tx, y: ty } };
         _builtCount++;
 
         warMap.robots.push(robot);

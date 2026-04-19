@@ -6,6 +6,7 @@ import type { Resources } from '../../game/resources';
 import { buildOccupancy, isOccupied } from '../../game/core/occupancy';
 import { CAPTURE_ZONES } from '../../game/mechanics/capture';
 import { CY_PARTS } from './constants';
+import { spawnRobot } from '../../game/core/utils';
 
 // ─── Part → game enum mappings ────────────────────────────────────────────────
 
@@ -173,19 +174,16 @@ export function spawnManualRobot(
 
     if (isOccupied(buildOccupancy(warMap), spawnX, spawnY)) return false;
 
-    const robot: RobotObject = {
+    const robot = spawnRobot({
         id: `robot_manual_${_manualBuildCount++}`,
-        type: ObjectType.ROBOT,
         x: spawnX,
         y: spawnY,
         owner,
         facing: Direction.E,
         robotConfig: config,
-        health: calcHealth(config),
         goal: RobotGoal.ATTACK_ROBOTS,
-        ai: RobotAI.SIMPLE,
-        nav: { moveOutTarget: { x: spawnX + 4, y: spawnY } },
-    };
+    });
+    robot.nav = { moveOutTarget: { x: spawnX + 4, y: spawnY } };
 
     warMap.robots.push(robot);
     return true;

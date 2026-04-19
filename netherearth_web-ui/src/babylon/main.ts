@@ -11,6 +11,7 @@ import { ProjectileRenderer } from './view/map/projectile-renderer';
 import { GameHud } from './view/hud/hud';
 import { createWarMap, Owner, RobotGoal } from './game/core/warmap';
 import { robotConfigs, calcHealth, calcRobotHeight, Chassis, Weapon, Electronics } from './data/robot';
+import { spawnRobot } from './game/core/utils';
 import { attachCameraControls } from './controls/camera';
 import { attachGameControls } from './controls/game';
 import { attachShipControls } from './controls/ship';
@@ -78,22 +79,19 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
     nuclear: true,
     electronics: Electronics.STANDARD,
   };
-  for (let x = 0; x < mapData.width; x++) {
-    const isShipRobot = x === 0;
-    const robotConfig = isShipRobot ? fullEquipConfig : configValues[x % configValues.length];
-    warMap.robots.push({
-      id: `init_robot_${x}`,
-      type: ObjectType.ROBOT,
-      x,
-      y: 14,
-      owner: Owner.RED,
-      robotConfig,
-      health: calcHealth(robotConfig),
-      facing: Direction.E,
-      goal: RobotGoal.DEFEND,
-      ai: RobotAI.SIMPLE,
-    });
-  }
+    for (let x = 0; x < mapData.width; x++) {
+        const isShipRobot = x === 0;
+        const robotConfig = isShipRobot ? fullEquipConfig : configValues[x % configValues.length];
+        warMap.robots.push(spawnRobot({
+            id: `init_robot_${x}`,
+            x,
+            y: 14,
+            owner: Owner.RED,
+            robotConfig,
+            facing: Direction.E,
+            goal: RobotGoal.DEFEND,
+        }));
+    }
 
   const renderer = new Renderer(models, scene, mapBegin);
   const projectileRenderer = new ProjectileRenderer(models, mapBegin);
