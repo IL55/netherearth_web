@@ -84,16 +84,18 @@ Each robot has a **goal** and an **AI strategy**:
 | `capture_warbase`         | Nearest non-owned warbase (enemy **or** neutral) |
 | `capture_enemy_warbase`   | Nearest enemy-owned warbase only |
 | `capture_neutral_warbase` | Nearest neutral (unowned) warbase only |
+| `nuke_factory`            | Navigate toward an enemy factory and detonate nuclear bomb |
+| `nuke_warbase`            | Navigate toward an enemy warbase and detonate nuclear bomb |
 | `defend`                  | Stay in place (no movement target) |
 | `move_forward`            | Move a fixed number of tiles toward the enemy base, then stop |
 | `move_backward`           | Move a fixed number of tiles toward own base, then stop |
 
 ### AI Strategies
 
-- **dummy** — navigates toward the nearest target by Manhattan distance; rotates to face the
+- **simple** — navigates toward the nearest target by Manhattan distance; rotates to face the
   preferred direction, moves when aligned, tries alternate directions if primary is blocked.
   Uses Bug2-style wall-follow when stuck (right-hand rule, exits when path to goal is clear).
-- **advanced** *(planned)* — same as dummy but uses electronics bonus for extended look-ahead
+- **advanced** *(planned)* — same as simple but uses electronics bonus for extended look-ahead
   and threat detection.
 
 ## Game Clock

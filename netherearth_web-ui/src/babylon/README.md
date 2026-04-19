@@ -25,6 +25,8 @@ view/            BabylonJS rendering. Reads game state, draws scene.
 
 controls/        User input handlers (keyboard, mouse, touch).
   camera.ts        Keyboard panning for ArcRotateCamera
+  ship.ts          Flying ship movement and positioning
+  game.ts          Keyboard bindings for game commands
 
 __tests__/       Unit/integration tests (NullEngine, no WebGL)
   view/map/        Tests for the battlefield view
