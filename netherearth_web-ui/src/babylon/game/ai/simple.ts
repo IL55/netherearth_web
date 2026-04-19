@@ -121,6 +121,41 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
     let tx = robot.x, ty = robot.y;
     let isMoveOut = false;
 
+    // Fresh spawn: no nav state means the robot was just built.
+    // Only set a move-out target if the robot is physically at its own warbase
+    // spawn point; otherwise just initialize nav to prevent re-checking every tick.
+    // This is AI-internal nav state — set directly like recordCell/visitCounts.
+    if (!robot.nav) {
+        const zone = CAPTURE_ZONES[ObjectType.WARBASE];
+        const ownWarbase = zone ? warMap.tiles.find(
+            t => t.type === ObjectType.WARBASE && t.owner === robot.owner,
+        ) : undefined;
+        const atSpawn = ownWarbase && zone &&
+            Math.abs(robot.x - (ownWarbase.x + zone.dx)) < 0.2 &&
+            Math.abs(robot.y - (ownWarbase.y + zone.dy)) < 0.2;
+
+        if (atSpawn) {
+            const enemyWarbase = warMap.tiles.find(
+                t => t.type === ObjectType.WARBASE && t.owner && t.owner !== robot.owner,
+            );
+            let moveX = robot.x + 4, moveY = robot.y;
+            if (enemyWarbase) {
+                const dx = enemyWarbase.x - robot.x;
+                const dy = enemyWarbase.y - robot.y;
+                if (Math.abs(dy) > Math.abs(dx)) {
+                    moveX = robot.x;
+                    moveY = robot.y + (dy > 0 ? 4 : -4);
+                } else {
+                    moveX = robot.x + (dx > 0 ? 4 : -4);
+                    moveY = robot.y;
+                }
+            }
+            robot.nav = { moveOutTarget: { x: moveX, y: moveY } };
+        } else {
+            robot.nav = {};
+        }
+    }
+
     if (robot.nav?.moveOutTarget) {
         tx = robot.nav.moveOutTarget.x;
         ty = robot.nav.moveOutTarget.y;

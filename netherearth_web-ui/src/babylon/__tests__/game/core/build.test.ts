@@ -12,6 +12,8 @@ import { Owner } from '../../../game/types/owner';
 import { Chassis, Weapon, Electronics } from '../../../data/robot';
 import { RobotGoal } from '../../../game/core/warmap';
 import type { WarMap, WarObject, RobotObject } from '../../../game/core/warmap';
+import { stepSimpleAI } from '../../../game/ai/simple';
+import { buildOccupancy } from '../../../game/core/occupancy';
 
 import { createWarMap } from '../../../game/core/utils';
 function makeMap(objects: any[]): WarMap {
@@ -155,7 +157,7 @@ describe('tickBuild — builds best resource-fit robot', () => {
     it('new robot is assigned a moveOutTarget 4 cells towards the enemy warbase to unblock the base', () => {
         const wb1 = warbase(Owner.RED, 2, 3); // capture point is 2+3.5=5.5, 3+2.0=5.0
         // Enemy warbase is far South
-        const wb2 = warbase(Owner.BLUE, 2, 20); 
+        const wb2 = warbase(Owner.BLUE, 2, 20);
         const map = makeMap([wb1, wb2]);
         const res = createOwnerResources();
         res[Owner.RED].chassis = 1;
@@ -163,6 +165,9 @@ describe('tickBuild — builds best resource-fit robot', () => {
 
         const robot = map.robots[0];
         expect(robot.facing).toBe(Direction.S); // Towards +y (South)
+
+        // moveOutTarget is set by the AI on the robot's first tick (not by tickBuild)
+        stepSimpleAI(robot, map, buildOccupancy(map));
         expect(robot.nav?.moveOutTarget).toEqual({ x: 5.5, y: 5.0 + 4 });
     });
 

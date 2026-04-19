@@ -1,10 +1,10 @@
 import { ObjectType } from '../core/warmap';
-import { Direction, RobotAI } from "../core/warmap";
+import { Direction } from "../core/warmap";
 
-import { Chassis, Weapon, Electronics, calcHealth, calcRobotHeight } from '../../data/robot';
+import { Chassis, Weapon, Electronics, calcRobotHeight } from '../../data/robot';
 import type { RobotConfig } from '../../data/robot';
 import { Owner } from '../types/owner';
-import type { WarMap, RobotObject } from '../core/warmap';
+import type { WarMap } from '../core/warmap';
 import { RobotGoal } from '../core/warmap';
 import type { OwnerResources, Resources } from '../resources';
 import { buildOccupancy, isOccupied } from '../core/occupancy';
@@ -197,25 +197,18 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
 
         deductCost(resources, option.cost);
 
-        // Find enemy warbase to determine the general move-out direction
+        // Face toward the enemy warbase on spawn
         const enemyWarbase = warMap.tiles.find(
             o => o.type === ObjectType.WARBASE && o.owner && o.owner !== obj.owner
         );
         let outFacing = Direction.E;
-        let tx = spawnX + 4;
-        let ty = spawnY;
-
         if (enemyWarbase) {
             const dx = enemyWarbase.x - spawnX;
             const dy = enemyWarbase.y - spawnY;
             if (Math.abs(dy) > Math.abs(dx)) {
                 outFacing = dy > 0 ? Direction.S : Direction.N;
-                tx = spawnX;
-                ty = spawnY + (dy > 0 ? 4 : -4);
             } else {
                 outFacing = dx > 0 ? Direction.E : Direction.W;
-                tx = spawnX + (dx > 0 ? 4 : -4);
-                ty = spawnY;
             }
         }
 
@@ -230,7 +223,6 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
                 ? NUKE_GOALS[_builtCount % NUKE_GOALS.length]
                 : chooseBuildGoal(warMap, obj.owner as Owner),
         });
-        robot.nav = { moveOutTarget: { x: tx, y: ty } };
         _builtCount++;
 
         warMap.robots.push(robot);

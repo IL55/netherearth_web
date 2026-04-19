@@ -1,7 +1,7 @@
-import { Chassis, Weapon, Electronics, calcHealth } from '../../data/robot';
+import { Chassis, Weapon, Electronics } from '../../data/robot';
 import type { RobotConfig } from '../../data/robot';
-import { ObjectType, Direction, RobotAI, RobotGoal, Owner } from '../../game/core/warmap';
-import type { WarMap, RobotObject } from '../../game/core/warmap';
+import { ObjectType, Direction, RobotGoal, Owner } from '../../game/core/warmap';
+import type { WarMap } from '../../game/core/warmap';
 import type { Resources } from '../../game/resources';
 import { buildOccupancy, isOccupied } from '../../game/core/occupancy';
 import { CAPTURE_ZONES } from '../../game/mechanics/capture';
@@ -183,8 +183,6 @@ export function spawnManualRobot(
         robotConfig: config,
         goal: RobotGoal.ATTACK_ROBOTS,
     });
-    robot.nav = { moveOutTarget: { x: spawnX + 4, y: spawnY } };
-
     warMap.robots.push(robot);
     return true;
 }
