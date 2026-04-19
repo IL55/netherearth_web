@@ -29,6 +29,9 @@ export const WEAPON_BUILD_COST: Record<Weapon, Cost> = {
 export const ELECTRONICS_BUILD_COST: Cost = { electronics: 1 };
 export const NUCLEAR_BUILD_COST:     Cost = { nuclear: 2 };
 
+// Ticks to wait before a warbase can build another robot.
+export const BUILD_COOLDOWN = 10;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function sumCosts(...costs: Cost[]): Cost {
@@ -178,12 +181,18 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
         const spawnX = obj.x + zone.dx;
         const spawnY = obj.y + zone.dy;
 
+        // Check warbase build cooldown
+        if (warMap.tick !== undefined && obj.lastBuiltAt !== undefined && obj.lastBuiltAt + BUILD_COOLDOWN > warMap.tick) continue;
+
         // Block if any robot (enemy capturing or own robot) is at the spawn point.
         if (isOccupied(occupancy, spawnX, spawnY)) continue;
 
         const resources = ownerResources[obj.owner];
         const option = chooseBuildOption(resources);
         if (!option) continue;
+
+        // Mark the time this warbase built a robot
+        if (warMap.tick !== undefined) obj.lastBuiltAt = warMap.tick;
 
         deductCost(resources, option.cost);
 

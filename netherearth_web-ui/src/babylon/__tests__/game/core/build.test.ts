@@ -200,6 +200,38 @@ describe('tickBuild — spawn blocked', () => {
 // ─── tickBuild — multiple warbases ───────────────────────────────────────────
 
 describe('tickBuild — multiple warbases', () => {
+    it('does not build another robot until BUILD_COOLDOWN ticks have passed', () => {
+        const map = makeMap([warbase(Owner.RED, 0, 0)]);
+        const warbaseObj = map.objects.find(o => o.type === ObjectType.WARBASE)!;
+        const res = createOwnerResources();
+        // Give enough resources for multiple builds
+        res[Owner.RED].chassis = 10;
+
+        // Build first robot at tick 5
+        map.tick = 5;
+        tickBuild(map, res);
+        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1);
+        
+        // Move the built robot out of the way so the spawn point is clear
+        const robot = map.objects.find(o => o.type === ObjectType.ROBOT)!;
+        robot.x = 0; robot.y = 0;
+
+        // Try to build another robot immediately (tick 6) - should fail because of cooldown
+        map.tick = 6;
+        tickBuild(map, res);
+        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1);
+
+        // Try to build one tick before cooldown finishes (tick 5 + 9 = 14)
+        map.tick = 14;
+        tickBuild(map, res);
+        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(1);
+
+        // Build again exactly when cooldown is over (tick 5 + 10 = 15)
+        map.tick = 15;
+        tickBuild(map, res);
+        expect(map.objects.filter(o => o.type === ObjectType.ROBOT)).toHaveLength(2);
+    });
+
     it('builds one robot per warbase in the same tick', () => {
         // cannon (tracks+cannon) costs chassis:1 + cannons:1; give exactly 1 of each per warbase
         const map = makeMap([warbase(Owner.RED, 0, 0), warbase(Owner.RED, 0, 10)]);

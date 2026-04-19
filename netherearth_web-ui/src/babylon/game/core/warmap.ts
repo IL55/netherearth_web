@@ -67,6 +67,7 @@ export interface MapObject extends ObjectBase {
     owner?: Owner;
     subtype?: string;
     captureCounter?: number;
+    lastBuiltAt?: number;
 }
 
 export type WarObject = RobotObject | MapObject;
