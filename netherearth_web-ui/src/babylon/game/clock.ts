@@ -1,10 +1,8 @@
 import { RobotAI } from "./core/warmap";
-
-import { ObjectType } from './core/warmap';
 import type { WarMap } from './core/warmap';
 import { buildOccupancy } from './core/occupancy';
 import { applyAction, ActionType, type RobotAction } from './actions';
-import { simpleAI } from './ai/simple';
+import { simpleAI, applyAIStateUpdate } from './ai/simple';
 import { tickCapture } from './mechanics/capture';
 import { advanceProjectiles, SUB_TICKS } from './mechanics/projectile';
 import { tickResources, createOwnerResources, type OwnerResources } from './resources';
@@ -78,7 +76,10 @@ function gameTick(
             continue;
         }
 
-        const action: RobotAction = obj.ai === RobotAI.SIMPLE ? simpleAI(obj, warMap, occupancy) : { type: ActionType.IDLE };
+        const { action, stateUpdate } = obj.ai === RobotAI.SIMPLE
+            ? simpleAI(obj, warMap, occupancy)
+            : { action: { type: ActionType.IDLE } as const, stateUpdate: undefined };
+        applyAIStateUpdate(obj, stateUpdate);
         applyAction(obj, action, warMap, occupancy);
     }
 

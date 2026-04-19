@@ -136,7 +136,7 @@ export function buildRobotConfig(selection: BuildSelection): RobotConfig | null 
 
 /** Returns true if the owner's warbase spawn point is currently blocked. */
 export function isSpawnOccupied(warMap: WarMap, owner: Owner): boolean {
-    const zone = CAPTURE_ZONES['warbase'];
+    const zone = CAPTURE_ZONES[ObjectType.WARBASE];
     if (!zone) return true;
     const warbase = warMap.tiles.find(
         o => o.type === ObjectType.WARBASE && o.owner === owner,
@@ -161,7 +161,7 @@ export function spawnManualRobot(
     config: RobotConfig,
     owner: Owner = Owner.RED,
 ): boolean {
-    const zone = CAPTURE_ZONES['warbase'];
+    const zone = CAPTURE_ZONES[ObjectType.WARBASE];
     if (!zone) return false;
 
     const warbase = warMap.tiles.find(

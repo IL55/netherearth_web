@@ -19,7 +19,7 @@
 import { ObjectType } from '../../../game/core/warmap';
 import { Direction } from '../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { simpleAI } from '../../../game/ai/simple';
+import { stepSimpleAI as simpleAI } from '../../../game/ai/simple';
 import { applyAction } from '../../../game/actions';
 import { buildOccupancy } from '../../../game/core/occupancy';
 import { CAPTURE_ZONES } from '../../../game/mechanics/capture';
@@ -131,7 +131,7 @@ describe('small1.map full setup', () => {
             tick: 0,
         };
 
-        const zone  = CAPTURE_ZONES['factory']!;
+        const zone  = CAPTURE_ZONES[ObjectType.FACTORY]!;
         const factories = map.tiles.filter(o => o.type === ObjectType.FACTORY);
 
         const trace: string[] = [];

@@ -13,7 +13,7 @@ import { ObjectType, Direction, RobotGoal, Owner } from '../../../../game/core/w
 import type { WarMap, WarObject, RobotObject } from '../../../../game/core/warmap';
 import { NavMode } from '../../../../game/types/nav-mode';
 import { describe, it, expect } from 'vitest';
-import { simpleAI } from '../../../../game/ai/simple';
+import { stepSimpleAI as simpleAI } from '../../../../game/ai/simple';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/core/occupancy';
 import { Chassis, Electronics } from '../../../../data/robot';

@@ -85,7 +85,7 @@ describe('scenario: warbase robot production', () => {
         const warMap = makeWarMap(warbase);
 
         // Place a robot exactly at the spawn point (warbase capture zone center)
-        const zone = CAPTURE_ZONES['warbase']!;
+        const zone = CAPTURE_ZONES[ObjectType.WARBASE]!;
         const blocker = {
             id: 'blocker',
             type: ObjectType.ROBOT as const,

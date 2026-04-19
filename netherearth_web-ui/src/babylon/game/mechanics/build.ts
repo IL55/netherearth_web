@@ -170,7 +170,7 @@ export function chooseBuildOption(resources: Resources): BuildOption | undefined
  * deducts its cost, and assigns it a goal from the round-robin cycle.
  */
 export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void {
-    const zone = CAPTURE_ZONES['warbase'];
+    const zone = CAPTURE_ZONES[ObjectType.WARBASE];
     if (!zone) return;
 
     const occupancy = buildOccupancy(warMap);

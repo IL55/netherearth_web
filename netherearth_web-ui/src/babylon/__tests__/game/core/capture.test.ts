@@ -34,10 +34,10 @@ function makeRobot(id: string, x: number, y: number, owner: Owner): RobotObject 
 
 describe('CAPTURE_ZONES', () => {
     it('factory zone exists with ticks=DAY_TICKS', () => {
-        expect(CAPTURE_ZONES['factory']?.ticks).toBe(DAY_TICKS);
+        expect(CAPTURE_ZONES[ObjectType.FACTORY]?.ticks).toBe(DAY_TICKS);
     });
     it('warbase zone exists with ticks=3*DAY_TICKS', () => {
-        expect(CAPTURE_ZONES['warbase']?.ticks).toBe(3 * DAY_TICKS);
+        expect(CAPTURE_ZONES[ObjectType.WARBASE]?.ticks).toBe(3 * DAY_TICKS);
     });
 });
 

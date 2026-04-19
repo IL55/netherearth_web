@@ -41,7 +41,7 @@ describe('scenario: neutral factory capture', () => {
 
     it('RED robot placed in capture zone flips factory owner after one day', () => {
         const factory: MapObject = { id: 'f1', type: ObjectType.FACTORY, x: 10, y: 10 };
-        const zone = CAPTURE_ZONES['factory']!;
+        const zone = CAPTURE_ZONES[ObjectType.FACTORY]!;
         // Place robot exactly in the capture slot
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.RED, RobotGoal.CAPTURE_NEUTRAL_FACTORY);
 
@@ -57,7 +57,7 @@ describe('scenario: neutral factory capture', () => {
 
     it('capture counter resets if robot leaves mid-capture', () => {
         const factory: MapObject = { id: 'f1', type: ObjectType.FACTORY, x: 10, y: 10 };
-        const zone = CAPTURE_ZONES['factory']!;
+        const zone = CAPTURE_ZONES[ObjectType.FACTORY]!;
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.RED, RobotGoal.CAPTURE_NEUTRAL_FACTORY);
 
         const warMap: WarMap = { width: 30, height: 30, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
@@ -79,7 +79,7 @@ describe('scenario: neutral factory capture', () => {
 
     it('BLUE robot cannot capture a factory already owned by BLUE', () => {
         const factory: MapObject = { id: 'f1', type: ObjectType.FACTORY, x: 10, y: 10, owner: Owner.BLUE };
-        const zone = CAPTURE_ZONES['factory']!;
+        const zone = CAPTURE_ZONES[ObjectType.FACTORY]!;
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.BLUE, RobotGoal.CAPTURE_FACTORY);
 
         const warMap: WarMap = { width: 30, height: 30, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
@@ -102,7 +102,7 @@ describe('scenario: warbase capture with navigation', () => {
         // Red warbase at (10, 10). Capture zone offset is dx: 3.5, dy: 2.0
         // So capture spot is exactly at (13.5, 12.0).
         const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 10, y: 10, owner: Owner.RED };
-        const zone = CAPTURE_ZONES['warbase']!;
+        const zone = CAPTURE_ZONES[ObjectType.WARBASE]!;
         
         // Place robot 2 cells EAST of the exact capture spot so it's not inside the warbase structure
         // Exact capture spot: (13.5, 12.0)
@@ -147,7 +147,7 @@ describe('scenario: enemy factory capture', () => {
 
     it('RED robot in zone flips a BLUE-owned factory', () => {
         const factory: MapObject = { id: 'f1', type: ObjectType.FACTORY, x: 10, y: 10, owner: Owner.BLUE };
-        const zone = CAPTURE_ZONES['factory']!;
+        const zone = CAPTURE_ZONES[ObjectType.FACTORY]!;
         const robot = makeRobot('r1', factory.x + zone.dx, factory.y + zone.dy, Owner.RED, RobotGoal.CAPTURE_FACTORY);
 
         const warMap: WarMap = { width: 30, height: 30, tiles: [factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };

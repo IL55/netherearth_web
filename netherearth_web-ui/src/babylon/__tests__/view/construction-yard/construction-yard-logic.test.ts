@@ -353,7 +353,7 @@ describe('spawnManualRobot', () => {
 
     it('spawns robot at the warbase spawn zone offset', () => {
         const warMap = makeWarMap();
-        // warbase at (0,0); CAPTURE_ZONES.warbase = { dx: 3.5, dy: 2.0 }
+        // warbase at (0,0); CAPTURE_ZONES[ObjectType.WARBASE] = { dx: 3.5, dy: 2.0 }
         spawnManualRobot(warMap, cfg);
         const robot = warMap.robots[0];
         expect(robot.x).toBeCloseTo(3.5);
@@ -403,7 +403,7 @@ describe('spawnManualRobot', () => {
 });
 
 // ─── isSpawnOccupied ──────────────────────────────────────────────────────────
-// Warbase spawn offset: dx=3.5, dy=2.0 (from CAPTURE_ZONES['warbase'])
+// Warbase spawn offset: dx=3.5, dy=2.0 (from CAPTURE_ZONES[ObjectType.WARBASE])
 
 describe('isSpawnOccupied', () => {
     it('returns true when no warbase exists', () => {

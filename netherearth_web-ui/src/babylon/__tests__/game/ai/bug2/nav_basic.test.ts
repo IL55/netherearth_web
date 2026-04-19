@@ -1,7 +1,7 @@
 import { ObjectType } from '../../../../game/core/warmap';
 import { Direction } from '../../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { simpleAI } from '../../../../game/ai/simple';
+import { stepSimpleAI as simpleAI } from '../../../../game/ai/simple';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/core/occupancy';
 import { RobotGoal, Owner } from '../../../../game/core/warmap';

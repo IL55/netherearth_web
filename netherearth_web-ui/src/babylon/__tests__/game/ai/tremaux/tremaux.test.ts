@@ -9,7 +9,7 @@
 import { ObjectType } from '../../../../game/core/warmap';
 import { Direction } from '../../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { simpleAI } from '../../../../game/ai/simple';
+import { stepSimpleAI as simpleAI } from '../../../../game/ai/simple';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/core/occupancy';
 import { tickCapture, CAPTURE_ZONES } from '../../../../game/mechanics/capture';
@@ -48,7 +48,7 @@ function makeTile(x: number, y: number, subtype: string): WarObject {
 }
 
 function runUntilCapture(map: WarMap, robot: RobotObject, factory: WarObject, maxTicks: number): number {
-    const zone  = CAPTURE_ZONES['factory']!;
+    const zone  = CAPTURE_ZONES[ObjectType.FACTORY]!;
     const goalX = factory.x + zone.dx;
     const goalY = factory.y + zone.dy;
     for (let tick = 0; tick < maxTicks; tick++) {
@@ -197,7 +197,7 @@ describe('Trémaux: U-shaped dead end', () => {
         const robot   = makeRobot('r0', 2, 5);
         const map: WarMap = { width: 20, height: 10, tiles: [...walls, factory], robots: [robot], projectiles: [], killCounts: {}, tick: 0 };
 
-        const zone  = CAPTURE_ZONES['factory']!;
+        const zone  = CAPTURE_ZONES[ObjectType.FACTORY]!;
         const goalX = factory.x + zone.dx;
         const goalY = factory.y + zone.dy;
 

@@ -1,7 +1,7 @@
 import { ObjectType } from '../../../../game/core/warmap';
 import { Direction } from '../../../../game/core/warmap';
 import { describe, it, expect } from 'vitest';
-import { simpleAI } from '../../../../game/ai/simple';
+import { stepSimpleAI as simpleAI } from '../../../../game/ai/simple';
 import { applyAction } from '../../../../game/actions';
 import { buildOccupancy } from '../../../../game/core/occupancy';
 import { tickCapture, CAPTURE_ZONES } from '../../../../game/mechanics/capture';
@@ -42,7 +42,7 @@ function runUntilCapture(
     factory: WarObject,
     maxTicks: number,
 ): number {
-    const zone = CAPTURE_ZONES['factory']!;
+    const zone = CAPTURE_ZONES[ObjectType.FACTORY]!;
     const goalX = factory.x + zone.dx;
     const goalY = factory.y + zone.dy;
 
