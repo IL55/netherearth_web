@@ -55,15 +55,17 @@ const HINT_STYLE: Partial<CSSStyleDeclaration> = {
  * Shown on game start; toggled with Escape during play.
  * All action callbacks (new game, save, load) are stubs — wire them up later.
  */
+import { bus } from '../game/event-bus';
+
 export class StartupMenu {
     private overlay:  HTMLDivElement;
     private visible = false;
     private onKeyDown: (e: KeyboardEvent) => void;
 
     constructor(
-        private onNewGame: () => void,
         private onSave:    () => void,
         private onLoad:    () => void,
+        private onNewGame?: () => void,
     ) {
         this.overlay = document.createElement('div');
         Object.assign(this.overlay.style, OVERLAY_STYLE);
@@ -89,7 +91,11 @@ export class StartupMenu {
             return btn;
         };
 
-        this.overlay.appendChild(makeBtn('NEW GAME',  () => { this.hide(); this.onNewGame(); }));
+        this.overlay.appendChild(makeBtn('NEW GAME',  () => {
+            this.hide();
+            if (this.onNewGame) this.onNewGame();
+            bus.emit({ type: 'game:start' });
+        }));
         this.overlay.appendChild(makeBtn('RESUME',    () => this.hide()));
         this.overlay.appendChild(makeBtn('SAVE GAME', () => this.onSave()));
         this.overlay.appendChild(makeBtn('LOAD GAME', () => this.onLoad()));

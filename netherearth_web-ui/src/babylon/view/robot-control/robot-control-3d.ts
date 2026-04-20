@@ -6,6 +6,8 @@ import { WEAPON_RENDER_ORDER } from '../../data/robot';
 import type { Weapon } from '../../data/robot';
 import { ORDERABLE_GOALS, GOAL_LABELS } from './constants';
 import { Direction } from '../../game/core/warmap';
+import { Owner } from '../../game/types/owner';
+import { RobotGoal } from '../../game/types/robot-goal';
 import type { RobotObject, WarMap } from '../../game/core/warmap';
 import { ActionType } from '../../game/actions';
 import type { RobotAction } from '../../game/actions';

@@ -22,6 +22,7 @@ import { RobotControlTrigger } from './view/robot-control/trigger';
 import { GameOverScreen } from './view/game-over';
 import { StartupMenu } from './view/startup-menu';
 import { bus } from './game/event-bus';
+import { resetGame } from './game/reset';
 
 export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElement): Promise<{ scene: BABYLON.Scene, dispose: () => void }> => {
   const scene = new BABYLON.Scene(engine);
@@ -40,7 +41,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const warMap = createWarMap(mapData);
 
-  warMap.tiles.filter(o => o.type === ObjectType.FACTORY).forEach(o => { o.owner = Owner.BLUE; });
+  warMap.tiles.filter(o => o.type === ObjectType.FACTORY).forEach(o => { o.owner = Owner.NEUTRAL; });
 
   const renderer = new Renderer(models, scene, mapBegin);
   const projectileRenderer = new ProjectileRenderer(models, mapBegin);
@@ -49,7 +50,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const redWarbase = warMap.tiles.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
   const shipStartX = redWarbase ? redWarbase.x + 1.5 : mapData.width / 2;
-  const shipStartY = redWarbase ? redWarbase.y + 2   : mapData.height / 2;
+  const shipStartY = redWarbase ? redWarbase.y - 3   : mapData.height / 2;
   const ship = { x: shipStartX, y: shipStartY, height: 1.5 };
   const shipInput = createShipInput();
   const shipRenderer = new ShipRenderer(models, mapBegin);
@@ -79,14 +80,25 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const robotControlTrigger = new RobotControlTrigger(scene, mapData.width, () => {});
 
-  const gameOverScreen = new GameOverScreen(() => {});
+  const gameOverScreen = new GameOverScreen();
 
   const startupMenu = new StartupMenu(
-      () => { /* TODO: new game */ },
       () => { /* TODO: save */ },
       () => { /* TODO: load */ },
   );
   startupMenu.show();
+
+  bus.on('game:menu', () => {
+      startupMenu.show();
+  });
+
+  bus.on('game:start', () => {
+      resetGame(warMap, mapData, ownerResources, ship, clock, INITIAL_RESOURCES);
+
+      // Render updated map
+      renderer.render(warMap);
+      hud.update(warMap);
+  });
 
   bus.on('tick:sub', ({ warMap }) => {
       const robotsPositions = warMap.robots.map(r => ({ x: r.x, y: r.y, height: calcRobotHeight(r.robotConfig) }));

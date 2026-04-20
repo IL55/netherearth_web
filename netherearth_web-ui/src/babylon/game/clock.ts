@@ -14,6 +14,8 @@ import { checkVictory } from './mechanics/victory';
 
 export interface Clock {
     stop: () => void;
+    reset: () => void;
+    start: () => void;
 }
 
 // One game tick = SUB_TICKS sub-ticks.
@@ -30,17 +32,37 @@ export function startClock(
     getManualAction: () => RobotAction | null = () => null,
 ): Clock {
     let subTick = 0;
-    const id = setInterval(() => {
-        if (isPaused()) return;
-        if (subTick === 0) {
-            gameTick(warMap, ownerResources, ship, getControlledRobotId(), getManualAction);
-            bus.emit({ type: 'tick:game', warMap });
+    let id: ReturnType<typeof setInterval> | null = null;
+    
+    const start = () => {
+        if (id) return;
+        id = setInterval(() => {
+            if (isPaused()) return;
+            if (subTick === 0) {
+                gameTick(warMap, ownerResources, ship, getControlledRobotId(), getManualAction);
+                bus.emit({ type: 'tick:game', warMap });
+            }
+            advanceProjectiles(warMap);
+            bus.emit({ type: 'tick:sub', warMap });
+            subTick = (subTick + 1) % SUB_TICKS;
+        }, subTickMs);
+    };
+    
+    const stop = () => {
+        if (id) {
+            clearInterval(id);
+            id = null;
         }
-        advanceProjectiles(warMap);
-        bus.emit({ type: 'tick:sub', warMap });
-        subTick = (subTick + 1) % SUB_TICKS;
-    }, subTickMs);
-    return { stop: () => clearInterval(id) };
+    };
+    
+    const reset = () => {
+        subTick = 0;
+        warMap.tick = 0;
+    };
+    
+    start();
+    
+    return { stop, reset, start };
 }
 
 // Number of ticks for the death-blink animation (show/hide alternates each tick).

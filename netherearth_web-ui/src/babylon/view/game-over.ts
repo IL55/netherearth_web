@@ -1,4 +1,5 @@
 import { Owner } from '../game/types/owner';
+import { bus } from '../game/event-bus';
 
 const OVERLAY_STYLE: Partial<CSSStyleDeclaration> = {
     position:        'fixed',
@@ -41,7 +42,7 @@ export class GameOverScreen {
     private overlay: HTMLDivElement;
     private visible = false;
 
-    constructor(private onDismiss: () => void) {
+    constructor(private onDismiss?: () => void) {
         this.overlay = document.createElement('div');
         Object.assign(this.overlay.style, OVERLAY_STYLE);
         this.overlay.style.display = 'none';
@@ -77,7 +78,10 @@ export class GameOverScreen {
     private dismiss(): void {
         this.overlay.style.display = 'none';
         this.visible = false;
-        this.onDismiss();
+        if (this.onDismiss) {
+            this.onDismiss();
+        }
+        bus.emit({ type: 'game:menu' });
     }
 
     dispose(): void {

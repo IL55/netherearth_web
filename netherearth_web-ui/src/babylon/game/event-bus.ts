@@ -4,7 +4,9 @@ import type { Owner } from './types/owner';
 export type GameEvent =
     | { type: 'tick:sub';  warMap: WarMap }
     | { type: 'tick:game'; warMap: WarMap }
-    | { type: 'game:over'; winner: Owner };
+    | { type: 'game:over'; winner: Owner }
+    | { type: 'game:menu' } // Requested to show the startup menu
+    | { type: 'game:start' }; // Start a new game
 
 type Handler<E> = (event: E) => void;
 
