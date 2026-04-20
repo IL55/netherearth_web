@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Chassis, Weapon, Electronics } from '../../../data/robot';
-import { ObjectType, Owner } from '../../../game/core/warmap';
+import { ObjectType, Owner, RobotGoal } from '../../../game/core/warmap';
 import type { WarMap } from '../../../game/core/warmap';
 import { createResources } from '../../../game/resources';
 import type { Resources } from '../../../game/resources';
@@ -372,6 +372,12 @@ describe('spawnManualRobot', () => {
         spawnManualRobot(warMap, cfg, Owner.RED);
         const robot = warMap.robots[0];
         expect(robot.owner).toBe(Owner.RED);
+    });
+
+    it('spawns with DEFEND goal so the robot holds position until commanded', () => {
+        const warMap = makeWarMap();
+        spawnManualRobot(warMap, cfg, Owner.RED);
+        expect(warMap.robots[0].goal).toBe(RobotGoal.DEFEND);
     });
 
     it('returns false when spawn point is already occupied', () => {

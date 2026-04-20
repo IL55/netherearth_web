@@ -181,7 +181,7 @@ export function spawnManualRobot(
         owner,
         facing: Direction.E,
         robotConfig: config,
-        goal: RobotGoal.ATTACK_ROBOTS,
+        goal: RobotGoal.DEFEND,
     });
     warMap.robots.push(robot);
     return true;

@@ -12,7 +12,7 @@ import { startClock } from '../../../game/clock';
 import { createOwnerResources } from '../../../game/resources';
 import { Chassis, Weapon, Electronics, calcHealth } from '../../../data/robot';
 import { SUB_TICKS } from '../../../game/mechanics/projectile';
-import { tickBuild, _resetBuildState, CHASSIS_BUILD_COST, WEAPON_BUILD_COST, ELECTRONICS_BUILD_COST, NUCLEAR_BUILD_COST } from '../../../game/mechanics/build';
+import { tickBuild, _resetBuildState, CHASSIS_BUILD_COST, WEAPON_BUILD_COST, ELECTRONICS_BUILD_COST, NUCLEAR_BUILD_COST, BUILD_COOLDOWN } from '../../../game/mechanics/build';
 
 const TICK_MS = 100;
 
@@ -102,8 +102,8 @@ describe('tickBuild — nuclear robot gets nuke goal', () => {
     beforeEach(() => _resetBuildState());
 
     it('assigns NUKE_FACTORY or NUKE_WARBASE to a nuclear robot', () => {
-        const wb: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 0, y: 0, owner: Owner.RED };
-        const warMap: WarMap = { width: 20, height: 20, tiles: [wb], robots: [], projectiles: [], killCounts: {}, tick: 0 };
+        const wb: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 0, y: 0, owner: Owner.BLUE };
+        const warMap: WarMap = { width: 20, height: 20, tiles: [wb], robots: [], projectiles: [], killCounts: {}, tick: BUILD_COOLDOWN + 1 };
         const res = createOwnerResources();
         // Full nuclear kit cost
         const cost = {
@@ -112,7 +112,7 @@ describe('tickBuild — nuclear robot gets nuke goal', () => {
             nuclear:     NUCLEAR_BUILD_COST.nuclear!,
             electronics: ELECTRONICS_BUILD_COST.electronics!,
         };
-        Object.assign(res[Owner.RED], cost);
+        Object.assign(res[Owner.BLUE], cost);
 
         tickBuild(warMap, res);
 
@@ -122,12 +122,12 @@ describe('tickBuild — nuclear robot gets nuke goal', () => {
     });
 
     it('alternates between NUKE_FACTORY and NUKE_WARBASE across successive builds', () => {
-        const wb1: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 0, y: 0, owner: Owner.RED };
-        const wb2: MapObject = { id: 'wb2', type: ObjectType.WARBASE, x: 0, y: 10, owner: Owner.RED };
-        const warMap: WarMap = { width: 20, height: 20, tiles: [wb1, wb2], robots: [], projectiles: [], killCounts: {}, tick: 0 };
+        const wb1: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 0, y: 0, owner: Owner.BLUE };
+        const wb2: MapObject = { id: 'wb2', type: ObjectType.WARBASE, x: 0, y: 10, owner: Owner.BLUE };
+        const warMap: WarMap = { width: 20, height: 20, tiles: [wb1, wb2], robots: [], projectiles: [], killCounts: {}, tick: BUILD_COOLDOWN + 1 };
         const res = createOwnerResources();
-        res[Owner.RED].chassis = 6; res[Owner.RED].phasers = 6;
-        res[Owner.RED].nuclear = 4; res[Owner.RED].electronics = 2;
+        res[Owner.BLUE].chassis = 6; res[Owner.BLUE].phasers = 6;
+        res[Owner.BLUE].nuclear = 4; res[Owner.BLUE].electronics = 2;
 
         tickBuild(warMap, res);
 

@@ -177,13 +177,13 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
 
     for (const obj of warMap.tiles) {
         if (obj.type !== ObjectType.WARBASE) continue;
-        if (obj.owner !== Owner.RED && obj.owner !== Owner.BLUE) continue;
+        if (obj.owner !== Owner.BLUE) continue; // RED robots are built only by the player
 
         const spawnX = obj.x + zone.dx;
         const spawnY = obj.y + zone.dy;
 
-        // Check warbase build cooldown
-        if (warMap.tick !== undefined && obj.lastBuiltAt !== undefined && obj.lastBuiltAt + BUILD_COOLDOWN > warMap.tick) continue;
+        // Check warbase build cooldown (treat never-built as lastBuiltAt=0)
+        if ((obj.lastBuiltAt ?? 0) + BUILD_COOLDOWN > (warMap.tick ?? 0)) continue;
 
         // Block if any robot (enemy capturing or own robot) is at the spawn point.
         if (isOccupied(occupancy, spawnX, spawnY)) continue;

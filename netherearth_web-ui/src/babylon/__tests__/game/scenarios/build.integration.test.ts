@@ -12,7 +12,7 @@ import { startClock } from '../../../game/clock';
 import { createOwnerResources } from '../../../game/resources';
 import { SUB_TICKS } from '../../../game/mechanics/projectile';
 import { RobotGoal, RobotAI, Direction } from '../../../game/core/warmap';
-import { _resetBuildState, CHASSIS_BUILD_COST, WEAPON_BUILD_COST } from '../../../game/mechanics/build';
+import { _resetBuildState, CHASSIS_BUILD_COST, WEAPON_BUILD_COST, BUILD_COOLDOWN } from '../../../game/mechanics/build';
 import { CAPTURE_ZONES } from '../../../game/mechanics/capture';
 import { Chassis, Weapon } from '../../../data/robot';
 
@@ -25,7 +25,7 @@ function advanceGameTicks(n: number): void {
 }
 
 function makeWarMap(warbase: MapObject): WarMap {
-    return { width: 30, height: 30, tiles: [warbase], robots: [], projectiles: [], killCounts: {}, tick: 0 };
+    return { width: 30, height: 30, tiles: [warbase], robots: [], projectiles: [], killCounts: {}, tick: BUILD_COOLDOWN };
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -34,14 +34,14 @@ describe('scenario: warbase robot production', () => {
     beforeEach(() => { vi.useFakeTimers(); _resetBuildState(); });
     afterEach(() => vi.useRealTimers());
 
-    it('spawns a robot after one tick when resources are sufficient', () => {
-        const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.RED };
+    it('spawns a robot after the build cooldown when resources are sufficient', () => {
+        const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.BLUE };
         const warMap = makeWarMap(warbase);
 
         const resources = createOwnerResources();
         // Minimum cost: tracks chassis (chassis: 1)
-        resources[Owner.RED].chassis  = CHASSIS_BUILD_COST[Chassis.TRACKS].chassis!;
-        resources[Owner.RED].cannons  = WEAPON_BUILD_COST[Weapon.CANNON].cannons!;
+        resources[Owner.BLUE].chassis  = CHASSIS_BUILD_COST[Chassis.TRACKS].chassis!;
+        resources[Owner.BLUE].cannons  = WEAPON_BUILD_COST[Weapon.CANNON].cannons!;
 
         const clock = startClock(warMap, resources, undefined, TICK_MS);
         advanceGameTicks(1);
@@ -49,11 +49,11 @@ describe('scenario: warbase robot production', () => {
 
         const robots = warMap.robots;
         expect(robots.length).toBe(1);
-        expect(robots[0].owner).toBe(Owner.RED);
+        expect(robots[0].owner).toBe(Owner.BLUE);
     });
 
     it('does not spawn when resources are insufficient', () => {
-        const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.RED };
+        const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.BLUE };
         const warMap = makeWarMap(warbase);
 
         // Empty resources — cannot afford anything
@@ -65,23 +65,23 @@ describe('scenario: warbase robot production', () => {
     });
 
     it('deducts resources after spawn', () => {
-        const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.RED };
+        const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.BLUE };
         const warMap = makeWarMap(warbase);
 
         const resources = createOwnerResources();
-        resources[Owner.RED].chassis = CHASSIS_BUILD_COST[Chassis.TRACKS].chassis!;
-        resources[Owner.RED].cannons = WEAPON_BUILD_COST[Weapon.CANNON].cannons!;
+        resources[Owner.BLUE].chassis = CHASSIS_BUILD_COST[Chassis.TRACKS].chassis!;
+        resources[Owner.BLUE].cannons = WEAPON_BUILD_COST[Weapon.CANNON].cannons!;
 
         const clock = startClock(warMap, resources, undefined, TICK_MS);
         advanceGameTicks(1);
         clock.stop();
 
         // Resources spent — not enough for another tracks+cannon build
-        expect(resources[Owner.RED].chassis).toBe(0);
+        expect(resources[Owner.BLUE].chassis).toBe(0);
     });
 
     it('does not spawn when spawn point is occupied by another robot', () => {
-        const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.RED };
+        const warbase: MapObject = { id: 'wb1', type: ObjectType.WARBASE, x: 5, y: 5, owner: Owner.BLUE };
         const warMap = makeWarMap(warbase);
 
         // Place a robot exactly at the spawn point (warbase capture zone center)
@@ -91,7 +91,7 @@ describe('scenario: warbase robot production', () => {
             type: ObjectType.ROBOT as const,
             x: warbase.x + zone.dx,
             y: warbase.y + zone.dy,
-            owner: Owner.RED,
+            owner: Owner.BLUE,
             facing: Direction.N,
             health: 100,
             robotConfig: { chassis: Chassis.TRACKS },
@@ -101,8 +101,8 @@ describe('scenario: warbase robot production', () => {
         warMap.robots.push(blocker as any);
 
         const resources = createOwnerResources();
-        resources[Owner.RED].chassis = 10;
-        resources[Owner.RED].cannons = 10;
+        resources[Owner.BLUE].chassis = 10;
+        resources[Owner.BLUE].cannons = 10;
 
         const clock = startClock(warMap, resources, undefined, TICK_MS);
         advanceGameTicks(1);
