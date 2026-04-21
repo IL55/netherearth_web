@@ -5,29 +5,39 @@ import type { WarMap } from './core/warmap';
 /** Number of ticks in one in-game "day" — resources are credited at the end of each day. */
 export const DAY_TICKS = 40;
 
+export enum ResourceType {
+    COMMON      = 'common',
+    ELECTRONICS = 'electronics',
+    CHASSIS     = 'chassis',
+    MISSILES    = 'missiles',
+    CANNONS     = 'cannons',
+    PHASERS     = 'phasers',
+    NUCLEAR     = 'nuclear',
+}
+
 /** Factory subtypes that produce a specific resource when owned. */
-export type FactoryResource = 'electronics' | 'chassis' | 'missiles' | 'cannons' | 'phasers' | 'nuclear';
+export type FactoryResource = ResourceType.ELECTRONICS | ResourceType.CHASSIS | ResourceType.MISSILES | ResourceType.CANNONS | ResourceType.PHASERS | ResourceType.NUCLEAR;
 
 const FACTORY_RESOURCE_SET: ReadonlySet<string> = new Set<FactoryResource>(
-    ['electronics', 'chassis', 'missiles', 'cannons', 'phasers', 'nuclear'],
+    [ResourceType.ELECTRONICS, ResourceType.CHASSIS, ResourceType.MISSILES, ResourceType.CANNONS, ResourceType.PHASERS, ResourceType.NUCLEAR],
 );
 
 /** All resources held by one owner. */
-export interface Resources {
-    common:      number;
-    electronics: number;
-    chassis:     number;
-    missiles:    number;
-    cannons:     number;
-    phasers:     number;
-    nuclear:     number;
-}
+export type Resources = Record<ResourceType, number>;
 
 /** Resources for both playing owners (NEUTRAL is excluded — it never earns income). */
 export type OwnerResources = Record<Owner.RED | Owner.BLUE, Resources>;
 
 export function createResources(): Resources {
-    return { common: 0, electronics: 0, chassis: 0, missiles: 0, cannons: 0, phasers: 0, nuclear: 0 };
+    return {
+        [ResourceType.COMMON]: 0,
+        [ResourceType.ELECTRONICS]: 0,
+        [ResourceType.CHASSIS]: 0,
+        [ResourceType.MISSILES]: 0,
+        [ResourceType.CANNONS]: 0,
+        [ResourceType.PHASERS]: 0,
+        [ResourceType.NUCLEAR]: 0,
+    };
 }
 
 export function createOwnerResources(): OwnerResources {

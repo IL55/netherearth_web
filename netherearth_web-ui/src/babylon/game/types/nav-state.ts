@@ -5,6 +5,8 @@ import { NavMode } from './nav-mode';
  * Kept in one sub-object so it is easy to inspect or reset.
  */
 export interface NavState {
+    /** The coordinate where the robot was originally spawned */
+    spawnPos?: { x: number; y: number };
     /** Terrain speed accumulator (all chassis types) */
     slowCounter?: number;
     /** Bug2 wall-follow state (h-electronics / e-electronics) */

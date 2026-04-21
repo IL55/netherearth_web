@@ -7,6 +7,7 @@ import { Owner } from '../types/owner';
 import type { WarMap } from '../core/warmap';
 import { RobotGoal } from '../core/warmap';
 import type { OwnerResources, Resources } from '../resources';
+import { ResourceType } from '../resources';
 import { buildOccupancy, isOccupied } from '../core/occupancy';
 import { CAPTURE_ZONES } from './capture';
 import { spawnRobot } from '../core/utils';
@@ -16,19 +17,19 @@ type Cost = Partial<Resources>;
 // ─── Part costs ───────────────────────────────────────────────────────────────
 
 export const CHASSIS_BUILD_COST: Record<Chassis, Cost> = {
-    [Chassis.TRACKS]:   { chassis: 1 },
-    [Chassis.ANTIGRAV]: { chassis: 2 },
-    [Chassis.BIPOD]:    { chassis: 3 },
+    [Chassis.TRACKS]:   { [ResourceType.CHASSIS]: 1 },
+    [Chassis.ANTIGRAV]: { [ResourceType.CHASSIS]: 2 },
+    [Chassis.BIPOD]:    { [ResourceType.CHASSIS]: 3 },
 };
 
 export const WEAPON_BUILD_COST: Record<Weapon, Cost> = {
-    [Weapon.CANNON]:   { cannons: 1 },
-    [Weapon.MISSILES]: { missiles: 2 },
-    [Weapon.PHASERS]:  { phasers: 3 },
+    [Weapon.CANNON]:   { [ResourceType.CANNONS]: 1 },
+    [Weapon.MISSILES]: { [ResourceType.MISSILES]: 2 },
+    [Weapon.PHASERS]:  { [ResourceType.PHASERS]: 3 },
 };
 
-export const ELECTRONICS_BUILD_COST: Cost = { electronics: 1 };
-export const NUCLEAR_BUILD_COST:     Cost = { nuclear: 2 };
+export const ELECTRONICS_BUILD_COST: Cost = { [ResourceType.ELECTRONICS]: 1 };
+export const NUCLEAR_BUILD_COST:     Cost = { [ResourceType.NUCLEAR]: 2 };
 
 // Ticks to wait before a warbase can build another robot.
 export const BUILD_COOLDOWN = 10;
@@ -46,14 +47,30 @@ function sumCosts(...costs: Cost[]): Cost {
 }
 
 export function canAfford(resources: Resources, cost: Cost): boolean {
-    return (Object.entries(cost) as [keyof Resources, number][]).every(
-        ([k, v]) => resources[k] >= v,
-    );
+    let deficit = 0;
+    for (const [k, v] of Object.entries(cost) as [ResourceType, number][]) {
+        if (k === ResourceType.COMMON) {
+            deficit += Math.max(0, v - resources[ResourceType.COMMON]);
+        } else {
+            deficit += Math.max(0, v - resources[k]);
+        }
+    }
+    return resources[ResourceType.COMMON] >= deficit;
 }
 
 function deductCost(resources: Resources, cost: Cost): void {
-    for (const [k, v] of Object.entries(cost) as [keyof Resources, number][]) {
-        resources[k] -= v;
+    for (const [k, v] of Object.entries(cost) as [ResourceType, number][]) {
+        if (k === ResourceType.COMMON) {
+            resources[ResourceType.COMMON] -= v;
+        } else {
+            if (resources[k] >= v) {
+                resources[k] -= v;
+            } else {
+                const remainder = v - resources[k];
+                resources[k] = 0;
+                resources[ResourceType.COMMON] -= remainder;
+            }
+        }
     }
 }
 

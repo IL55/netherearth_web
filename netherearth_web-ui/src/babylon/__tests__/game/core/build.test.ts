@@ -29,15 +29,32 @@ beforeEach(() => _resetBuildState());
 
 // ─── canAfford ────────────────────────────────────────────────────────────────
 
+import { ResourceType } from '../../../game/resources';
+
 describe('canAfford', () => {
     it('returns true when all resources are met', () => {
-        const res = { ...createResources(), chassis: 2 };
-        expect(canAfford(res, { chassis: 2 })).toBe(true);
+        const res = { ...createResources(), [ResourceType.CHASSIS]: 2 };
+        expect(canAfford(res, { [ResourceType.CHASSIS]: 2 })).toBe(true);
     });
 
-    it('returns false when a resource is short', () => {
-        const res = { ...createResources(), chassis: 1 };
-        expect(canAfford(res, { chassis: 2 })).toBe(false);
+    it('returns false when a resource is short and no common resources are available', () => {
+        const res = { ...createResources(), [ResourceType.CHASSIS]: 1 };
+        expect(canAfford(res, { [ResourceType.CHASSIS]: 2 })).toBe(false);
+    });
+
+    it('returns true when a resource is short but common resources cover the deficit', () => {
+        const res = { ...createResources(), [ResourceType.CHASSIS]: 1, [ResourceType.COMMON]: 2 };
+        expect(canAfford(res, { [ResourceType.CHASSIS]: 2 })).toBe(true);
+    });
+
+    it('returns false when a resource is short and common resources are insufficient', () => {
+        const res = { ...createResources(), [ResourceType.CHASSIS]: 1, [ResourceType.COMMON]: 1 };
+        expect(canAfford(res, { [ResourceType.CHASSIS]: 3 })).toBe(false);
+    });
+
+    it('can cover multiple deficits with common resources', () => {
+        const res = { ...createResources(), [ResourceType.CHASSIS]: 0, [ResourceType.PHASERS]: 0, [ResourceType.COMMON]: 5 };
+        expect(canAfford(res, { [ResourceType.CHASSIS]: 2, [ResourceType.PHASERS]: 3 })).toBe(true);
     });
 
     it('returns true for an empty cost', () => {
@@ -106,9 +123,20 @@ describe('tickBuild — builds best resource-fit robot', () => {
     it('deducts the cost from resources', () => {
         const map = makeMap([warbase(Owner.BLUE)]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
         tickBuild(map, res);
-        expect(res[Owner.BLUE].chassis).toBe(0); // 1 − 1 (tracks)
+        expect(res[Owner.BLUE][ResourceType.CHASSIS]).toBe(0); // 1 − 1 (tracks)
+    });
+
+    it('deducts from common resources when specific resource is short', () => {
+        const map = makeMap([warbase(Owner.BLUE)]);
+        const res = createOwnerResources();
+        res[Owner.BLUE][ResourceType.CHASSIS] = 0;
+        // Give 1 common resource so it can ONLY afford the cheapest option (tracks, which costs 1 chassis)
+        res[Owner.BLUE][ResourceType.COMMON] = 1;
+        tickBuild(map, res);
+        expect(res[Owner.BLUE][ResourceType.CHASSIS]).toBe(0);
+        expect(res[Owner.BLUE][ResourceType.COMMON]).toBe(0); // Tracks cost 1 chassis -> takes 1 from common
     });
 
     it('builds the best affordable robot (cannon over tracks when cannons resource available)', () => {

@@ -1,3 +1,5 @@
+import { bus } from '../game/event-bus';
+
 const OVERLAY_STYLE: Partial<CSSStyleDeclaration> = {
     position:       'fixed',
     inset:          '0',
@@ -55,7 +57,6 @@ const HINT_STYLE: Partial<CSSStyleDeclaration> = {
  * Shown on game start; toggled with Escape during play.
  * All action callbacks (new game, save, load) are stubs — wire them up later.
  */
-import { bus } from '../game/event-bus';
 
 export class StartupMenu {
     private overlay:  HTMLDivElement;
@@ -73,7 +74,7 @@ export class StartupMenu {
 
         const title = document.createElement('div');
         Object.assign(title.style, TITLE_STYLE);
-        title.textContent = 'NETHEREARTH';
+        title.textContent = 'NETHER EARTH RESTART';
         this.overlay.appendChild(title);
 
         const subtitle = document.createElement('div');

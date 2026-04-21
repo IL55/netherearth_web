@@ -150,7 +150,10 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
                     moveY = robot.y;
                 }
             }
-            robot.nav = { moveOutTarget: { x: moveX, y: moveY } };
+            robot.nav = { 
+                moveOutTarget: { x: moveX, y: moveY },
+                spawnPos: { x: robot.x, y: robot.y }
+            };
         } else {
             robot.nav = {};
         }
@@ -160,8 +163,12 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
         tx = robot.nav.moveOutTarget.x;
         ty = robot.nav.moveOutTarget.y;
         isMoveOut = true;
-        // If we reached the target or very close to it, schedule a clear.
-        if (Math.abs(robot.x - tx) + Math.abs(robot.y - ty) < 0.1) {
+        
+        // If we reached the target OR we've moved sufficiently far from the spawn point
+        const spawnPos = robot.nav.spawnPos;
+        const distFromSpawn = spawnPos ? (Math.abs(robot.x - spawnPos.x) + Math.abs(robot.y - spawnPos.y)) : 0;
+        
+        if (Math.abs(robot.x - tx) + Math.abs(robot.y - ty) < 0.1 || distFromSpawn >= 3) {
             su.clearMoveOut = true;
             isMoveOut = false;
         }
