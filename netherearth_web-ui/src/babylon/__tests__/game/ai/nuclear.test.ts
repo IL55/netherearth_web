@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { shouldDetonateNuclear } from '../../../game/ai/nuclear';
-import { ObjectType, Owner } from '../../../game/core/warmap';
+import { ObjectType, Owner, Direction, RobotGoal, RobotAI } from '../../../game/core/warmap';
 import type { WarMap, MapObject, RobotObject } from '../../../game/core/warmap';
 import { Chassis } from '../../../data/robot';
 
@@ -14,6 +14,7 @@ describe('shouldDetonateNuclear', () => {
     it('returns false if robot has no nuclear bomb', () => {
         const robot: RobotObject = {
             id: 'r1', type: ObjectType.ROBOT, x: 5, y: 5, owner: Owner.RED,
+            facing: Direction.N, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE, health: 100,
             robotConfig: { chassis: Chassis.TRACKS },
         };
         const warMap = createMapWithObjects([robot]);
@@ -23,10 +24,12 @@ describe('shouldDetonateNuclear', () => {
     it('returns true if stuck and an enemy robot is in 3x3 zone', () => {
         const robot: RobotObject = {
             id: 'r1', type: ObjectType.ROBOT, x: 5, y: 5, owner: Owner.RED,
+            facing: Direction.N, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE, health: 100,
             robotConfig: { chassis: Chassis.TRACKS, nuclear: true },
         };
         const enemy: RobotObject = {
             id: 'e1', type: ObjectType.ROBOT, x: 4, y: 6, owner: Owner.BLUE,
+            facing: Direction.N, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE, health: 100, robotConfig: { chassis: Chassis.TRACKS }
         };
         const warMap = createMapWithObjects([robot, enemy]);
 
@@ -37,14 +40,17 @@ describe('shouldDetonateNuclear', () => {
     it('returns false if stuck but no valuable target is in 3x3 zone', () => {
         const robot: RobotObject = {
             id: 'r1', type: ObjectType.ROBOT, x: 5, y: 5, owner: Owner.RED,
+            facing: Direction.N, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE, health: 100,
             robotConfig: { chassis: Chassis.TRACKS, nuclear: true },
         };
         const enemy: RobotObject = {
             id: 'e1', type: ObjectType.ROBOT, x: 3, y: 5, owner: Owner.BLUE,
+            facing: Direction.N, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE, health: 100, robotConfig: { chassis: Chassis.TRACKS }
         }; // Chebyshev distance = 2 (outside 3x3)
         
         const friendly: RobotObject = {
             id: 'f1', type: ObjectType.ROBOT, x: 4, y: 5, owner: Owner.RED,
+            facing: Direction.N, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE, health: 100, robotConfig: { chassis: Chassis.TRACKS }
         }; // Inside 3x3 but friendly
 
         const warMap = createMapWithObjects([robot, enemy, friendly]);
@@ -55,6 +61,7 @@ describe('shouldDetonateNuclear', () => {
     it('returns true if stuck and an enemy factory intersects 3x3 zone', () => {
         const robot: RobotObject = {
             id: 'r1', type: ObjectType.ROBOT, x: 5, y: 5, owner: Owner.RED,
+            facing: Direction.N, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE, health: 100,
             robotConfig: { chassis: Chassis.TRACKS, nuclear: true },
         };
         // Factory top-left at (3,4), width 2, height 3 -> spans x:3-4, y:4-6
@@ -70,6 +77,7 @@ describe('shouldDetonateNuclear', () => {
     it('returns true if stuck and a neutral factory intersects 3x3 zone', () => {
         const robot: RobotObject = {
             id: 'r1', type: ObjectType.ROBOT, x: 5, y: 5, owner: Owner.RED,
+            facing: Direction.N, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE, health: 100,
             robotConfig: { chassis: Chassis.TRACKS, nuclear: true },
         };
         const neutralFactory: MapObject = {
@@ -83,6 +91,7 @@ describe('shouldDetonateNuclear', () => {
     it('returns false if only friendly structures intersect 3x3 zone', () => {
         const robot: RobotObject = {
             id: 'r1', type: ObjectType.ROBOT, x: 5, y: 5, owner: Owner.RED,
+            facing: Direction.N, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE, health: 100,
             robotConfig: { chassis: Chassis.TRACKS, nuclear: true },
         };
         const friendlyFactory: MapObject = {

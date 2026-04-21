@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { resetGame } from '../reset';
 import { createWarMap, Owner, ObjectType } from '../core/warmap';
 import type { MapData } from '../../data/map';
-import type { OwnerResources } from '../resources';
+import { ResourceType, type OwnerResources } from '../resources';
 import type { ShipState } from '../ship/index';
 import type { Clock } from '../clock';
 
@@ -14,9 +14,9 @@ describe('resetGame', () => {
             height: 10,
             tiles: [], // Not strictly needed for this mock
             objects: [
-                { type: 'warbase', x: 2, y: 2, owner: Owner.RED },
-                { type: 'warbase', x: 8, y: 8, owner: Owner.BLUE },
-                { type: 'factory', x: 5, y: 5, owner: Owner.BLUE },
+                { type: ObjectType.WARBASE, x: 2, y: 2, owner: Owner.RED },
+                { type: ObjectType.WARBASE, x: 8, y: 8, owner: Owner.BLUE },
+                { type: ObjectType.FACTORY, x: 5, y: 5, owner: Owner.BLUE },
             ],
         };
 
@@ -31,10 +31,8 @@ describe('resetGame', () => {
         factory.owner = Owner.RED;
 
         const ownerResources: OwnerResources = {
-            [Owner.RED]: { common: 0, chassis: 0, cannons: 0, missiles: 0, phasers: 0, electronics: 0, nuclear: 0 },
-            [Owner.BLUE]: { common: 99, chassis: 99, cannons: 99, missiles: 99, phasers: 99, electronics: 99, nuclear: 99 },
-            [Owner.NEUTRAL]: { common: 0, chassis: 0, cannons: 0, missiles: 0, phasers: 0, electronics: 0, nuclear: 0 },
-            [Owner.NONE]: { common: 0, chassis: 0, cannons: 0, missiles: 0, phasers: 0, electronics: 0, nuclear: 0 },
+            [Owner.RED]: { [ResourceType.COMMON]: 0, [ResourceType.CHASSIS]: 0, [ResourceType.CANNONS]: 0, [ResourceType.MISSILES]: 0, [ResourceType.PHASERS]: 0, [ResourceType.ELECTRONICS]: 0, [ResourceType.NUCLEAR]: 0 },
+            [Owner.BLUE]: { [ResourceType.COMMON]: 99, [ResourceType.CHASSIS]: 99, [ResourceType.CANNONS]: 99, [ResourceType.MISSILES]: 99, [ResourceType.PHASERS]: 99, [ResourceType.ELECTRONICS]: 99, [ResourceType.NUCLEAR]: 99 },
         };
 
         const ship: ShipState = { x: 9, y: 9, height: 5 };
@@ -65,8 +63,8 @@ describe('resetGame', () => {
         expect(resetFactory?.owner).toBe(Owner.NEUTRAL);
 
         // Resources reset to initial
-        expect(ownerResources[Owner.RED].common).toBe(5);
-        expect(ownerResources[Owner.BLUE].common).toBe(5);
+        expect(ownerResources[Owner.RED][ResourceType.COMMON]).toBe(5);
+        expect(ownerResources[Owner.BLUE][ResourceType.COMMON]).toBe(5);
 
         // Ship positioned north of red warbase
         expect(ship.x).toBe(2 + 1.5);

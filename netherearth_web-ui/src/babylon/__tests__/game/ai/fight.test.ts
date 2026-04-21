@@ -8,7 +8,7 @@ import { ActionType, RotateDir } from '../../../game/actions';
 import { fightAction } from '../../../game/ai/fight';
 import { buildOccupancy } from '../../../game/core/occupancy';
 import { Chassis, Electronics, Weapon } from '../../../data/robot';
-import type { WarMap, RobotObject, WarObject } from '../../../game/core/warmap';
+import { RobotAI, type WarMap, type RobotObject, type WarObject } from '../../../game/core/warmap';
 
 function makeRobot(
     id: string,
@@ -26,6 +26,7 @@ function makeRobot(
         facing,
         owner,
         goal: RobotGoal.ATTACK_ROBOTS,
+        ai: RobotAI.SIMPLE,
         robotConfig: {
             chassis: Chassis.TRACKS,
             electronics: Electronics.STANDARD,
