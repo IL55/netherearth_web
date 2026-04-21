@@ -27,4 +27,6 @@ export interface NavState {
     visitCounts?: Map<string, number>;
     /** Temporary target coordinate given when the robot is built to move away from the spawn point */
     moveOutTarget?: { x: number; y: number };
+    /** Health of the robot at the end of the previous tick, used to detect incoming damage */
+    lastHealth?: number;
 }

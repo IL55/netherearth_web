@@ -104,6 +104,13 @@ export function fightAction(
 
     const facing = robot.facing;
 
+    // Detect incoming damage: compare health to previous tick
+    const lastHealth = robot.nav?.lastHealth;
+    const underAttack = lastHealth !== undefined && robot.health < lastHealth;
+
+    // Update for next tick (only if nav is initialized)
+    if (robot.nav) robot.nav.lastHealth = robot.health;
+
     // 1. Check for adjacent enemies first (they override forward-only scanning)
     let enemy = scanAdjacentEnemy(robot, warMap, occupancy);
     if (enemy) {
@@ -122,6 +129,18 @@ export function fightAction(
     } else {
         // 2. Otherwise, check for enemies ahead
         enemy = scanForwardEnemy(robot, facing, sightRange, warMap, occupancy);
+    }
+
+    if (!enemy && underAttack) {
+        // 3. We took damage but don't see anyone ahead or adjacent -> scan peripheral directions
+        for (const dir of CW_DIRS) {
+            if (dir === facing) continue;
+            const found = scanForwardEnemy(robot, dir, sightRange, warMap, occupancy);
+            if (found) {
+                const steps = (CW_DIRS.indexOf(dir) - CW_DIRS.indexOf(facing) + 4) % 4;
+                return { type: ActionType.ROTATE, direction: steps <= 2 ? RotateDir.RIGHT : RotateDir.LEFT };
+            }
+        }
     }
 
     if (!enemy) return undefined;
