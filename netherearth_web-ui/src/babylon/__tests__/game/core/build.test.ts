@@ -79,11 +79,11 @@ describe('BUILD_OPTIONS costs', () => {
         });
     });
 
-    it('cheapest option is tracks-only chassis', () => {
+    it('cheapest option is tracks with cannon', () => {
         const cheapest = BUILD_OPTIONS[BUILD_OPTIONS.length - 1];
         expect(cheapest.config.chassis).toBe(Chassis.TRACKS);
-        expect(cheapest.config.weapons ?? []).toHaveLength(0);
-        expect(cheapest.cost).toEqual({ chassis: 1 });
+        expect(cheapest.config.weapons).toContain(Weapon.CANNON);
+        expect(cheapest.cost).toEqual({ [ResourceType.CHASSIS]: 1, [ResourceType.CANNONS]: 1 });
     });
 });
 
@@ -109,14 +109,16 @@ describe('tickBuild — no resources', () => {
 // ─── tickBuild — basic build ──────────────────────────────────────────────────
 
 describe('tickBuild — builds best resource-fit robot', () => {
-    it('builds a tracks robot when only chassis resource is available', () => {
+    it('builds a tracks+cannon robot when chassis and cannon resources are available', () => {
         const map = makeMap([warbase(Owner.BLUE)]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
         tickBuild(map, res);
         const robots = map.robots;
         expect(robots).toHaveLength(1);
         expect(robots[0].robotConfig?.chassis).toBe(Chassis.TRACKS);
+        expect(robots[0].robotConfig?.weapons).toContain(Weapon.CANNON);
         expect(robots[0].owner).toBe(Owner.BLUE);
     });
 
@@ -124,27 +126,31 @@ describe('tickBuild — builds best resource-fit robot', () => {
         const map = makeMap([warbase(Owner.BLUE)]);
         const res = createOwnerResources();
         res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
         tickBuild(map, res);
         expect(res[Owner.BLUE][ResourceType.CHASSIS]).toBe(0); // 1 − 1 (tracks)
+        expect(res[Owner.BLUE][ResourceType.CANNONS]).toBe(0); // 1 − 1 (cannon)
     });
 
     it('deducts from common resources when specific resource is short', () => {
         const map = makeMap([warbase(Owner.BLUE)]);
         const res = createOwnerResources();
         res[Owner.BLUE][ResourceType.CHASSIS] = 0;
-        // Give 1 common resource so it can ONLY afford the cheapest option (tracks, which costs 1 chassis)
-        res[Owner.BLUE][ResourceType.COMMON] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 0;
+        // Give 2 common resource so it can ONLY afford the cheapest option (tracks+cannon, which costs 2 total)
+        res[Owner.BLUE][ResourceType.COMMON] = 2;
         tickBuild(map, res);
         expect(res[Owner.BLUE][ResourceType.CHASSIS]).toBe(0);
-        expect(res[Owner.BLUE][ResourceType.COMMON]).toBe(0); // Tracks cost 1 chassis -> takes 1 from common
+        expect(res[Owner.BLUE][ResourceType.CANNONS]).toBe(0);
+        expect(res[Owner.BLUE][ResourceType.COMMON]).toBe(0); // Tracks+Cannon cost 2 -> takes 2 from common
     });
 
-    it('builds the best affordable robot (cannon over tracks when cannons resource available)', () => {
+    it('builds the best affordable robot with electronics when available', () => {
         const map = makeMap([warbase(Owner.BLUE)]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
-        res[Owner.BLUE].cannons = 1;
-        res[Owner.BLUE].electronics = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
+        res[Owner.BLUE][ResourceType.ELECTRONICS] = 1;
         tickBuild(map, res);
         const robots = map.robots;
         expect(robots[0].robotConfig?.weapons).toContain(Weapon.CANNON);
@@ -154,7 +160,8 @@ describe('tickBuild — builds best resource-fit robot', () => {
     it('spawns robot at warbase capture zone point', () => {
         const map = makeMap([warbase(Owner.BLUE, 2, 3)]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
         tickBuild(map, res);
         const robot = map.robots[0];
         expect(robot.x).toBe(2 + 3.5); // warbase.x + zone.dx
@@ -165,7 +172,8 @@ describe('tickBuild — builds best resource-fit robot', () => {
         const validGoals = Object.values(RobotGoal);
         const map = makeMap([warbase(Owner.BLUE)]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
         tickBuild(map, res);
         const robot = map.robots[0];
         expect(validGoals).toContain(robot.goal);
@@ -174,7 +182,8 @@ describe('tickBuild — builds best resource-fit robot', () => {
     it('new robot has correct owner and ai', () => {
         const map = makeMap([warbase(Owner.BLUE)]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
         tickBuild(map, res);
         const robot = map.robots[0];
         expect(robot.owner).toBe(Owner.BLUE);
@@ -187,7 +196,8 @@ describe('tickBuild — builds best resource-fit robot', () => {
         const wb2 = warbase(Owner.RED, 2, 20);
         const map = makeMap([wb1, wb2]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
         tickBuild(map, res);
 
         const robot = map.robots[0];
@@ -201,7 +211,8 @@ describe('tickBuild — builds best resource-fit robot', () => {
     it('new robot has positive health', () => {
         const map = makeMap([warbase(Owner.BLUE)]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
         tickBuild(map, res);
         const robot = map.robots[0];
         expect(robot.health).toBeGreaterThan(0);
@@ -239,7 +250,8 @@ describe('tickBuild — multiple warbases', () => {
         const map = makeMap([warbase(Owner.BLUE, 0, 0)]);
         const res = createOwnerResources();
         // Give enough resources for multiple builds
-        res[Owner.BLUE].chassis = 10;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 10;
+        res[Owner.BLUE][ResourceType.CANNONS] = 10;
 
         // Build first robot (makeMap starts at BUILD_COOLDOWN + 1)
         const firstTick = BUILD_COOLDOWN + 1;
@@ -271,12 +283,12 @@ describe('tickBuild — multiple warbases', () => {
         // cannon (tracks+cannon) costs chassis:1 + cannons:1; give exactly 1 of each per warbase
         const map = makeMap([warbase(Owner.BLUE, 0, 0), warbase(Owner.BLUE, 0, 10)]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 2;
-        res[Owner.BLUE].cannons = 2;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 2;
+        res[Owner.BLUE][ResourceType.CANNONS] = 2;
         tickBuild(map, res);
         expect(map.robots).toHaveLength(2);
-        expect(res[Owner.BLUE].chassis).toBe(0);
-        expect(res[Owner.BLUE].cannons).toBe(0);
+        expect(res[Owner.BLUE][ResourceType.CHASSIS]).toBe(0);
+        expect(res[Owner.BLUE][ResourceType.CANNONS]).toBe(0);
     });
 
     it('sends robots to capture neutral factories when they exist', () => {
@@ -287,7 +299,9 @@ describe('tickBuild — multiple warbases', () => {
             factory as any,
         ]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 3; // antigrav (2) + tracks (1)
+        res[Owner.BLUE][ResourceType.CHASSIS] = 3; // 2 from antigrav + 1 from tracks
+        res[Owner.BLUE][ResourceType.MISSILES] = 2; // antigrav option
+        res[Owner.BLUE][ResourceType.CANNONS] = 1; // tracks option
         tickBuild(map, res);
         const robots = map.robots;
         // First robot: no fighters yet → ATTACK_ROBOTS (rule 1 baseline)
@@ -306,11 +320,10 @@ describe('chooseBuildOption — resource-aware selection', () => {
         expect(chooseBuildOption(createResources())).toBeUndefined();
     });
 
-    it('picks tracks when chassis is the only resource', () => {
-        const res = { ...createResources(), chassis: 1 };
+    it('cannot pick anything when chassis is the only resource', () => {
+        const res = { ...createResources(), [ResourceType.CHASSIS]: 1 };
         const option = chooseBuildOption(res);
-        expect(option?.config.chassis).toBe(Chassis.TRACKS);
-        expect(option?.config.weapons ?? []).toHaveLength(0);
+        expect(option).toBeUndefined();
     });
 
     it('prefers bipod+phaser over tracks when phasers are plentiful', () => {
@@ -503,7 +516,8 @@ describe('tickBuild — robot id prefix', () => {
         const wb = warbase(Owner.BLUE, 0, 0);
         const map = makeMap([wb]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
         tickBuild(map, res);
         const robot = map.robots[0];
         expect(robot).toBeDefined();
@@ -514,7 +528,8 @@ describe('tickBuild — robot id prefix', () => {
         const wb = warbase(Owner.BLUE, 0, 0);
         const map = makeMap([wb]);
         const res = createOwnerResources();
-        res[Owner.BLUE].chassis = 1;
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
         tickBuild(map, res);
         const builtRobot = map.robots[0] as RobotObject;
         expect(builtRobot).toBeDefined();

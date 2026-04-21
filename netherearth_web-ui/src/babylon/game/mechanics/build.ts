@@ -100,10 +100,6 @@ export const BUILD_OPTIONS: BuildOption[] = [
       cost: sumCosts(CHASSIS_BUILD_COST[Chassis.ANTIGRAV], WEAPON_BUILD_COST[Weapon.MISSILES]) },
     { config: { chassis: Chassis.TRACKS,   weapons: [Weapon.CANNON] },
       cost: sumCosts(CHASSIS_BUILD_COST[Chassis.TRACKS], WEAPON_BUILD_COST[Weapon.CANNON]) },
-    { config: { chassis: Chassis.ANTIGRAV },
-      cost: CHASSIS_BUILD_COST[Chassis.ANTIGRAV] },
-    { config: { chassis: Chassis.TRACKS },
-      cost: CHASSIS_BUILD_COST[Chassis.TRACKS] },
 ];
 
 // ─── Goal selection ───────────────────────────────────────────────────────────
