@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
     tickBuild, canAfford, chooseBuildOption, chooseBuildGoal, BUILD_OPTIONS,
     CHASSIS_BUILD_COST, WEAPON_BUILD_COST, ELECTRONICS_BUILD_COST, NUCLEAR_BUILD_COST,
-    BUILD_COOLDOWN, _resetBuildState,
+    BUILD_COOLDOWN_BLUE, _resetBuildState,
 } from '../../../game/mechanics/build';
 import { createOwnerResources, createResources } from '../../../game/resources';
 import { Owner } from '../../../game/types/owner';
@@ -18,7 +18,7 @@ import { buildOccupancy } from '../../../game/core/occupancy';
 function makeMap(objects: any[]): WarMap {
     const tiles = objects.filter(o => o.type !== ObjectType.ROBOT);
     const robots = objects.filter(o => o.type === ObjectType.ROBOT);
-    return { width: 20, height: 20, tiles, robots, projectiles: [], killCounts: {}, tick: BUILD_COOLDOWN + 1 };
+    return { width: 20, height: 20, tiles, robots, projectiles: [], killCounts: {}, tick: BUILD_COOLDOWN_BLUE + 1 };
 }
 
 function warbase(owner: Owner, x = 0, y = 0): WarObject {
@@ -253,8 +253,8 @@ describe('tickBuild — multiple warbases', () => {
         res[Owner.BLUE][ResourceType.CHASSIS] = 10;
         res[Owner.BLUE][ResourceType.CANNONS] = 10;
 
-        // Build first robot (makeMap starts at BUILD_COOLDOWN + 1)
-        const firstTick = BUILD_COOLDOWN + 1;
+        // Build first robot (makeMap starts at BUILD_COOLDOWN_BLUE + 1)
+        const firstTick = BUILD_COOLDOWN_BLUE + 1;
         map.tick = firstTick;
         tickBuild(map, res);
         expect(map.robots).toHaveLength(1);
@@ -269,12 +269,12 @@ describe('tickBuild — multiple warbases', () => {
         expect(map.robots).toHaveLength(1);
 
         // Try to build one tick before cooldown finishes
-        map.tick = firstTick + BUILD_COOLDOWN - 1;
+        map.tick = firstTick + BUILD_COOLDOWN_BLUE - 1;
         tickBuild(map, res);
         expect(map.robots).toHaveLength(1);
 
         // Build again exactly when cooldown is over
-        map.tick = firstTick + BUILD_COOLDOWN;
+        map.tick = firstTick + BUILD_COOLDOWN_BLUE;
         tickBuild(map, res);
         expect(map.robots).toHaveLength(2);
     });

@@ -12,7 +12,7 @@ import { startClock } from '../../../game/clock';
 import { createOwnerResources } from '../../../game/resources';
 import { SUB_TICKS } from '../../../game/mechanics/projectile';
 import { RobotGoal, RobotAI, Direction } from '../../../game/core/warmap';
-import { _resetBuildState, CHASSIS_BUILD_COST, WEAPON_BUILD_COST, BUILD_COOLDOWN } from '../../../game/mechanics/build';
+import { _resetBuildState, CHASSIS_BUILD_COST, WEAPON_BUILD_COST, BUILD_COOLDOWN_BLUE } from '../../../game/mechanics/build';
 import { CAPTURE_ZONES } from '../../../game/mechanics/capture';
 import { Chassis, Weapon } from '../../../data/robot';
 
@@ -25,7 +25,7 @@ function advanceGameTicks(n: number): void {
 }
 
 function makeWarMap(warbase: MapObject): WarMap {
-    return { width: 30, height: 30, tiles: [warbase], robots: [], projectiles: [], killCounts: {}, tick: BUILD_COOLDOWN };
+    return { width: 30, height: 30, tiles: [warbase], robots: [], projectiles: [], killCounts: {}, tick: BUILD_COOLDOWN_BLUE };
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
