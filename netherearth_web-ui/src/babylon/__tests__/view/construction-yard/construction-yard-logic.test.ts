@@ -57,18 +57,19 @@ describe('applyPartToggle', () => {
 
     it('selects weapon when none is selected', () => {
         const result = applyPartToggle(EMPTY_SELECTION, 'h-cannon');
-        expect(result.weapon).toBe('h-cannon');
+        expect(result.weapons).toContain('h-cannon');
     });
 
-    it('switches weapon radio-style', () => {
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon' };
+    it('adds another weapon when one is already selected', () => {
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'] };
         const result = applyPartToggle(sel, 'h-missiles');
-        expect(result.weapon).toBe('h-missiles');
+        expect(result.weapons).toContain('h-missiles');
+        expect(result.weapons).toContain('h-cannon');
     });
 
     it('deselects weapon when clicking the same one', () => {
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon' };
-        expect(applyPartToggle(sel, 'h-cannon').weapon).toBeNull();
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'] };
+        expect(applyPartToggle(sel, 'h-cannon').weapons).not.toContain('h-cannon');
     });
 
     it('toggles nuclear on', () => {
@@ -115,8 +116,8 @@ describe('getSelectedPartIds', () => {
         expect(getSelectedPartIds(sel)).toEqual(['h-bipod']);
     });
 
-    it('returns parts in stacking order: chassis → weapon → nuclear → electronics', () => {
-        const sel: BuildSelection = { chassis: 'h-tracks', weapon: 'h-cannon', nuclear: true, electronics: true };
+    it('returns parts in stacking order: chassis → weapons → nuclear → electronics', () => {
+        const sel: BuildSelection = { chassis: 'h-tracks', weapons: ['h-cannon'], nuclear: true, electronics: true };
         expect(getSelectedPartIds(sel)).toEqual(['h-tracks', 'h-cannon', 'h-nuclear', 'h-electronics']);
     });
 });
@@ -143,20 +144,20 @@ describe('canAffordSelection', () => {
     });
 
     it('not affordable when neither specific nor common is enough', () => {
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon' };
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'] };
         expect(canAffordSelection(empty(), sel)).toBe(false);
     });
 
     it('common pool is shared — insufficient if two parts both need common', () => {
         // h-cannon costs 1 cannon, h-electronics costs 1 electronics
         // We have 0 cannons + 0 electronics + 1 common
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon', electronics: true };
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'], electronics: true };
         const res = { ...empty(), common: 1 };
         expect(canAffordSelection(res, sel)).toBe(false);
     });
 
     it('common pool is shared — sufficient when common covers both deficits', () => {
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon', electronics: true };
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'], electronics: true };
         const res = { ...empty(), common: 2 };
         expect(canAffordSelection(res, sel)).toBe(true);
     });
@@ -164,7 +165,7 @@ describe('canAffordSelection', () => {
     it('mixed: specific covers one part, common covers another', () => {
         // h-cannon costs 1 cannon, h-electronics costs 1 electronics
         // We have 1 cannon + 0 electronics + 1 common
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon', electronics: true };
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'], electronics: true };
         const res = { ...empty(), cannons: 1, common: 1 };
         expect(canAffordSelection(res, sel)).toBe(true);
     });
@@ -188,7 +189,7 @@ describe('canAffordSelection', () => {
 
 describe('deductSelectionCost', () => {
     it('returns false and does not mutate when not affordable', () => {
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon' };
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'] };
         const res = empty();
         const before = { ...res };
         const result = deductSelectionCost(res, sel);
@@ -197,7 +198,7 @@ describe('deductSelectionCost', () => {
     });
 
     it('deducts specific resource when available', () => {
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon' }; // costs 1 cannon
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'] }; // costs 1 cannon
         const res = { ...empty(), cannons: 3 };
         expect(deductSelectionCost(res, sel)).toBe(true);
         expect(res.cannons).toBe(2);
@@ -205,7 +206,7 @@ describe('deductSelectionCost', () => {
     });
 
     it('deducts from common when specific is zero', () => {
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon' }; // costs 1 cannon
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'] }; // costs 1 cannon
         const res = { ...empty(), common: 2 };
         expect(deductSelectionCost(res, sel)).toBe(true);
         expect(res.cannons).toBe(0);
@@ -223,7 +224,7 @@ describe('deductSelectionCost', () => {
 
     it('deducts multiple parts correctly', () => {
         // h-tracks costs 1 chassis, h-cannon costs 1 cannon, h-electronics costs 1 electronics
-        const sel: BuildSelection = { chassis: 'h-tracks', weapon: 'h-cannon', electronics: true, nuclear: false };
+        const sel: BuildSelection = { chassis: 'h-tracks', weapons: ['h-cannon'], electronics: true, nuclear: false };
         const res = rich();
         expect(deductSelectionCost(res, sel)).toBe(true);
         expect(res.chassis).toBe(9);
@@ -251,12 +252,12 @@ describe('isValidBuild', () => {
     });
 
     it('weapon-only is invalid (no chassis)', () => {
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon' };
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'] };
         expect(isValidBuild(sel)).toBe(false);
     });
 
     it('chassis + weapon is valid', () => {
-        const sel: BuildSelection = { ...EMPTY_SELECTION, chassis: 'h-bipod', weapon: 'h-cannon' };
+        const sel: BuildSelection = { ...EMPTY_SELECTION, chassis: 'h-bipod', weapons: ['h-cannon'] };
         expect(isValidBuild(sel)).toBe(true);
     });
 
@@ -266,7 +267,7 @@ describe('isValidBuild', () => {
     });
 
     it('chassis + weapon + nuclear is valid', () => {
-        const sel: BuildSelection = { chassis: 'h-bipod', weapon: 'h-phasers', nuclear: true, electronics: false };
+        const sel: BuildSelection = { chassis: 'h-bipod', weapons: ['h-phasers'], nuclear: true, electronics: false };
         expect(isValidBuild(sel)).toBe(true);
     });
 
@@ -295,12 +296,12 @@ describe('buildRobotConfig', () => {
     });
 
     it('maps weapon correctly', () => {
-        const cfg = buildRobotConfig({ ...EMPTY_SELECTION, chassis: 'h-bipod', weapon: 'h-cannon' });
+        const cfg = buildRobotConfig({ ...EMPTY_SELECTION, chassis: 'h-bipod', weapons: ['h-cannon'] });
         expect(cfg?.weapons).toContain(Weapon.CANNON);
     });
 
     it('maps all three weapon types correctly', () => {
-        const m = (w: string) => buildRobotConfig({ ...EMPTY_SELECTION, chassis: 'h-bipod', weapon: w })?.weapons?.[0];
+        const m = (w: string) => buildRobotConfig({ ...EMPTY_SELECTION, chassis: 'h-bipod', weapons: [w] })?.weapons?.[0];
         expect(m('h-missiles')).toBe(Weapon.MISSILES);
         expect(m('h-phasers')).toBe(Weapon.PHASERS);
     });
@@ -316,7 +317,7 @@ describe('buildRobotConfig', () => {
     });
 
     it('full config maps correctly', () => {
-        const cfg = buildRobotConfig({ chassis: 'h-tracks', weapon: 'h-phasers', nuclear: true, electronics: true });
+        const cfg = buildRobotConfig({ chassis: 'h-tracks', weapons: ['h-phasers'], nuclear: true, electronics: true });
         expect(cfg).toEqual({
             chassis: Chassis.TRACKS,
             weapons: [Weapon.PHASERS],

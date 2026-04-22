@@ -26,13 +26,13 @@ export const PART_TO_WEAPON: Readonly<Record<string, Weapon>> = {
 
 export interface BuildSelection {
     chassis:     string | null;
-    weapon:      string | null;
+    weapons:     string[];
     nuclear:     boolean;
     electronics: boolean;
 }
 
 export const EMPTY_SELECTION: BuildSelection = {
-    chassis: null, weapon: null, nuclear: false, electronics: false,
+    chassis: null, weapons: [], nuclear: false, electronics: false,
 };
 
 // ─── Selection helpers ────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ export const EMPTY_SELECTION: BuildSelection = {
 export function getSelectedPartIds(selection: BuildSelection): string[] {
     const ids: string[] = [];
     if (selection.chassis)     ids.push(selection.chassis);
-    if (selection.weapon)      ids.push(selection.weapon);
+    for (const weapon of selection.weapons) ids.push(weapon);
     if (selection.nuclear)     ids.push('h-nuclear');
     if (selection.electronics) ids.push('h-electronics');
     return ids;
@@ -49,15 +49,21 @@ export function getSelectedPartIds(selection: BuildSelection): string[] {
 
 /**
  * Returns the new selection after toggling the given part:
- * - chassis / weapon: radio-style (deselects previous, selects new; click same to deselect)
+ * - chassis: radio-style (deselects previous, selects new; click same to deselect)
+ * - weapons: toggle-style (can select multiple, click to add/remove)
  * - nuclear / electronics: simple on/off toggle
  * - 'common' and unknown ids: no-op, returns the same selection
  */
 export function applyPartToggle(selection: BuildSelection, partId: string): BuildSelection {
     if (PART_TO_CHASSIS[partId] !== undefined)
         return { ...selection, chassis: selection.chassis === partId ? null : partId };
-    if (PART_TO_WEAPON[partId] !== undefined)
-        return { ...selection, weapon: selection.weapon === partId ? null : partId };
+    if (PART_TO_WEAPON[partId] !== undefined) {
+        const isSelected = selection.weapons.includes(partId);
+        return {
+            ...selection,
+            weapons: isSelected ? selection.weapons.filter(id => id !== partId) : [...selection.weapons, partId],
+        };
+    }
     if (partId === 'h-nuclear')
         return { ...selection, nuclear: !selection.nuclear };
     if (partId === 'h-electronics')
@@ -111,7 +117,7 @@ export function deductSelectionCost(resources: Resources, selection: BuildSelect
  * (nuclear counts as a weapon for creation purposes).
  */
 export function isValidBuild(selection: BuildSelection): boolean {
-    return selection.chassis !== null && (selection.weapon !== null || selection.nuclear);
+    return selection.chassis !== null && (selection.weapons.length > 0 || selection.nuclear);
 }
 
 // ─── RobotConfig conversion ───────────────────────────────────────────────────
@@ -123,10 +129,11 @@ export function buildRobotConfig(selection: BuildSelection): RobotConfig | null 
     if (!chassis) return null;
 
     const config: RobotConfig = { chassis };
-    if (selection.weapon) {
-        const weapon = PART_TO_WEAPON[selection.weapon];
-        if (weapon) config.weapons = [weapon];
-    }
+    const weapons = selection.weapons
+        .map(w => PART_TO_WEAPON[w])
+        .filter(w => w !== undefined);
+    
+    if (weapons.length > 0) config.weapons = weapons;
     if (selection.nuclear)     config.nuclear = true;
     if (selection.electronics) config.electronics = Electronics.STANDARD;
     return config;
