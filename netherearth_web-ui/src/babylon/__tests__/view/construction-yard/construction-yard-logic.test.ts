@@ -131,14 +131,14 @@ describe('canAffordSelection', () => {
 
     it('affordable when specific resources cover the cost', () => {
         // h-cannon costs 1 cannon
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon' };
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'] };
         const res = { ...empty(), cannons: 1 };
         expect(canAffordSelection(res, sel)).toBe(true);
     });
 
     it('affordable when common covers the specific deficit', () => {
         // h-cannon costs 1 cannon; we have 0 cannons but 1 common
-        const sel: BuildSelection = { ...EMPTY_SELECTION, weapon: 'h-cannon' };
+        const sel: BuildSelection = { ...EMPTY_SELECTION, weapons: ['h-cannon'] };
         const res = { ...empty(), common: 1 };
         expect(canAffordSelection(res, sel)).toBe(true);
     });
