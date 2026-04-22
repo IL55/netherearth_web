@@ -34,7 +34,8 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const models = loadModels(assetsManager);
   await assetsManager.loadAsync();
 
-  const mapData = await loadMap('/maps/small1.map');
+  let currentMapName = 'small1.map';
+  let mapData = await loadMap(`/maps/${currentMapName}`);
   const mapBegin = new BABYLON.Vector3(0, 0, 0);
 
   // debugLoadMap(mapData, scene, mapBegin);
@@ -49,8 +50,10 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   renderer.render(warMap);
 
   const redWarbase = warMap.tiles.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
-  const shipStartX = redWarbase ? redWarbase.x + 1.5 : mapData.width / 2;
-  const shipStartY = redWarbase ? redWarbase.y - 3   : mapData.height / 2;
+  const rawX = redWarbase ? redWarbase.x + 1.5 : mapData.width / 2;
+  const rawY = redWarbase ? redWarbase.y - 3   : mapData.height / 2;
+  const shipStartX = Math.max(0, Math.min(mapData.width - 1, rawX));
+  const shipStartY = Math.max(0, Math.min(mapData.height - 1, rawY));
   const ship = { x: shipStartX, y: shipStartY, height: 1.5 };
   const shipInput = createShipInput();
   const shipRenderer = new ShipRenderer(models, mapBegin);
@@ -78,7 +81,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
     ship.height = 1.5;
   });
 
-  const robotControlTrigger = new RobotControlTrigger(scene, mapData.width, () => {});
+  const robotControlTrigger = new RobotControlTrigger(scene, () => mapData.width, () => {});
 
   const gameOverScreen = new GameOverScreen();
 
@@ -98,6 +101,14 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       // Render updated map
       renderer.render(warMap);
       hud.update(warMap);
+  });
+
+  bus.on('game:new-map', async ({ mapName }) => {
+      if (currentMapName !== mapName) {
+          mapData = await loadMap(`/maps/${mapName}`);
+          currentMapName = mapName;
+      }
+      bus.emit({ type: 'game:start' });
   });
 
   bus.on('tick:sub', ({ warMap }) => {

@@ -16,7 +16,7 @@ export class RobotControlTrigger {
 
     constructor(
         private scene: BABYLON.Scene,
-        private mapWidth: number,
+        private getMapWidth: () => number,
         private onExit: () => void
     ) {}
 
@@ -50,7 +50,7 @@ export class RobotControlTrigger {
                 setHoverHeight(ship, nearRobot);
                 if (!this.robotControl) {
                     // minimap height = mapData.width * 4px (CELL=4, rotated 90°), plus 8px margin and 8px gap
-                    const minimapHeight = this.mapWidth * 4;
+                    const minimapHeight = this.getMapWidth() * 4;
                     this.robotControl = new RobotControl3D(this.scene, warMap, () => {
                         this.isRobotControlOpen = false;
                         this.triggeredRobotControlId = null;

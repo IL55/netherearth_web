@@ -58,10 +58,33 @@ const HINT_STYLE: Partial<CSSStyleDeclaration> = {
  * All action callbacks (new game, save, load) are stubs — wire them up later.
  */
 
+const AVAILABLE_MAPS = [
+    'bigcitylights.map',
+    'castle.map',
+    'city.map',
+    'crossroads.map',
+    'ecuador.map',
+    'factory_test.map',
+    'la.map',
+    'labirynth.map',
+    'map1.map',
+    'nucl_war2.map',
+    'nuclear.map',
+    'original.map',
+    'rectangle.map',
+    'rectangle2.map',
+    'small1.map',
+    'small2.map',
+    'small3.map',
+    'vulturia.map'
+];
+
 export class StartupMenu {
     private overlay:  HTMLDivElement;
+    private mapDialog: HTMLDivElement;
     private visible = false;
     private onKeyDown: (e: KeyboardEvent) => void;
+    private selectedMap = 'small1.map';
 
     constructor(
         private onSave:    () => void,
@@ -92,14 +115,62 @@ export class StartupMenu {
             return btn;
         };
 
+        const selectedMapLabel = document.createElement('div');
+        Object.assign(selectedMapLabel.style, SUBTITLE_STYLE, { marginBottom: '10px', marginTop: '-30px', color: 'yellow' });
+        selectedMapLabel.textContent = `CURRENT MAP: ${this.selectedMap}`;
+        this.overlay.appendChild(selectedMapLabel);
+
         this.overlay.appendChild(makeBtn('NEW GAME',  () => {
             this.hide();
             if (this.onNewGame) this.onNewGame();
-            bus.emit({ type: 'game:start' });
+            bus.emit({ type: 'game:new-map', mapName: this.selectedMap });
+        }));
+        this.overlay.appendChild(makeBtn('SELECT MAP', () => {
+            this.overlay.style.display = 'none';
+            this.mapDialog.style.display = 'flex';
         }));
         this.overlay.appendChild(makeBtn('RESUME',    () => this.hide()));
         this.overlay.appendChild(makeBtn('SAVE GAME', () => this.onSave()));
         this.overlay.appendChild(makeBtn('LOAD GAME', () => this.onLoad()));
+
+        this.mapDialog = document.createElement('div');
+        Object.assign(this.mapDialog.style, OVERLAY_STYLE, { background: 'rgba(0, 0, 0, 0.95)', display: 'none' });
+
+        const mapDialogTitle = document.createElement('div');
+        Object.assign(mapDialogTitle.style, TITLE_STYLE, { fontSize: '32px' });
+        mapDialogTitle.textContent = 'SELECT MAP';
+        this.mapDialog.appendChild(mapDialogTitle);
+
+        const listContainer = document.createElement('div');
+        Object.assign(listContainer.style, {
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '50vh',
+            overflowY: 'auto',
+            marginBottom: '20px',
+            border: '1px solid rgba(255,255,255,0.2)',
+            padding: '10px',
+            width: '300px',
+        });
+
+        AVAILABLE_MAPS.forEach(mapName => {
+            const btn = makeBtn(mapName, () => {
+                this.selectedMap = mapName;
+                selectedMapLabel.textContent = `CURRENT MAP: ${this.selectedMap}`;
+                this.mapDialog.style.display = 'none';
+                this.overlay.style.display = 'flex';
+            });
+            btn.style.width = '100%';
+            listContainer.appendChild(btn);
+        });
+        this.mapDialog.appendChild(listContainer);
+
+        this.mapDialog.appendChild(makeBtn('BACK', () => {
+            this.mapDialog.style.display = 'none';
+            this.overlay.style.display = 'flex';
+        }));
+
+        document.body.appendChild(this.mapDialog);
 
         const hint = document.createElement('div');
         Object.assign(hint.style, HINT_STYLE);
@@ -118,12 +189,14 @@ export class StartupMenu {
         if (this.visible) return;
         this.visible = true;
         this.overlay.style.display = 'flex';
+        this.mapDialog.style.display = 'none';
     }
 
     hide(): void {
         if (!this.visible) return;
         this.visible = false;
         this.overlay.style.display = 'none';
+        this.mapDialog.style.display = 'none';
     }
 
     toggle(): void {
@@ -137,5 +210,6 @@ export class StartupMenu {
     dispose(): void {
         document.removeEventListener('keydown', this.onKeyDown);
         this.overlay.remove();
+        this.mapDialog.remove();
     }
 }

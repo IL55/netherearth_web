@@ -52,6 +52,8 @@ describe('resetGame', () => {
         expect(warMap.projectiles).toEqual([]);
         expect(warMap.tick).toBe(0);
         expect(warMap.killCounts).toEqual({});
+        expect(warMap.width).toBe(10);
+        expect(warMap.height).toBe(10);
 
         // Factories should be neutral, warbases retain initial ownership
         const redBase = warMap.tiles.find(t => t.type === ObjectType.WARBASE && t.owner === Owner.RED);

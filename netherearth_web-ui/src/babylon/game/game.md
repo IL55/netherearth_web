@@ -152,3 +152,10 @@ Uses **Chebyshev distance** (square footprint): blocked when
 | Fence | Yes | No |
 
 The **warbase** H-shaped central model is always visible. A decal texture is applied on top only when owned by blue (owner=2).
+
+## Victory Conditions
+
+The game evaluates victory at the end of every simulation tick based on the following strict rules:
+
+1. **Elimination by Loss of Warbases:** If a team's warbase count drops to 0 (because their last warbase was captured by the enemy or neutralized/destroyed), that team is instantly eliminated and loses the game. It does not matter if they still have surviving robots out on the battlefield; without a base of operations, they forfeit immediately.
+2. **Total Map Control:** A team instantly wins if they are the only team remaining that owns a warbase.

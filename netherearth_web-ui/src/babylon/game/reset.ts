@@ -22,6 +22,8 @@ export function resetGame(
         .forEach(o => { o.owner = Owner.NEUTRAL; });
 
     // Apply the fresh map state to the existing warMap object to preserve the reference
+    warMap.width = freshMap.width;
+    warMap.height = freshMap.height;
     warMap.tiles = freshMap.tiles;
     warMap.robots = freshMap.robots;
     warMap.projectiles = freshMap.projectiles;
@@ -38,8 +40,8 @@ export function resetGame(
     const redWarbase = warMap.tiles.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
     if (redWarbase) {
         // Place ship on the north of the warbase
-        ship.x = redWarbase.x + 1.5;
-        ship.y = redWarbase.y - 3;
+        ship.x = Math.max(0, Math.min(mapData.width - 1, redWarbase.x + 1.5));
+        ship.y = Math.max(0, Math.min(mapData.height - 1, redWarbase.y - 3));
     } else {
         ship.x = mapData.width / 2;
         ship.y = mapData.height / 2;

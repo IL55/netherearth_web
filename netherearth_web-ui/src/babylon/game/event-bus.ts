@@ -6,7 +6,9 @@ export type GameEvent =
     | { type: 'tick:game'; warMap: WarMap }
     | { type: 'game:over'; winner: Owner }
     | { type: 'game:menu' } // Requested to show the startup menu
-    | { type: 'game:start' }; // Start a new game
+    | { type: 'game:start' } // Start a new game
+    | { type: 'game:new-map'; mapName: string }; // Start a new game with a different map
+
 
 type Handler<E> = (event: E) => void;
 

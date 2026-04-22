@@ -1,15 +1,25 @@
-4
-6
-G G G G
-G G G G
-S G G S
-G G G G
-S2 G G S2
-G G G G
+8
+14
+G G G G G G G G
+G G G G G G G G
+G G G G G G G G
+G G G G G G G G
+G G G G G G G G
+G G G G G G G G
+S G G S G G G G
+G G G G G G G G
+S2 G G S2 G G G G
+G G G G G G G G
+G G G G G G G G
+G G G G G G G G
+G G G G G G G G
+G G G G G G G G
 
-fence 0.0 0.0
-wall1 2.0 2.0
-wall2 3.0 2.0
-wall3 2.0 4.0
-wall4 1.0 4.0
-wall6 0.0 4.0
+fence 2.0 6.0
+wall1 4.0 6.0
+wall2 5.0 6.0
+wall3 4.0 7.0
+wall4 3.0 7.0
+wall6 2.0 7.0
+warbase 2.5 1.0 1
+warbase 2.5 9.0 2
