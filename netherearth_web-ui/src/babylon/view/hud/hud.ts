@@ -95,9 +95,9 @@ export class GameHud {
         parent.appendChild(this.minimapCanvas);
     }
 
-    update(warMap: WarMap): void {
+    update(warMap: WarMap, ship?: { x: number; y: number }): void {
         this.updateResources(warMap);
-        this.updateMinimap(warMap);
+        this.updateMinimap(warMap, ship);
     }
 
     private updateResources(warMap: WarMap): void {
@@ -125,7 +125,7 @@ export class GameHud {
         this.minimapCanvas.remove();
     }
 
-    private updateMinimap(warMap: WarMap): void {
+    private updateMinimap(warMap: WarMap, ship?: { x: number; y: number }): void {
         // Rotated 90° CW: canvas width = mapHeight, canvas height = mapWidth
         const cw = warMap.height * CELL;
         const ch = warMap.width  * CELL;
@@ -181,6 +181,20 @@ export class GameHud {
             ctx.beginPath();
             ctx.arc(cx + CELL / 2, cy + CELL / 2, CELL / 2 - 0.5, 0, Math.PI * 2);
             ctx.fill();
+        }
+        
+        if (ship) {
+            ctx.fillStyle = C_RED;
+            const {cx, cy} = toCanvas(ship.x, ship.y);
+            ctx.beginPath();
+            // Slightly smaller radius than CELL but larger than robots (CELL/2)
+            ctx.arc(cx + CELL / 2, cy + CELL / 2, CELL * 0.75, 0, Math.PI * 2); 
+            ctx.fill();
+            
+            // Add a white outline to make it stand out
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 1;
+            ctx.stroke();
         }
     }
 }

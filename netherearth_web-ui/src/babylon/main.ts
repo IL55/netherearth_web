@@ -8,7 +8,7 @@ import { Renderer } from './view/map/renderer';
 import { ProjectileRenderer } from './view/map/projectile-renderer';
 import { GameHud } from './view/hud/hud';
 import { calcRobotHeight } from './data/robot';
-import { attachCameraControls } from './controls/camera';
+import { setupCamera, updateCameraTarget } from './controls/camera';
 import { attachGameControls } from './controls/game';
 import { attachShipControls } from './controls/ship';
 import { startClock } from './game/clock';
@@ -60,12 +60,8 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const shipTarget = new BABYLON.Vector3(mapBegin.x + ship.x, 2, mapBegin.z + ship.y);
 
-  const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 3, Math.PI / 4, 8, shipTarget, scene);
-  camera.attachControl(canvas, true);
-  // Remove default keyboard inputs (arrow keys, etc.) from the camera
-  camera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput");
+  const camera = setupCamera(scene, canvas, shipTarget);
 
-  const removeCameraControls = attachCameraControls(scene, camera);
   const removeGameControls = attachGameControls(scene, warMap, () => renderer.render(warMap));
   const removeShipControls = attachShipControls(scene, shipInput);
   const ownerResources = createOwnerResources();
@@ -100,7 +96,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
       // Render updated map
       renderer.render(warMap);
-      hud.update(warMap);
+      hud.update(warMap, ship);
   });
 
   bus.on('game:new-map', async ({ mapName }) => {
@@ -124,7 +120,10 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       renderer.render(warMap);
       projectileRenderer.render(warMap);
       shipRenderer.render(ship, warMap);
-      hud.update(warMap);
+      hud.update(warMap, ship);
+
+      // Make camera follow ship smoothly
+      updateCameraTarget(shipTarget, ship, mapBegin, 3.5);
   });
 
   bus.on('game:over', ({ winner }) => {
@@ -151,7 +150,6 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       hud.dispose();
       robotControlTrigger.dispose();
       constructionYardTrigger.dispose();
-      removeCameraControls();
       removeGameControls();
       removeShipControls();
       camera.detachControl();
