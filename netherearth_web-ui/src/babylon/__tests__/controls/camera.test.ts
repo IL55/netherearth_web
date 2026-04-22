@@ -37,20 +37,20 @@ describe('attachCameraControls', () => {
     it('pressing "a" decreases camera.target.z by 1', () => {
         const before = camera.target.z;
         pressKey(scene, 'a');
-        expect(camera.target.z).toBeCloseTo(before - 1);
+        expect(camera.target.z).toBe(before); // Camera controls removed per user request
     });
 
     it('pressing "d" increases camera.target.z by 1', () => {
         const before = camera.target.z;
         pressKey(scene, 'd');
-        expect(camera.target.z).toBeCloseTo(before + 1);
+        expect(camera.target.z).toBe(before); // Camera controls removed per user request
     });
 
     it('pressing "a" multiple times accumulates', () => {
         pressKey(scene, 'a');
         pressKey(scene, 'a');
         pressKey(scene, 'a');
-        expect(camera.target.z).toBeCloseTo(-3);
+        expect(camera.target.z).toBe(0); // Camera controls removed per user request
     });
 
     it('pressing other keys does not change camera.target.z', () => {

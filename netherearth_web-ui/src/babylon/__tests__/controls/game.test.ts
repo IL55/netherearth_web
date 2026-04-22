@@ -28,7 +28,7 @@ function pressKey(scene: Scene, key: string) {
     );
 }
 
-describe('attachGameControls - t key cycles owner', () => {
+describe('attachGameControls - disabled', () => {
     let engine: NullEngine;
     let scene: Scene;
     let warMap: WarMap;
@@ -45,56 +45,8 @@ describe('attachGameControls - t key cycles owner', () => {
         engine.dispose();
     });
 
-    it('first press sets owner to 1 on all factories and warbases', () => {
+    it('does nothing when keys are pressed', () => {
         pressKey(scene, 't');
-        const factory = warMap.tiles.find(o => o.id === 'factory_0')!;
-        const warbase = warMap.tiles.find(o => o.id === 'warbase_0')!;
-        expect(factory.owner).toBe(Owner.RED);
-        expect(warbase.owner).toBe(Owner.RED);
-    });
-
-    it('second press sets owner to 2', () => {
-        pressKey(scene, 't');
-        pressKey(scene, 't');
-        const factory = warMap.tiles.find(o => o.id === 'factory_0')!;
-        const warbase = warMap.tiles.find(o => o.id === 'warbase_0')!;
-        expect(factory.owner).toBe(Owner.BLUE);
-        expect(warbase.owner).toBe(Owner.BLUE);
-    });
-
-    it('third press clears owner back to neutral', () => {
-        pressKey(scene, 't');
-        pressKey(scene, 't');
-        pressKey(scene, 't');
-        const factory = warMap.tiles.find(o => o.id === 'factory_0')!;
-        const warbase = warMap.tiles.find(o => o.id === 'warbase_0')!;
-        expect(factory.owner).toBe(Owner.NEUTRAL);
-        expect(warbase.owner).toBe(Owner.NEUTRAL);
-    });
-
-    it('calls onUpdate on every press', () => {
-        pressKey(scene, 't');
-        pressKey(scene, 't');
-        expect(updateCount).toBe(Owner.BLUE);
-    });
-
-    it('does not affect tiles', () => {
-        pressKey(scene, 't');
-        const tile = warMap.tiles.find(o => o.id === 'tile_0_0')!;
-        expect(tile.owner).toBeUndefined();
-    });
-
-
-    it('other keys do not trigger updates', () => {
-        pressKey(scene, 'a');
-        pressKey(scene, 'd');
-        expect(updateCount).toBe(0);
-    });
-
-    it('KEYUP for t does not trigger update', () => {
-        scene.onKeyboardObservable.notifyObservers(
-            new KeyboardInfo(KeyboardEventTypes.KEYUP, { key: 't' } as KeyboardEvent)
-        );
         expect(updateCount).toBe(0);
     });
 });

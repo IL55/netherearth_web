@@ -1,4 +1,5 @@
 import { bus } from '../game/event-bus';
+import { loadKeyBindings, saveKeyBindings, formatKey, type KeyBindings } from '../controls/keybindings';
 
 const OVERLAY_STYLE: Partial<CSSStyleDeclaration> = {
     position:       'fixed',
@@ -82,6 +83,7 @@ const AVAILABLE_MAPS = [
 export class StartupMenu {
     private overlay:  HTMLDivElement;
     private mapDialog: HTMLDivElement;
+    private keysDialog: HTMLDivElement;
     private visible = false;
     private onKeyDown: (e: KeyboardEvent) => void;
     private selectedMap = 'small1.map';
@@ -129,10 +131,16 @@ export class StartupMenu {
             this.overlay.style.display = 'none';
             this.mapDialog.style.display = 'flex';
         }));
+        this.overlay.appendChild(makeBtn('BIND KEYS', () => {
+            this.overlay.style.display = 'none';
+            this.keysDialog.style.display = 'flex';
+            this.updateKeysUI();
+        }));
         this.overlay.appendChild(makeBtn('RESUME',    () => this.hide()));
         this.overlay.appendChild(makeBtn('SAVE GAME', () => this.onSave()));
         this.overlay.appendChild(makeBtn('LOAD GAME', () => this.onLoad()));
 
+        // --- MAP DIALOG ---
         this.mapDialog = document.createElement('div');
         Object.assign(this.mapDialog.style, OVERLAY_STYLE, { background: 'rgba(0, 0, 0, 0.95)', display: 'none' });
 
@@ -172,6 +180,32 @@ export class StartupMenu {
 
         document.body.appendChild(this.mapDialog);
 
+        // --- KEYS DIALOG ---
+        this.keysDialog = document.createElement('div');
+        Object.assign(this.keysDialog.style, OVERLAY_STYLE, { background: 'rgba(0, 0, 0, 0.95)', display: 'none' });
+        
+        const keysDialogTitle = document.createElement('div');
+        Object.assign(keysDialogTitle.style, TITLE_STYLE, { fontSize: '32px' });
+        keysDialogTitle.textContent = 'BIND KEYS';
+        this.keysDialog.appendChild(keysDialogTitle);
+
+        this.keysContainer = document.createElement('div');
+        Object.assign(this.keysContainer.style, {
+            display: 'flex',
+            flexDirection: 'column',
+            marginBottom: '20px',
+            border: '1px solid rgba(255,255,255,0.2)',
+            padding: '10px',
+            width: '300px',
+        });
+        this.keysDialog.appendChild(this.keysContainer);
+
+        this.keysDialog.appendChild(makeBtn('BACK', () => {
+            this.keysDialog.style.display = 'none';
+            this.overlay.style.display = 'flex';
+        }));
+        document.body.appendChild(this.keysDialog);
+
         const hint = document.createElement('div');
         Object.assign(hint.style, HINT_STYLE);
         hint.textContent = 'ESC — resume';
@@ -180,9 +214,70 @@ export class StartupMenu {
         document.body.appendChild(this.overlay);
 
         this.onKeyDown = (e: KeyboardEvent) => {
+            if (this.waitingForKey) {
+                e.preventDefault();
+                this.bindKey(e.code);
+                return;
+            }
             if (e.key === 'Escape') this.toggle();
         };
         document.addEventListener('keydown', this.onKeyDown);
+    }
+
+    private keysContainer: HTMLDivElement;
+    private waitingForKey: keyof KeyBindings | null = null;
+    
+    private updateKeysUI() {
+        this.keysContainer.innerHTML = '';
+        const bindings = loadKeyBindings();
+        
+        const actions: { id: keyof KeyBindings, label: string }[] = [
+            { id: 'up', label: 'UP' },
+            { id: 'down', label: 'DOWN' },
+            { id: 'left', label: 'LEFT' },
+            { id: 'right', label: 'RIGHT' },
+            { id: 'fire', label: 'FIRE/ASCEND' }
+        ];
+
+        actions.forEach(action => {
+            const row = document.createElement('div');
+            Object.assign(row.style, {
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '8px 0',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                cursor: 'pointer',
+                fontFamily: 'monospace'
+            });
+            
+            const labelEl = document.createElement('span');
+            labelEl.textContent = action.label;
+            
+            const valEl = document.createElement('span');
+            valEl.style.color = 'yellow';
+            valEl.textContent = this.waitingForKey === action.id ? '[PRESS KEY]' : formatKey(bindings[action.id]);
+            
+            row.appendChild(labelEl);
+            row.appendChild(valEl);
+            
+            row.addEventListener('click', () => {
+                this.waitingForKey = action.id;
+                this.updateKeysUI();
+            });
+            
+            this.keysContainer.appendChild(row);
+        });
+    }
+
+    private bindKey(code: string) {
+        if (!this.waitingForKey) return;
+        
+        const bindings = loadKeyBindings();
+        bindings[this.waitingForKey] = code;
+        saveKeyBindings(bindings);
+        
+        this.waitingForKey = null;
+        this.updateKeysUI();
     }
 
     show(): void {
@@ -190,6 +285,8 @@ export class StartupMenu {
         this.visible = true;
         this.overlay.style.display = 'flex';
         this.mapDialog.style.display = 'none';
+        this.keysDialog.style.display = 'none';
+        this.waitingForKey = null;
     }
 
     hide(): void {
@@ -197,6 +294,8 @@ export class StartupMenu {
         this.visible = false;
         this.overlay.style.display = 'none';
         this.mapDialog.style.display = 'none';
+        this.keysDialog.style.display = 'none';
+        this.waitingForKey = null;
     }
 
     toggle(): void {
@@ -211,5 +310,6 @@ export class StartupMenu {
         document.removeEventListener('keydown', this.onKeyDown);
         this.overlay.remove();
         this.mapDialog.remove();
+        this.keysDialog.remove();
     }
 }

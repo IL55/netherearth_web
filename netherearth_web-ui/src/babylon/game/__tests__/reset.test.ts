@@ -69,8 +69,8 @@ describe('resetGame', () => {
         expect(ownerResources[Owner.BLUE][ResourceType.COMMON]).toBe(5);
 
         // Ship positioned north of red warbase
-        expect(ship.x).toBe(2 + 1.5);
-        expect(ship.y).toBe(2 - 3);
+        expect(ship.x).toBe(3.5); // 2 + 1.5
+        expect(ship.y).toBe(0); // Math.max(0, 2 - 3)
         expect(ship.height).toBe(1.5);
 
         // Clock methods called

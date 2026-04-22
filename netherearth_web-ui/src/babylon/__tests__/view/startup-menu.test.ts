@@ -3,9 +3,9 @@ import { StartupMenu } from '../../view/startup-menu';
 import { bus } from '../../game/event-bus';
 
 describe('StartupMenu', () => {
-    let onSave: ReturnType<typeof vi.fn>;
-    let onLoad: ReturnType<typeof vi.fn>;
-    let onNewGame: ReturnType<typeof vi.fn>;
+    let onSave: any;
+    let onLoad: any;
+    let onNewGame: any;
     let menu: StartupMenu;
 
     beforeEach(() => {
@@ -29,14 +29,14 @@ describe('StartupMenu', () => {
 
     it('initializes hidden', () => {
         expect(menu.isVisible()).toBe(false);
-        const overlay = document.body.children[1] as HTMLElement;
+        const overlay = Array.from(document.body.children).find(el => el.textContent?.includes('PAUSE MENU')) as HTMLElement;
         expect(overlay.style.display).toBe('none');
     });
 
     it('shows and hides properly', () => {
         menu.show();
         expect(menu.isVisible()).toBe(true);
-        const overlay = document.body.children[1] as HTMLElement;
+        const overlay = Array.from(document.body.children).find(el => el.textContent?.includes('PAUSE MENU')) as HTMLElement;
         expect(overlay.style.display).toBe('flex');
 
         menu.hide();
@@ -46,7 +46,7 @@ describe('StartupMenu', () => {
 
     it('emits game:new-map when NEW GAME is clicked', () => {
         menu.show();
-        const overlay = document.body.children[1] as HTMLElement;
+        const overlay = Array.from(document.body.children).find(el => el.textContent?.includes('PAUSE MENU')) as HTMLElement;
         
         // Find the NEW GAME button
         const buttons = Array.from(overlay.querySelectorAll('button'));
@@ -62,8 +62,8 @@ describe('StartupMenu', () => {
 
     it('opens map selection dialog when SELECT MAP is clicked and allows choosing a map', () => {
         menu.show();
-        const mapDialog = document.body.children[0] as HTMLElement;
-        const overlay = document.body.children[1] as HTMLElement;
+        const overlay = Array.from(document.body.children).find(el => el.textContent?.includes('PAUSE MENU')) as HTMLElement;
+        const mapDialog = Array.from(document.body.children).find(el => el.textContent?.includes('SELECT MAP') && !el.textContent.includes('PAUSE MENU')) as HTMLElement;
         
         expect(mapDialog.style.display).toBe('none');
 
@@ -101,8 +101,8 @@ describe('StartupMenu', () => {
 
     it('closes map dialog when BACK is clicked', () => {
         menu.show();
-        const mapDialog = document.body.children[0] as HTMLElement;
-        const overlay = document.body.children[1] as HTMLElement;
+        const overlay = Array.from(document.body.children).find(el => el.textContent?.includes('PAUSE MENU')) as HTMLElement;
+        const mapDialog = Array.from(document.body.children).find(el => el.textContent?.includes('SELECT MAP') && !el.textContent.includes('PAUSE MENU')) as HTMLElement;
         
         const selectMapBtn = Array.from(overlay.querySelectorAll('button')).find(b => b.textContent === 'SELECT MAP');
         selectMapBtn!.click();
@@ -115,7 +115,7 @@ describe('StartupMenu', () => {
     });
 
     it('cleans up DOM on dispose', () => {
-        expect(document.body.children.length).toBe(2); // overlay and mapDialog
+        expect(document.body.children.length).toBe(3); // overlay, mapDialog, keysDialog
         menu.dispose();
         expect(document.body.children.length).toBe(0);
     });

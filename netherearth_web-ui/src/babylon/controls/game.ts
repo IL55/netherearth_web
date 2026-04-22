@@ -8,20 +8,7 @@ export const attachGameControls = (
     warMap: WarMap,
     onUpdate: () => void,
 ) => {
-    const observer = scene.onKeyboardObservable.add((kbInfo) => {
-        if (kbInfo.type !== BABYLON.KeyboardEventTypes.KEYDOWN) return;
-
-        switch (kbInfo.event.key) {
-            case 't': {
-                warMap.tiles
-                    .filter(o => o.type === ObjectType.FACTORY || o.type === ObjectType.WARBASE)
-                    .forEach(o => cycleOwner(o));
-                onUpdate();
-                break;
-            }
-        }
-    });
+    // Game debug controls removed per user request
     return () => {
-        if (observer) scene.onKeyboardObservable.remove(observer);
     };
 };

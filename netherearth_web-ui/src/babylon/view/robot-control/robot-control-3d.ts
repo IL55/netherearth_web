@@ -7,6 +7,7 @@ import type { Weapon } from '../../data/robot';
 import { ORDERABLE_GOALS, GOAL_LABELS } from './constants';
 import { Direction } from '../../game/core/warmap';
 import { Owner } from '../../game/types/owner';
+import { loadKeyBindings } from '../../controls/keybindings';
 import { RobotGoal } from '../../game/types/robot-goal';
 import type { RobotObject, WarMap } from '../../game/core/warmap';
 import { ActionType } from '../../game/actions';
@@ -216,7 +217,7 @@ export class RobotControl3D {
         dpad.appendChild(arrowBtn('→', Direction.S));
         this.manualView.appendChild(dpad);
 
-        this.manualView.appendChild(makeBtn('FIRE BEST  [Space]', '#ffa726', () => this.dispatchFire()));
+        this.manualView.appendChild(makeBtn('FIRE BEST  [Key]', '#ffa726', () => this.dispatchFire()));
 
         this.weaponBtnsContainer = document.createElement('div');
         this.manualView.appendChild(this.weaponBtnsContainer);
@@ -259,32 +260,31 @@ export class RobotControl3D {
 
     private attachKeys(): void {
         this.keyHandler = (e: KeyboardEvent) => {
-            switch (e.code) {
-                case 'ArrowLeft':  e.preventDefault(); this.heldDirection = Direction.N; break;
-                case 'ArrowRight': e.preventDefault(); this.heldDirection = Direction.S; break;
-                case 'ArrowUp':    e.preventDefault(); this.heldDirection = Direction.W; break;
-                case 'ArrowDown':  e.preventDefault(); this.heldDirection = Direction.E; break;
-                case 'Space':      if (!e.repeat) { e.preventDefault(); this.dispatchFire(); } break;
-                case 'KeyX':       if (!e.repeat) { e.preventDefault(); this.dispatchDetonate(); } break;
-                case 'Digit1': case 'Digit2': case 'Digit3': {
-                    if (!e.repeat) {
-                        e.preventDefault();
-                        const idx = parseInt(e.code.replace('Digit', ''), 10) - 1;
-                        const w = this.weaponKeys[idx];
-                        if (w) this.dispatchFireWeapon(w);
-                    }
-                    break;
+            const bindings = loadKeyBindings();
+            const code = e.code;
+
+            if (code === bindings.up) { e.preventDefault(); this.heldDirection = Direction.W; }
+            else if (code === bindings.down) { e.preventDefault(); this.heldDirection = Direction.E; }
+            else if (code === bindings.left) { e.preventDefault(); this.heldDirection = Direction.N; }
+            else if (code === bindings.right) { e.preventDefault(); this.heldDirection = Direction.S; }
+            else if (code === bindings.fire || (bindings.fire === 'Space' && e.key === ' ')) {
+                if (!e.repeat) { e.preventDefault(); this.dispatchFire(); }
+            } else if (code === 'KeyX') {
+                if (!e.repeat) { e.preventDefault(); this.dispatchDetonate(); }
+            } else if (code === 'Digit1' || code === 'Digit2' || code === 'Digit3') {
+                if (!e.repeat) {
+                    e.preventDefault();
+                    const idx = parseInt(e.code.replace('Digit', ''), 10) - 1;
+                    const w = this.weaponKeys[idx];
+                    if (w) this.dispatchFireWeapon(w);
                 }
             }
         };
         this.keyUpHandler = (e: KeyboardEvent) => {
-            switch (e.code) {
-                case 'ArrowLeft':
-                case 'ArrowRight':
-                case 'ArrowUp':
-                case 'ArrowDown':
-                    this.heldDirection = null;
-                    break;
+            const bindings = loadKeyBindings();
+            const code = e.code;
+            if (code === bindings.up || code === bindings.down || code === bindings.left || code === bindings.right) {
+                this.heldDirection = null;
             }
         };
         document.addEventListener('keydown', this.keyHandler);
