@@ -1,5 +1,6 @@
 import { bus } from '../game/event-bus';
-import { loadKeyBindings, saveKeyBindings, formatKey, type KeyBindings } from '../controls/keybindings';
+import { formatKey } from '../controls/keybindings';
+import { loadKeyBindings, saveKeyBindings, loadSelectedMap, saveSelectedMap, type KeyBindings } from '../data/storage';
 
 const OVERLAY_STYLE: Partial<CSSStyleDeclaration> = {
     position:       'fixed',
@@ -86,7 +87,7 @@ export class StartupMenu {
     private keysDialog: HTMLDivElement;
     private visible = false;
     private onKeyDown: (e: KeyboardEvent) => void;
-    private selectedMap = 'small1.map';
+    private selectedMap = loadSelectedMap();
 
     constructor(
         private onSave:    () => void,
@@ -164,6 +165,7 @@ export class StartupMenu {
         AVAILABLE_MAPS.forEach(mapName => {
             const btn = makeBtn(mapName, () => {
                 this.selectedMap = mapName;
+                saveSelectedMap(mapName);
                 selectedMapLabel.textContent = `CURRENT MAP: ${this.selectedMap}`;
                 this.mapDialog.style.display = 'none';
                 this.overlay.style.display = 'flex';
