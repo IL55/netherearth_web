@@ -304,12 +304,12 @@ describe('tickBuild — multiple warbases', () => {
         res[Owner.BLUE][ResourceType.CANNONS] = 1; // tracks option
         tickBuild(map, res);
         const robots = map.robots;
-        // First robot: no fighters yet → ATTACK_ROBOTS (rule 1 baseline)
-        // Second robot: 1 fighter / 1 total = 100 % ≥ 33 % → go capture neutral factory
+        // Since we have fewer than EARLY_GAME_CAPTORS_LIMIT (10) robots, both should be captors
         expect(robots.length).toBeGreaterThanOrEqual(2);
         const goals = robots.map(r => r.goal);
-        expect(goals).toContain(RobotGoal.ATTACK_ROBOTS);
-        expect(goals).toContain(RobotGoal.CAPTURE_NEUTRAL_FACTORY);
+        expect(goals).not.toContain(RobotGoal.ATTACK_ROBOTS);
+        expect(goals[0]).toBe(RobotGoal.CAPTURE_NEUTRAL_FACTORY);
+        expect(goals[1]).toBe(RobotGoal.CAPTURE_NEUTRAL_FACTORY);
     });
 });
 
@@ -386,13 +386,24 @@ describe('chooseBuildGoal — rule 1: maintain fighter baseline', () => {
         expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.ATTACK_ROBOTS);
     });
 
-    it('returns ATTACK_ROBOTS when fighters are below 1-per-3 threshold', () => {
+    it('returns ATTACK_ROBOTS when fighters are below 1-per-3 threshold and early game limit reached (or no neutrals)', () => {
         // 3 robots, 0 fighters → need at least ceil(3/3)=1
         const map = makeWarMapForGoal([
             makeRobotWithGoal('r1', RobotGoal.CAPTURE_FACTORY),
             makeRobotWithGoal('r2', RobotGoal.CAPTURE_WARBASE),
             makeRobotWithGoal('r3', RobotGoal.CAPTURE_FACTORY),
+        ]); // No neutral structures in map, so it bypasses early game rule and hits rule 2.
+        expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.ATTACK_ROBOTS);
+    });
+
+    it('returns ATTACK_ROBOTS when there are neutrals but early game limit is reached', () => {
+        // Build 10 captors + 1 neutral factory. This surpasses EARLY_GAME_CAPTORS_LIMIT
+        const neutralFactory: WarObject = { id: 'f1', type: ObjectType.FACTORY, x: 5, y: 5, owner: Owner.NEUTRAL };
+        const map = makeWarMapForGoal([
+            ...Array.from({ length: 10 }).map((_, i) => makeRobotWithGoal(`r${i}`, RobotGoal.CAPTURE_FACTORY)),
+            neutralFactory
         ]);
+        // Since we have 10 robots and 0 fighters, Rule 2 triggers and we build a fighter.
         expect(chooseBuildGoal(map, Owner.RED)).toBe(RobotGoal.ATTACK_ROBOTS);
     });
 

@@ -110,15 +110,18 @@ const NUKE_GOALS: RobotGoal[] = [
     RobotGoal.NUKE_WARBASE,
 ];
 
+/** Number of robots to build for capturing neutral structures before starting to mix in fighters */
+export const EARLY_GAME_CAPTORS_LIMIT = 10;
+
 /**
  * Chooses a goal for a newly built (non-nuclear) robot based on the current
  * map state and the team's existing robot composition.
  *
  * Strategy:
- *  1. Always keep ≥1 fighter per 3 robots (combat baseline).
- *  2. Early game: while neutral structures exist, send captors there.
- *  3. Late game: no neutrals left — ramp fighters to 50 % then attack enemy
- *     structures.
+ *  1. Early game (first EARLY_GAME_CAPTORS_LIMIT robots): if neutral structures exist, build only captors.
+ *  2. Mid/Late game baseline: always keep ≥1 fighter per 3 robots.
+ *  3. Mid game: while neutral structures exist, send captors there.
+ *  4. Late game: no neutrals left — ramp fighters to 50 % then attack enemy structures.
  */
 export function chooseBuildGoal(warMap: WarMap, owner: Owner): RobotGoal {
     const neutralFactories = warMap.tiles.filter(o => o.type === ObjectType.FACTORY && !o.owner).length;
@@ -131,16 +134,22 @@ export function chooseBuildGoal(warMap: WarMap, owner: Owner): RobotGoal {
     );
     const fighters = myRobots.filter(r => r.goal === RobotGoal.ATTACK_ROBOTS).length;
 
-    // Rule 1: always maintain at least 1 fighter per 3 other robots
+    // Rule 1: Early game prioritize neutral structures blindly
+    if (myRobots.length < EARLY_GAME_CAPTORS_LIMIT && (neutralFactories > 0 || neutralWarbases > 0)) {
+        if (neutralFactories > 0) return RobotGoal.CAPTURE_NEUTRAL_FACTORY;
+        if (neutralWarbases  > 0) return RobotGoal.CAPTURE_NEUTRAL_WARBASE;
+    }
+
+    // Rule 2: always maintain at least 1 fighter per 3 other robots
     if (fighters < Math.ceil(myRobots.length / 3)) {
         return RobotGoal.ATTACK_ROBOTS;
     }
 
-    // Rule 2: neutral structures exist → prioritise capturing them
+    // Rule 3: neutral structures exist → prioritise capturing them
     if (neutralFactories > 0) return RobotGoal.CAPTURE_NEUTRAL_FACTORY;
     if (neutralWarbases  > 0) return RobotGoal.CAPTURE_NEUTRAL_WARBASE;
 
-    // Rule 3: no neutrals left → ramp to 50 % fighters, then capture enemy
+    // Rule 4: no neutrals left → ramp to 50 % fighters, then capture enemy
     if (myRobots.length === 0 || fighters / myRobots.length < 0.5) {
         return RobotGoal.ATTACK_ROBOTS;
     }
