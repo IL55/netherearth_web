@@ -157,9 +157,9 @@ describe('cycleRobotGoal', () => {
     });
 
     it('starts from index 0 when current goal is not in ORDERABLE_GOALS', () => {
-        // CAPTURE_ENEMY_FACTORY is not in ORDERABLE_GOALS
+        // MOVE_FORWARD is not in ORDERABLE_GOALS
         // indexOf returns -1; (-1+1) % n = 0 → cycles to ORDERABLE_GOALS[0]
-        const robot = makeRobot('r1', 0, 0, Owner.RED, RobotGoal.CAPTURE_ENEMY_FACTORY);
+        const robot = makeRobot('r1', 0, 0, Owner.RED, RobotGoal.MOVE_FORWARD);
         cycleRobotGoal(robot);
         expect(robot.goal).toBe(ORDERABLE_GOALS[0]);
     });

@@ -11,8 +11,10 @@ export const HOVER_GAP      = 0.5;  // Gap between robot's visual top and ship's
 /** Goals the player can assign via "CHANGE ORDER". */
 export const ORDERABLE_GOALS: RobotGoal[] = [
     RobotGoal.ATTACK_ROBOTS,
-    RobotGoal.CAPTURE_FACTORY,
-    RobotGoal.CAPTURE_WARBASE,
+    RobotGoal.CAPTURE_ENEMY_FACTORY,
+    RobotGoal.CAPTURE_NEUTRAL_FACTORY,
+    RobotGoal.CAPTURE_ENEMY_WARBASE,
+    RobotGoal.CAPTURE_NEUTRAL_WARBASE,
     RobotGoal.NUKE_FACTORY,
     RobotGoal.NUKE_WARBASE,
     RobotGoal.DEFEND,
@@ -22,11 +24,11 @@ export const ORDERABLE_GOALS: RobotGoal[] = [
 export const GOAL_LABELS: Record<string, string> = {
     [RobotGoal.ATTACK_ROBOTS]:           'Attack Robots',
     [RobotGoal.CAPTURE_FACTORY]:         'Capture Factory',
-    [RobotGoal.CAPTURE_ENEMY_FACTORY]:   'Enemy Factory',
-    [RobotGoal.CAPTURE_NEUTRAL_FACTORY]: 'Neutral Factory',
+    [RobotGoal.CAPTURE_ENEMY_FACTORY]:   'Capture Enemy Factory',
+    [RobotGoal.CAPTURE_NEUTRAL_FACTORY]: 'Capture Neutral Factory',
     [RobotGoal.CAPTURE_WARBASE]:         'Capture Warbase',
-    [RobotGoal.CAPTURE_ENEMY_WARBASE]:   'Enemy Warbase',
-    [RobotGoal.CAPTURE_NEUTRAL_WARBASE]: 'Neutral Warbase',
+    [RobotGoal.CAPTURE_ENEMY_WARBASE]:   'Capture Enemy Warbase',
+    [RobotGoal.CAPTURE_NEUTRAL_WARBASE]: 'Capture Neutral Warbase',
     [RobotGoal.NUKE_FACTORY]:            'Nuke Factory',
     [RobotGoal.NUKE_WARBASE]:            'Nuke Warbase',
     [RobotGoal.DEFEND]:                  'Defend',
