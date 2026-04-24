@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core';
-import { setVisibleAll } from '../shared/scene-utils';
-import type { Owner } from '../../game/types/owner';
+import { setVisibleAll, setFlagColor } from '../shared/scene-utils';
+import { Owner } from '../../game/types/owner';
 
 const FACTORY_PARTS = [
     { model: 'highwall1', xo: 0, yo: 0 },
@@ -33,6 +33,10 @@ const CENTRAL_PIECE_OFFSET: Record<string, { x: number; y: number; z: number }> 
 const FLAG_OFFSET: Record<number, { xo: number; yo: number; zo: number }> = {
     1: { xo: 0,   yo: 2, zo: 0.1 },  // red:  left wall
     2: { xo: 0,   yo: 2, zo: 2.1 },  // blue: right wall
+};
+const FLAG_COLOR: Record<number, BABYLON.Color3> = {
+    [Owner.RED]:  new BABYLON.Color3(1, 0, 0),
+    [Owner.BLUE]: new BABYLON.Color3(0, 0, 1),
 };
 
 export const addFactory = (
@@ -70,11 +74,12 @@ export const addFactory = (
     if (owner !== undefined && FLAG_OFFSET[owner] !== undefined) {
         const flagModel = models.get('flag');
         if (flagModel) {
-            const instance = flagModel.instantiateHierarchy();
+            const instance = flagModel.clone('flag', null);
             if (instance) {
                 const { xo, yo, zo } = FLAG_OFFSET[owner];
                 instance.position = new BABYLON.Vector3(mapBegin.x + x + xo, yo, mapBegin.z + y + zo);
                 setVisibleAll(instance, true);
+                setFlagColor(instance, FLAG_COLOR[owner]);
             }
         }
     }
