@@ -144,10 +144,12 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const debugStartVisualTest = () => {
       resetGame(warMap, mapData, ownerResources, ship, clock, INITIAL_RESOURCES);
       const factory = warMap.tiles.find(o => o.type === ObjectType.FACTORY);
-      if (factory) {
-          factory.owner = Owner.RED;
-          ship.x = Math.max(0, Math.min(mapData.width - 1, factory.x + 2));
-          ship.y = Math.max(0, Math.min(mapData.height - 1, factory.y + 1));
+      if (factory) factory.owner = Owner.RED;
+
+      const redWarbase = warMap.tiles.find(o => o.type === ObjectType.WARBASE && o.owner === Owner.RED);
+      if (redWarbase) {
+          ship.x = Math.max(0, Math.min(mapData.width - 1, redWarbase.x + 1.5));
+          ship.y = Math.max(0, Math.min(mapData.height - 1, redWarbase.y - 3));
           ship.height = 1.5;
           shipTarget.x = mapBegin.x + ship.x;
           shipTarget.z = mapBegin.z + ship.y;

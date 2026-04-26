@@ -4,11 +4,11 @@ import { MODEL_OVERLAY } from '../shared/model-textures';
 import { Owner } from '../../game/types/owner';
 
 const FACTORY_PARTS = [
-    { model: 'highwall1', overlays: ['highwall1', 'brick-side', 'brick-z-neg', 'highwall1-top'], xo: 0, yo: 0 },
-    { model: 'highwall1', overlays: ['building',  'brick-center', 'highwall1-top'],               xo: 0, yo: 1 },
-    { model: 'highwall1', overlays: ['highwall1', 'brick-side', 'brick-z-pos', 'highwall1-top'], xo: 0, yo: 2 },
-    { model: 'lowwall2',  overlays: ['lowwall2', 'lowwall2-front', 'lowwall2-z-neg', 'lowwall2-z-pos'], xo: 1, yo: 0 },
-    { model: 'lowwall2',  overlays: ['lowwall2', 'lowwall2-front', 'lowwall2-z-neg', 'lowwall2-z-pos'], xo: 1, yo: 2 },
+    { model: 'highwall1', overlays: ['factory-highwall1', 'factory-brick-side', 'factory-brick-z-neg'],         xo: 0, yo: 0 },
+    { model: 'highwall1', overlays: ['factory-building',  'factory-brick-center', 'factory-highwall1-top'],     xo: 0, yo: 1 },
+    { model: 'highwall1', overlays: ['factory-highwall1', 'factory-brick-side', 'factory-brick-z-pos'],         xo: 0, yo: 2 },
+    { model: 'lowwall2',  overlays: ['factory-lowwall2', 'factory-lowwall2-front', 'factory-lowwall2-z-neg', 'factory-lowwall2-z-pos'], xo: 1, yo: 0 },
+    { model: 'lowwall2',  overlays: ['factory-lowwall2', 'factory-lowwall2-front', 'factory-lowwall2-z-neg', 'factory-lowwall2-z-pos'], xo: 1, yo: 2 },
 ];
 
 const CENTRAL_PIECE_MODEL: Record<string, string> = {
