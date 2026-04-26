@@ -5,10 +5,10 @@ import { Owner } from '../../game/types/owner';
 
 const FACTORY_PARTS = [
     { model: 'highwall1', overlays: ['highwall1', 'brick-side', 'brick-z-neg', 'highwall1-top'], xo: 0, yo: 0 },
-    { model: 'highwall1', overlays: ['building',  'brick-center'],                               xo: 0, yo: 1 },
+    { model: 'highwall1', overlays: ['building',  'brick-center', 'highwall1-top'],               xo: 0, yo: 1 },
     { model: 'highwall1', overlays: ['highwall1', 'brick-side', 'brick-z-pos', 'highwall1-top'], xo: 0, yo: 2 },
-    { model: 'lowwall2',  overlays: ['lowwall2'],                               xo: 1, yo: 0 },
-    { model: 'lowwall2',  overlays: ['lowwall2'],                               xo: 1, yo: 2 },
+    { model: 'lowwall2',  overlays: ['lowwall2', 'lowwall2-front', 'lowwall2-z-neg', 'lowwall2-z-pos'], xo: 1, yo: 0 },
+    { model: 'lowwall2',  overlays: ['lowwall2', 'lowwall2-front', 'lowwall2-z-neg', 'lowwall2-z-pos'], xo: 1, yo: 2 },
 ];
 
 const CENTRAL_PIECE_MODEL: Record<string, string> = {
