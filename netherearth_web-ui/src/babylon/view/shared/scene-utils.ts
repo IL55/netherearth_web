@@ -17,10 +17,12 @@ export const setFlagColor = (node: BABYLON.Node, color: BABYLON.Color3) => {
         if (src instanceof BABYLON.PBRMaterial) {
             const mat = src.clone(`${src.name}_colored`) as BABYLON.PBRMaterial;
             mat.albedoColor = color;
+            mat.albedoTexture = null; // clear texture so flat color shows through
             mesh.material = mat;
         } else if (src instanceof BABYLON.StandardMaterial) {
             const mat = src.clone(`${src.name}_colored`) as BABYLON.StandardMaterial;
             mat.diffuseColor = color;
+            mat.diffuseTexture = null;
             mesh.material = mat;
         } else {
             const mat = new BABYLON.PBRMaterial(`flagMat_${color.toHexString()}`, mesh.getScene());

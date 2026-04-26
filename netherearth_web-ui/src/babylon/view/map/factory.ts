@@ -1,13 +1,14 @@
 import * as BABYLON from '@babylonjs/core';
 import { setVisibleAll, setFlagColor } from '../shared/scene-utils';
+import { MODEL_OVERLAY } from '../shared/model-textures';
 import { Owner } from '../../game/types/owner';
 
 const FACTORY_PARTS = [
-    { model: 'highwall1', xo: 0, yo: 0 },
-    { model: 'highwall1', xo: 0, yo: 1 },
-    { model: 'highwall1', xo: 0, yo: 2 },
-    { model: 'lowwall2',  xo: 1, yo: 0 },
-    { model: 'lowwall2',  xo: 1, yo: 2 },
+    { model: 'highwall1',                  xo: 0, yo: 0 },
+    { model: 'highwall1', tex: 'building', xo: 0, yo: 1 },
+    { model: 'highwall1',                  xo: 0, yo: 2 },
+    { model: 'lowwall2',                   xo: 1, yo: 0 },
+    { model: 'lowwall2',                   xo: 1, yo: 2 },
 ];
 
 const CENTRAL_PIECE_MODEL: Record<string, string> = {
@@ -39,6 +40,7 @@ const FLAG_COLOR: Record<number, BABYLON.Color3> = {
     [Owner.BLUE]: new BABYLON.Color3(0, 0, 1),
 };
 
+
 export const addFactory = (
     models: Map<string, BABYLON.AbstractMesh>,
     mapBegin: BABYLON.Vector3,
@@ -47,14 +49,31 @@ export const addFactory = (
     subtype: string,
     owner?: Owner,
 ) => {
-    FACTORY_PARTS.forEach(part => {
+    FACTORY_PARTS.forEach((part, i) => {
         const model = models.get(part.model);
-        if (model) {
-            const instance = model.instantiateHierarchy();
-            if (instance) {
-                instance.position = new BABYLON.Vector3(mapBegin.x + x + part.xo, 1, mapBegin.z + y + part.yo);
-                setVisibleAll(instance, true);
-            }
+        if (!model) return;
+
+        const instance = model.instantiateHierarchy();
+        if (!instance) return;
+
+        const px = mapBegin.x + x + part.xo;
+        const pz = mapBegin.z + y + part.yo;
+        instance.position = new BABYLON.Vector3(px, 1, pz);
+        setVisibleAll(instance, true);
+
+        const overlay = MODEL_OVERLAY[part.tex ?? part.model];
+        if (overlay) {
+            const scene = model.getScene();
+            const mat = new BABYLON.StandardMaterial(`${part.model}_tex_${x}_${y}_${i}`, scene);
+            mat.diffuseTexture = new BABYLON.Texture(overlay.texture, scene);
+            mat.specularColor = new BABYLON.Color3(0, 0, 0);
+            mat.backFaceCulling = false;
+            mat.zOffset = -2;
+
+            const plane = BABYLON.MeshBuilder.CreatePlane(`${part.model}_plane_${x}_${y}_${i}`, { width: overlay.w, height: overlay.h }, scene);
+            plane.material = mat;
+            plane.rotation.set(overlay.rx, overlay.ry, overlay.rz);
+            plane.position = new BABYLON.Vector3(px + overlay.dx, 1 + overlay.dy, pz + overlay.dz);
         }
     });
 

@@ -85,7 +85,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       () => { /* TODO: save */ },
       () => { /* TODO: load */ },
   );
-  startupMenu.show();
+  // startupMenu.show(); // uncomment to show the startup dialog normally
 
   bus.on('game:menu', () => {
       startupMenu.show();
@@ -140,6 +140,22 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       () => robotControlTrigger.getTriggeredRobotId(),
       () => robotControlTrigger.takePendingAction(),
   );
+
+  const debugStartVisualTest = () => {
+      resetGame(warMap, mapData, ownerResources, ship, clock, INITIAL_RESOURCES);
+      const factory = warMap.tiles.find(o => o.type === ObjectType.FACTORY);
+      if (factory) {
+          factory.owner = Owner.RED;
+          ship.x = Math.max(0, Math.min(mapData.width - 1, factory.x + 2));
+          ship.y = Math.max(0, Math.min(mapData.height - 1, factory.y + 1));
+          ship.height = 1.5;
+          shipTarget.x = mapBegin.x + ship.x;
+          shipTarget.z = mapBegin.z + ship.y;
+      }
+      renderer.render(warMap);
+      hud.update(warMap, ship);
+  };
+  debugStartVisualTest();
 
   return {
     scene,
