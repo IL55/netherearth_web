@@ -15,6 +15,21 @@ export interface OverlayConfig {
 }
 
 export const MODEL_OVERLAY: Record<string, OverlayConfig> = {
+    // ── wall2 ──────────────────────────────────────────────────────────────
+    'wall2-top':   { texture: `${T}/lowwall3r1.bmp`,  dx:  0,    dy: 0.51, dz:  0,    rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1 },
+    'wall2-back':  { texture: `${T}/highwall2w2.bmp`, dx: -0.51, dy: 0.25, dz:  0,    rx: 0, ry: Math.PI / 2,  rz: 0, w: 1, h: 0.5 },
+    'wall2-front': { texture: `${T}/highwall2w2.bmp`, dx:  0.51, dy: 0.25, dz:  0,    rx: 0, ry: -Math.PI / 2, rz: 0, w: 1, h: 0.5 },
+    'wall2-z-neg': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.25, dz: -0.51, rx: 0, ry: 0,            rz: 0, w: 1, h: 0.5 },
+    'wall2-z-pos': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.25, dz:  0.51, rx: 0, ry: Math.PI,      rz: 0, w: 1, h: 0.5 },
+    // ── wall4 / wall6 ───────────────────────────────────────────────────────
+    'wall4-top':   { texture: `${T}/highwall2w1.bmp`, dx: 0, dy: 1.01, dz: 0, rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1 },
+    'wall6-top':   { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 1.01, dz:  0,    rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1 },
+    'wall6-back':  { texture: `${T}/highwall2w2.bmp`, dx: -0.51, dy: 0.5,  dz:  0,    rx: 0,           ry: Math.PI / 2,     rz: 0, w: 1, h: 1 },
+    'wall6-front': { texture: `${T}/highwall2w2.bmp`, dx:  0.51, dy: 0.5,  dz:  0,    rx: 0,           ry: -Math.PI / 2,    rz: 0, w: 1, h: 1 },
+    'wall6-z-neg': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.5,  dz: -0.51, rx: 0,           ry: 0,               rz: 0, w: 1, h: 1 },
+    'wall6-z-pos': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.5,  dz:  0.51, rx: 0,           ry: Math.PI,         rz: 0, w: 1, h: 1 },
+    // ── wall3 ──────────────────────────────────────────────────────────────
+    'wall3-top':   { texture: `${T}/highwall2r1.bmp`, dx: 0, dy: 0.51, dz: 0, rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1 },
     // ── warbase ────────────────────────────────────────────────────────────
     // highwall (h=1)
     'warbase-brick-back':  { texture: `${T}/highwall2w2.bmp`, dx: -0.51, dy: 0.5,  dz:  0,    rx: 0, ry: Math.PI / 2,  rz: 0, w: 1, h: 1   },

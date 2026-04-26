@@ -1,6 +1,6 @@
 import { ObjectType } from '../../game/core/warmap';
 import * as BABYLON from '@babylonjs/core';
-import { setVisibleAll } from '../shared/scene-utils';
+import { setVisibleAll, addOverlayPlanes } from '../shared/scene-utils';
 import { addFactory } from './factory';
 import { addWarbase } from './warbase';
 import { placeRobot } from './robot';
@@ -99,8 +99,32 @@ export class Renderer {
             if (model) {
                 const instance = model.instantiateHierarchy();
                 if (instance) {
-                    instance.position = new BABYLON.Vector3(this.mapBegin.x + obj.x, 1, this.mapBegin.z + obj.y);
+                    const px = this.mapBegin.x + obj.x;
+                    const pz = this.mapBegin.z + obj.y;
+                    instance.position = new BABYLON.Vector3(px, 1, pz);
                     setVisibleAll(instance, true);
+
+                    if (obj.type === ObjectType.WALL2) {
+                        addOverlayPlanes(
+                            ['wall2-top', 'wall2-back', 'wall2-front', 'wall2-z-neg', 'wall2-z-pos'],
+                            this.scene, px, pz, `wall2_${obj.x}_${obj.y}`,
+                        );
+                    } else if (obj.type === ObjectType.WALL3) {
+                        addOverlayPlanes(
+                            ['wall3-top'],
+                            this.scene, px, pz, `wall3_${obj.x}_${obj.y}`,
+                        );
+                    } else if (obj.type === ObjectType.WALL4) {
+                        addOverlayPlanes(
+                            ['wall4-top'],
+                            this.scene, px, pz, `wall4_${obj.x}_${obj.y}`,
+                        );
+                    } else if (obj.type === ObjectType.WALL6) {
+                        addOverlayPlanes(
+                            ['wall6-top', 'wall6-back', 'wall6-front', 'wall6-z-neg', 'wall6-z-pos'],
+                            this.scene, px, pz, `wall6_${obj.x}_${obj.y}`,
+                        );
+                    }
                 }
             }
         }
