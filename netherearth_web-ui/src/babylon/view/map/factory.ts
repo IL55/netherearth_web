@@ -4,11 +4,11 @@ import { MODEL_OVERLAY } from '../shared/model-textures';
 import { Owner } from '../../game/types/owner';
 
 const FACTORY_PARTS = [
-    { model: 'highwall1',                  xo: 0, yo: 0 },
-    { model: 'highwall1', tex: 'building', xo: 0, yo: 1 },
-    { model: 'highwall1',                  xo: 0, yo: 2 },
-    { model: 'lowwall2',                   xo: 1, yo: 0 },
-    { model: 'lowwall2',                   xo: 1, yo: 2 },
+    { model: 'highwall1',                  backTex: 'brick-side',   xo: 0, yo: 0 },
+    { model: 'highwall1', tex: 'building', backTex: 'brick-center', xo: 0, yo: 1 },
+    { model: 'highwall1',                  backTex: 'brick-side',   xo: 0, yo: 2 },
+    { model: 'lowwall2',                                            xo: 1, yo: 0 },
+    { model: 'lowwall2',                                            xo: 1, yo: 2 },
 ];
 
 const CENTRAL_PIECE_MODEL: Record<string, string> = {
@@ -61,19 +61,22 @@ export const addFactory = (
         instance.position = new BABYLON.Vector3(px, 1, pz);
         setVisibleAll(instance, true);
 
-        const overlay = MODEL_OVERLAY[part.tex ?? part.model];
-        if (overlay) {
-            const scene = model.getScene();
-            const mat = new BABYLON.StandardMaterial(`${part.model}_tex_${x}_${y}_${i}`, scene);
-            mat.diffuseTexture = new BABYLON.Texture(overlay.texture, scene);
+        const scene = model.getScene();
+        for (const [suffix, key] of [['front', part.tex ?? part.model], ['back', part.backTex]] as const) {
+            if (!key) continue;
+            const cfg = MODEL_OVERLAY[key];
+            if (!cfg) continue;
+
+            const mat = new BABYLON.StandardMaterial(`${part.model}_${suffix}_${x}_${y}_${i}`, scene);
+            mat.diffuseTexture = new BABYLON.Texture(cfg.texture, scene);
             mat.specularColor = new BABYLON.Color3(0, 0, 0);
             mat.backFaceCulling = false;
             mat.zOffset = -2;
 
-            const plane = BABYLON.MeshBuilder.CreatePlane(`${part.model}_plane_${x}_${y}_${i}`, { width: overlay.w, height: overlay.h }, scene);
+            const plane = BABYLON.MeshBuilder.CreatePlane(`${part.model}_${suffix}_plane_${x}_${y}_${i}`, { width: cfg.w, height: cfg.h }, scene);
             plane.material = mat;
-            plane.rotation.set(overlay.rx, overlay.ry, overlay.rz);
-            plane.position = new BABYLON.Vector3(px + overlay.dx, 1 + overlay.dy, pz + overlay.dz);
+            plane.rotation.set(cfg.rx, cfg.ry, cfg.rz);
+            plane.position = new BABYLON.Vector3(px + cfg.dx, 1 + cfg.dy, pz + cfg.dz);
         }
     });
 

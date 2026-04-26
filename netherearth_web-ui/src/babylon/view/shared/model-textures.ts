@@ -25,4 +25,7 @@ export const MODEL_OVERLAY: Record<string, OverlayConfig> = {
     highwall2: { texture: `${T}/highwall2w1.bmp`, dx: 0.51, dy: 0.5, dz: 0, rx: 0,           ry: -Math.PI / 2,    rz: 0,            w: 1, h: 1 },
     // building: central block — texture on the outer vertical face (facing -X)
     building:  { texture: `${T}/buildingw1.bmp`,  dx: 0.51, dy: 0.5, dz: 0, rx: 0,           ry: -Math.PI / 2,    rz: 0,            w: 1, h: 1 },
+    // back-face brick textures (facing +X, opposite side)
+    'brick-side':   { texture: `${T}/highwall2w2.bmp`, dx: -0.51, dy: 0.5, dz: 0, rx: 0, ry: Math.PI / 2, rz: 0, w: 1, h: 1 },
+    'brick-center': { texture: `${T}/highwall2w1.bmp`, dx: -0.51, dy: 0.5, dz: 0, rx: 0, ry: Math.PI / 2, rz: 0, w: 1, h: 1 },
 };
