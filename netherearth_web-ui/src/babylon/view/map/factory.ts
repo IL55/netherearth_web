@@ -4,11 +4,11 @@ import { MODEL_OVERLAY } from '../shared/model-textures';
 import { Owner } from '../../game/types/owner';
 
 const FACTORY_PARTS = [
-    { model: 'highwall1',                  backTex: 'brick-side',   xo: 0, yo: 0 },
-    { model: 'highwall1', tex: 'building', backTex: 'brick-center', xo: 0, yo: 1 },
-    { model: 'highwall1',                  backTex: 'brick-side',   xo: 0, yo: 2 },
-    { model: 'lowwall2',                                            xo: 1, yo: 0 },
-    { model: 'lowwall2',                                            xo: 1, yo: 2 },
+    { model: 'highwall1', overlays: ['highwall1', 'brick-side', 'brick-z-neg', 'highwall1-top'], xo: 0, yo: 0 },
+    { model: 'highwall1', overlays: ['building',  'brick-center'],                               xo: 0, yo: 1 },
+    { model: 'highwall1', overlays: ['highwall1', 'brick-side', 'brick-z-pos', 'highwall1-top'], xo: 0, yo: 2 },
+    { model: 'lowwall2',  overlays: ['lowwall2'],                               xo: 1, yo: 0 },
+    { model: 'lowwall2',  overlays: ['lowwall2'],                               xo: 1, yo: 2 },
 ];
 
 const CENTRAL_PIECE_MODEL: Record<string, string> = {
@@ -62,22 +62,25 @@ export const addFactory = (
         setVisibleAll(instance, true);
 
         const scene = model.getScene();
-        for (const [suffix, key] of [['front', part.tex ?? part.model], ['back', part.backTex]] as const) {
-            if (!key) continue;
+        part.overlays.forEach((key, oi) => {
             const cfg = MODEL_OVERLAY[key];
-            if (!cfg) continue;
+            if (!cfg) return;
 
-            const mat = new BABYLON.StandardMaterial(`${part.model}_${suffix}_${x}_${y}_${i}`, scene);
-            mat.diffuseTexture = new BABYLON.Texture(cfg.texture, scene);
+            const mat = new BABYLON.StandardMaterial(`${part.model}_ov${oi}_${x}_${y}_${i}`, scene);
+            const tex = new BABYLON.Texture(cfg.texture, scene);
+            if (cfg.texRot) tex.wAng = cfg.texRot;
+            mat.diffuseTexture = tex;
+            const b = cfg.brightness ?? 1;
+            mat.diffuseColor = new BABYLON.Color3(b, b, b);
             mat.specularColor = new BABYLON.Color3(0, 0, 0);
             mat.backFaceCulling = false;
             mat.zOffset = -2;
 
-            const plane = BABYLON.MeshBuilder.CreatePlane(`${part.model}_${suffix}_plane_${x}_${y}_${i}`, { width: cfg.w, height: cfg.h }, scene);
+            const plane = BABYLON.MeshBuilder.CreatePlane(`${part.model}_ov${oi}_plane_${x}_${y}_${i}`, { width: cfg.w, height: cfg.h }, scene);
             plane.material = mat;
             plane.rotation.set(cfg.rx, cfg.ry, cfg.rz);
             plane.position = new BABYLON.Vector3(px + cfg.dx, 1 + cfg.dy, pz + cfg.dz);
-        }
+        });
     });
 
     const modelName = CENTRAL_PIECE_MODEL[subtype];

@@ -8,6 +8,10 @@ export interface OverlayConfig {
     rx: number; ry: number; rz: number;
     // Plane dimensions
     w: number; h: number;
+    // Brightness multiplier applied to diffuseColor (0–1, default 1)
+    brightness?: number;
+    // In-plane texture rotation in radians (applied as texture.wAng)
+    texRot?: number;
 }
 
 // Maps texture key → overlay plane config.
@@ -26,6 +30,11 @@ export const MODEL_OVERLAY: Record<string, OverlayConfig> = {
     // building: central block — texture on the outer vertical face (facing -X)
     building:  { texture: `${T}/buildingw1.bmp`,  dx: 0.51, dy: 0.5, dz: 0, rx: 0,           ry: -Math.PI / 2,    rz: 0,            w: 1, h: 1 },
     // back-face brick textures (facing +X, opposite side)
-    'brick-side':   { texture: `${T}/highwall2w2.bmp`, dx: -0.51, dy: 0.5, dz: 0, rx: 0, ry: Math.PI / 2, rz: 0, w: 1, h: 1 },
-    'brick-center': { texture: `${T}/highwall2w1.bmp`, dx: -0.51, dy: 0.5, dz: 0, rx: 0, ry: Math.PI / 2, rz: 0, w: 1, h: 1 },
+    'brick-side':   { texture: `${T}/highwall2w2.bmp`, dx: -0.51, dy: 0.5, dz:  0,    rx: 0, ry: Math.PI / 2,  rz: 0, w: 1, h: 1 },
+    'brick-center': { texture: `${T}/highwall2w1.bmp`, dx: -0.51, dy: 0.5, dz:  0,    rx: 0, ry: Math.PI / 2,  rz: 0, w: 1, h: 1 },
+    // Z-direction side faces (outer ends of the highwall column)
+    'brick-z-neg':  { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.5, dz: -0.51, rx: 0,           ry: 0,                rz: 0, w: 1, h: 1 },
+    'brick-z-pos':  { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.5, dz:  0.51, rx: 0,           ry: Math.PI,          rz: 0, w: 1, h: 1 },
+    // Top face of highwall
+    'highwall1-top': { texture: `${T}/highwall1w1.bmp`, dx: 0,    dy: 1.01, dz: 0,    rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1, brightness: 0.5, texRot: Math.PI / 2 },
 };
