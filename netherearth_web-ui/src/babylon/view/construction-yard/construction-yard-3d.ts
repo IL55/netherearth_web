@@ -17,6 +17,8 @@ import {
 import type { OwnerResources } from '../../game/resources';
 import { Owner } from '../../game/core/warmap';
 import type { WarMap } from '../../game/core/warmap';
+import { bus } from '../../game/event-bus';
+import { SOUNDS } from '../../game/types/sound';
 
 export class ConstructionYard3D {
     private scene: BABYLON.Scene;
@@ -218,6 +220,7 @@ export class ConstructionYard3D {
         if (!config) return;
         deductSelectionCost(resources, this.selection);
         spawnManualRobot(this.warMap, config, Owner.RED);
+        bus.emit({ type: 'sound:play', name: SOUNDS.CONSTRUCTION });
         this.close();
     }
 

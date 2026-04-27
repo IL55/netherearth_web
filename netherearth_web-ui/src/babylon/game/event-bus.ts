@@ -1,5 +1,6 @@
 import type { WarMap } from './core/warmap';
 import type { Owner } from './types/owner';
+import type { SoundName } from './types/sound';
 
 export type GameEvent =
     | { type: 'tick:sub';  warMap: WarMap }
@@ -7,7 +8,8 @@ export type GameEvent =
     | { type: 'game:over'; winner: Owner }
     | { type: 'game:menu' } // Requested to show the startup menu
     | { type: 'game:start' } // Start a new game
-    | { type: 'game:new-map'; mapName: string }; // Start a new game with a different map
+    | { type: 'game:new-map'; mapName: string } // Start a new game with a different map
+    | { type: 'sound:play'; name: SoundName };
 
 
 type Handler<E> = (event: E) => void;

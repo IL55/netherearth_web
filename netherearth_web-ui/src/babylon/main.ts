@@ -3,6 +3,8 @@ import { ObjectType, createWarMap, Owner } from './game/core/warmap';
 import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { loadModels } from './view/shared/models';
+import { loadSounds } from './view/shared/sounds';
+import { ALL_SOUNDS } from './game/types/sound';
 import { loadMap } from './data/map';
 import { Renderer } from './view/map/renderer';
 import { ProjectileRenderer } from './view/map/projectile-renderer';
@@ -33,6 +35,9 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
   const assetsManager = new BABYLON.AssetsManager(scene);
   const models = loadModels(assetsManager);
   await assetsManager.loadAsync();
+
+  const sounds = loadSounds();
+  bus.on('sound:play', ({ name }) => sounds.play(name));
 
   let currentMapName = 'small1.map';
   let mapData = await loadMap(`/maps/${currentMapName}`);
@@ -156,6 +161,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       }
       renderer.render(warMap);
       hud.update(warMap, ship);
+      sounds.playSequence(ALL_SOUNDS);
   };
   debugStartVisualTest();
 

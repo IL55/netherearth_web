@@ -2,6 +2,8 @@ import { Owner } from '../../game/core/warmap';
 import type { WarMap, RobotObject } from '../../game/core/warmap';
 import { ActionType } from '../../game/actions';
 import type { RobotAction } from '../../game/actions';
+import { bus } from '../../game/event-bus';
+import { SOUNDS } from '../../game/types/sound';
 import { RobotControl3D } from './robot-control-3d';
 import { isRobotAlive } from './queries';
 import { findRobotUnderShip, setHoverHeight, applyExitBump } from './physics';
@@ -47,6 +49,7 @@ export class RobotControlTrigger {
             if (nearRobot && nearRobot.id !== this.triggeredRobotControlId) {
                 this.triggeredRobotControlId = nearRobot.id;
                 this.isRobotControlOpen = true;
+                bus.emit({ type: 'sound:play', name: SOUNDS.SELECT });
                 setHoverHeight(ship, nearRobot);
                 if (!this.robotControl) {
                     // minimap height = mapData.width * 4px (CELL=4, rotated 90°), plus 8px margin and 8px gap

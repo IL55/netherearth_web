@@ -2,6 +2,7 @@ import { RobotAI } from "./core/warmap";
 import type { WarMap } from './core/warmap';
 import { buildOccupancy } from './core/occupancy';
 import { applyAction, ActionType, type RobotAction } from './actions';
+import { SOUNDS } from './types/sound';
 import { simpleAI, applyAIStateUpdate } from './ai/simple';
 import { tickCapture } from './mechanics/capture';
 import { advanceProjectiles, SUB_TICKS } from './mechanics/projectile';
@@ -94,7 +95,12 @@ function gameTick(
         if (obj.dyingTicks !== undefined) continue;
         if (obj.id === controlledRobotId) {
             const action = getManualAction();
-            if (action) applyAction(obj, action, warMap, occupancy);
+            if (action) {
+                if (action.type === ActionType.FIRE && applyAction(obj, action, warMap, occupancy))
+                    bus.emit({ type: 'sound:play', name: SOUNDS.SHOT });
+                else
+                    applyAction(obj, action, warMap, occupancy);
+            }
             continue;
         }
 
@@ -102,7 +108,10 @@ function gameTick(
             ? simpleAI(obj, warMap, occupancy)
             : { action: { type: ActionType.IDLE } as const, stateUpdate: undefined };
         applyAIStateUpdate(obj, stateUpdate);
-        applyAction(obj, action, warMap, occupancy);
+        if (action.type === ActionType.FIRE && applyAction(obj, action, warMap, occupancy))
+            bus.emit({ type: 'sound:play', name: SOUNDS.SHOT });
+        else
+            applyAction(obj, action, warMap, occupancy);
     }
 
     // Start death animation for robots that just reached 0 health; record kill for terrain upgrade
@@ -110,6 +119,7 @@ function gameTick(
         if (obj.health <= 0 && obj.dyingTicks === undefined) {
             obj.dyingTicks = DEATH_BLINK_TICKS;
             recordKill(warMap, obj);
+            bus.emit({ type: 'sound:play', name: SOUNDS.EXPLOSION });
         }
     }
 

@@ -4,6 +4,9 @@ import type { WarMap, RobotObject } from '../../game/core/warmap';
 import { startClock } from '../../game/clock';
 import { createOwnerResources } from '../../game/resources';
 import { Chassis, Weapon, calcHealth } from '../../data/robot';
+import { ActionType } from '../../game/actions';
+import { bus } from '../../game/event-bus';
+import { SOUNDS } from '../../game/types/sound';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -64,6 +67,101 @@ describe('startClock — controlled robot skips AI', () => {
 
         expect(robot.x).toBe(startX);
         expect(robot.y).toBe(startY);
+    });
+
+    it('emits sound:play SHOT when player-controlled robot successfully fires', () => {
+        const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
+        const shooter: RobotObject = {
+            id: 'shooter', type: ObjectType.ROBOT, x: 5, y: 5,
+            owner: Owner.RED, facing: Direction.E, goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
+            robotConfig: cfg, health: calcHealth(cfg), ai: RobotAI.SIMPLE,
+        };
+        const target: RobotObject = {
+            id: 'target', type: ObjectType.ROBOT, x: 7, y: 5,
+            owner: Owner.BLUE, facing: Direction.W, goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
+            robotConfig: cfg, health: calcHealth(cfg), ai: RobotAI.SIMPLE,
+        };
+        const warMap = makeWarMap(shooter, target);
+
+        const shotsFired: string[] = [];
+        const handler = ({ name }: { name: string }) => shotsFired.push(name);
+        bus.on('sound:play', handler);
+
+        const clock = startClock(
+            warMap, createOwnerResources(), undefined, 100,
+            () => false,
+            () => 'shooter',
+            () => ({ type: ActionType.FIRE, targetId: 'target', weapon: Weapon.CANNON }),
+        );
+        vi.advanceTimersByTime(100);
+        clock.stop();
+        bus.off('sound:play', handler);
+
+        expect(shotsFired).toContain(SOUNDS.SHOT);
+    });
+
+    it('does not emit sound:play SHOT when fire is blocked (weapon reloading)', () => {
+        const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
+        const shooter: RobotObject = {
+            id: 'shooter', type: ObjectType.ROBOT, x: 5, y: 5,
+            owner: Owner.RED, facing: Direction.E, goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
+            robotConfig: cfg, health: calcHealth(cfg), ai: RobotAI.SIMPLE,
+            weaponReadyAt: 9999, // far in the future — always reloading
+        };
+        const target: RobotObject = {
+            id: 'target', type: ObjectType.ROBOT, x: 7, y: 5,
+            owner: Owner.BLUE, facing: Direction.W, goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
+            robotConfig: cfg, health: calcHealth(cfg), ai: RobotAI.SIMPLE,
+        };
+        const warMap = makeWarMap(shooter, target);
+
+        const shotsFired: string[] = [];
+        const handler = ({ name }: { name: string }) => shotsFired.push(name);
+        bus.on('sound:play', handler);
+
+        const clock = startClock(
+            warMap, createOwnerResources(), undefined, 100,
+            () => false,
+            () => 'shooter',
+            () => ({ type: ActionType.FIRE, targetId: 'target', weapon: Weapon.CANNON }),
+        );
+        vi.advanceTimersByTime(100);
+        clock.stop();
+        bus.off('sound:play', handler);
+
+        expect(shotsFired).not.toContain(SOUNDS.SHOT);
+    });
+
+    it('emits sound:play EXPLOSION when a robot reaches 0 health', () => {
+        const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
+        const shooter: RobotObject = {
+            id: 'shooter', type: ObjectType.ROBOT, x: 5, y: 5,
+            owner: Owner.RED, facing: Direction.E, goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
+            robotConfig: cfg, health: calcHealth(cfg), ai: RobotAI.SIMPLE,
+        };
+        const target: RobotObject = {
+            id: 'target', type: ObjectType.ROBOT, x: 7, y: 5,
+            owner: Owner.BLUE, facing: Direction.W, goal: RobotGoal.CAPTURE_NEUTRAL_FACTORY,
+            robotConfig: cfg, health: 1, // one hit from death
+            ai: RobotAI.SIMPLE,
+        };
+        const warMap = makeWarMap(shooter, target);
+
+        const events: string[] = [];
+        const handler = ({ name }: { name: string }) => events.push(name);
+        bus.on('sound:play', handler);
+
+        const clock = startClock(
+            warMap, createOwnerResources(), undefined, 100,
+            () => false,
+            () => 'shooter',
+            () => ({ type: ActionType.FIRE, targetId: 'target', weapon: Weapon.CANNON }),
+        );
+        vi.advanceTimersByTime(100);
+        clock.stop();
+        bus.off('sound:play', handler);
+
+        expect(events).toContain(SOUNDS.EXPLOSION);
     });
 
     it('robot resumes moving once control is released', () => {

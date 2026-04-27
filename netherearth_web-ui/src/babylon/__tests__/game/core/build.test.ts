@@ -1,7 +1,9 @@
 import { RobotAI, Direction } from "../../../game/core/warmap";
 
 import { ObjectType } from '../../../game/core/warmap';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { bus } from '../../../game/event-bus';
+import { SOUNDS } from '../../../game/types/sound';
 import {
     tickBuild, canAfford, chooseBuildOption, chooseBuildGoal, BUILD_OPTIONS,
     CHASSIS_BUILD_COST, WEAPON_BUILD_COST, ELECTRONICS_BUILD_COST, NUCLEAR_BUILD_COST,
@@ -521,6 +523,33 @@ describe('chooseBuildGoal — rule 3: late game, no neutrals left', () => {
 });
 
 // ─── tickBuild — robot id format (regression: id collision with preset robots) ─
+
+describe('tickBuild — does not play sound (AI build)', () => {
+    let soundEvents: string[];
+    let handler: (e: { name: string }) => void;
+
+    beforeEach(() => {
+        soundEvents = [];
+        handler = ({ name }) => soundEvents.push(name);
+        bus.on('sound:play', handler);
+    });
+
+    afterEach(() => {
+        bus.off('sound:play', handler);
+    });
+
+    it('does not emit sound:play CONSTRUCTION when AI builds a robot', () => {
+        const wb = warbase(Owner.BLUE, 0, 0);
+        const map = makeMap([wb]);
+        const res = createOwnerResources();
+        res[Owner.BLUE][ResourceType.CHASSIS] = 1;
+        res[Owner.BLUE][ResourceType.CANNONS] = 1;
+        tickBuild(map, res);
+
+        expect(map.robots).toHaveLength(1); // robot was built
+        expect(soundEvents).not.toContain(SOUNDS.CONSTRUCTION);
+    });
+});
 
 describe('tickBuild — robot id prefix', () => {
     it('assigns ids starting with "robot_"', () => {

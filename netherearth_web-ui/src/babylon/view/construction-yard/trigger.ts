@@ -3,6 +3,8 @@ import type { WarMap } from '../../game/core/warmap';
 import { ConstructionYard3D } from './construction-yard-3d';
 import type * as BABYLON from '@babylonjs/core';
 import type { OwnerResources } from '../../game/resources';
+import { bus } from '../../game/event-bus';
+import { SOUNDS } from '../../game/types/sound';
 
 export class ConstructionYardTrigger {
     private isConstructionYardOpen = false;
@@ -27,6 +29,7 @@ export class ConstructionYardTrigger {
                 if (!this.hasTriggeredYard) {
                     this.isConstructionYardOpen = true;
                     this.hasTriggeredYard = true;
+                    bus.emit({ type: 'sound:play', name: SOUNDS.SELECT });
 
                     if (!this.constructionYard) {
                         this.constructionYard = new ConstructionYard3D(this.scene, this.models, this.ownerResources, warMap, () => {
