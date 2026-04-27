@@ -21,13 +21,13 @@ export const MODEL_OVERLAY: Record<string, OverlayConfig> = {
     'wall2-front': { texture: `${T}/highwall2w2.bmp`, dx:  0.51, dy: 0.25, dz:  0,    rx: 0, ry: -Math.PI / 2, rz: 0, w: 1, h: 0.5 },
     'wall2-z-neg': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.25, dz: -0.51, rx: 0, ry: 0,            rz: 0, w: 1, h: 0.5 },
     'wall2-z-pos': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.25, dz:  0.51, rx: 0, ry: Math.PI,      rz: 0, w: 1, h: 0.5 },
-    // ── wall4 / wall6 ───────────────────────────────────────────────────────
+    // ── wall4 ──────────────────────────────────────────────────────────────
     'wall4-top':   { texture: `${T}/highwall2w1.bmp`, dx: 0, dy: 1.01, dz: 0, rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1 },
-    'wall6-top':   { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 1.01, dz:  0,    rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1 },
-    'wall6-back':  { texture: `${T}/highwall2w2.bmp`, dx: -0.51, dy: 0.5,  dz:  0,    rx: 0,           ry: Math.PI / 2,     rz: 0, w: 1, h: 1 },
-    'wall6-front': { texture: `${T}/highwall2w2.bmp`, dx:  0.51, dy: 0.5,  dz:  0,    rx: 0,           ry: -Math.PI / 2,    rz: 0, w: 1, h: 1 },
-    'wall6-z-neg': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.5,  dz: -0.51, rx: 0,           ry: 0,               rz: 0, w: 1, h: 1 },
-    'wall6-z-pos': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.5,  dz:  0.51, rx: 0,           ry: Math.PI,         rz: 0, w: 1, h: 1 },
+    // ── wall6 ──────────────────────────────────────────────────────────────
+    'wall6-back':  { texture: `${T}/highwall2w2.bmp`, dx: -0.51, dy: 0.5, dz:  0,    rx: 0, ry: Math.PI / 2,  rz: 0, w: 1, h: 1 },
+    'wall6-front': { texture: `${T}/highwall2w2.bmp`, dx:  0.51, dy: 0.5, dz:  0,    rx: 0, ry: -Math.PI / 2, rz: 0, w: 1, h: 1 },
+    'wall6-z-neg': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.5, dz: -0.51, rx: 0, ry: 0,            rz: 0, w: 1, h: 1 },
+    'wall6-z-pos': { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.5, dz:  0.51, rx: 0, ry: Math.PI,      rz: 0, w: 1, h: 1 },
     // ── wall3 ──────────────────────────────────────────────────────────────
     'wall3-top':   { texture: `${T}/highwall2r1.bmp`, dx: 0, dy: 0.51, dz: 0, rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1 },
     // ── warbase ────────────────────────────────────────────────────────────
@@ -43,14 +43,14 @@ export const MODEL_OVERLAY: Record<string, OverlayConfig> = {
     'warbase-hp-z-neg': { texture: `${T}/warbasew1.bmp`, dx:  0,    dy: 0.5, dz: -0.51, rx: 0, ry: 0,            rz: 0, w: 1, h: 1 },
     'warbase-hp-z-pos': { texture: `${T}/warbasew1.bmp`, dx:  0,    dy: 0.5, dz:  0.51, rx: 0, ry: Math.PI,      rz: 0, w: 1, h: 1 },
     // lowwall top face
-    'warbase-lw-top':  { texture: `${T}/lowwall1r1.bmp`,  dx:  0,    dy: 0.51, dz:  0,    rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1 },
+    'warbase-lw-top':  { texture: `${T}/lowwall1r1.bmp`,  dx:  0,    dy: 0.51, dz:  0,    rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1, h: 1,   brightness: 0.7 },
     // lowwall (h=0.5)
     'warbase-lw-back':     { texture: `${T}/highwall2w2.bmp`, dx: -0.51, dy: 0.25, dz:  0,    rx: 0, ry: Math.PI / 2,  rz: 0, w: 1, h: 0.5 },
     'warbase-lw-front':    { texture: `${T}/lowwall3w2.bmp`,  dx:  0.51, dy: 0.25, dz:  0,    rx: 0, ry: -Math.PI / 2, rz: 0, w: 1, h: 0.5 },
     'warbase-lw-z-neg':    { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.25, dz: -0.51, rx: 0, ry: 0,            rz: 0, w: 1, h: 0.5 },
     'warbase-lw-z-pos':    { texture: `${T}/highwall2w2.bmp`, dx:  0,    dy: 0.25, dz:  0.51, rx: 0, ry: Math.PI,      rz: 0, w: 1, h: 0.5 },
     // ── factory ────────────────────────────────────────────────────────────
-    'factory-lowwall2':      { texture: `${T}/lowwall1r1.bmp`,   dx:  0,    dy: 0.51, dz:  0,    rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1,   h: 1   },
+    'factory-lowwall2':      { texture: `${T}/lowwall1r1.bmp`,   dx:  0,    dy: 0.51, dz:  0,    rx: Math.PI / 2, ry: 3 * Math.PI / 2, rz: 0, w: 1,   h: 1,   brightness: 0.7 },
     'factory-lowwall2-front':{ texture: `${T}/lowwall1w1.bmp`,   dx:  0.51, dy: 0.25, dz:  0,    rx: 0,           ry: -Math.PI / 2,    rz: 0, w: 1,   h: 0.5 },
     'factory-lowwall2-z-neg':{ texture: `${T}/highwall2w2.bmp`,  dx:  0,    dy: 0.25, dz: -0.51, rx: 0,           ry: 0,               rz: 0, w: 1,   h: 0.5 },
     'factory-lowwall2-z-pos':{ texture: `${T}/highwall2w2.bmp`,  dx:  0,    dy: 0.25, dz:  0.51, rx: 0,           ry: Math.PI,         rz: 0, w: 1,   h: 0.5 },

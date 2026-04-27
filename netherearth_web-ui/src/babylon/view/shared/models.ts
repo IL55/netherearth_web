@@ -3,8 +3,14 @@ import * as BABYLON from '@babylonjs/core';
 const modelNames: string[] = [
     "bullet1.glb", "bullet2.glb", "bullet3.glb", "construction.glb", "construction1.glb", 
     "construction2.glb", "construction3.glb", "e-antigrav.glb", "e-bipod-base.glb", 
-    "e-bipod-lleg.glb", "e-bipod-rleg.glb", "e-bipod.glb", "e-cannon.glb", "e-electronics.glb", 
-    "e-missiles.glb", "e-nuclear.glb", "e-phasers.glb", "e-tracks.glb", "factory.glb", 
+    "e-bipod-lleg.glb", "e-bipod-rleg.glb", "e-bipod.glb",
+    "e-cannon.glb", "n-cannon.glb",
+    "e-electronics.glb", "n-electronics.glb",
+    "e-missiles.glb", "n-missiles.glb",
+    "e-nuclear.glb", "n-nuclear.glb",
+    "e-phasers.glb", "n-phasers.glb",
+    "e-tracks.glb", "n-tracks.glb",
+    "factory.glb",
     "fence.glb", "flag.glb", "gameover.glb", "go.glb", "grass.glb", "grass1.glb", "grass2.glb", 
     "grass3.glb", "h-antigrav.glb", "h-bipod-base.glb", "h-bipod-lleg.glb", "h-bipod-rleg.glb", 
     "h-bipod.glb", "h-cannon.glb", "h-electronics.glb", "h-missiles.glb", "h-nuclear.glb", 
@@ -22,7 +28,7 @@ export const loadModels = (assetsManager: BABYLON.AssetsManager): Map<string, BA
         task.onSuccess = (task) => {
             const modelNameWithoutExtension = modelName.split('.')[0];
             const rootMesh = task.loadedMeshes[0];
-            if (modelName.startsWith("e-") || modelName.startsWith("h-")) {
+            if (modelName.startsWith("e-") || modelName.startsWith("h-") || modelName.startsWith("n-")) {
                 rootMesh.position = new BABYLON.Vector3(0, 0, 0);
                 rootMesh.rotation = new BABYLON.Vector3(0, 0, 0);
                 rootMesh.computeWorldMatrix(true);

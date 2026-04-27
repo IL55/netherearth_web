@@ -146,12 +146,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       const factory = warMap.tiles.find(o => o.type === ObjectType.FACTORY);
       if (factory) factory.owner = Owner.RED;
 
-      const cx = mapData.width / 2;
-      const cy = mapData.height / 2;
-      const wall3 = warMap.tiles
-          .filter(o => o.type === ObjectType.WALL3)
-          .sort((a, b) => (Math.abs(a.x - cx) + Math.abs(a.y - cy)) - (Math.abs(b.x - cx) + Math.abs(b.y - cy)))[0];
-      const target = wall3;
+      const target = warMap.tiles.find(o => o.type === ObjectType.FACTORY && o.subtype === 'nuclear');
       if (target) {
           ship.x = Math.max(0, Math.min(mapData.width - 1, target.x + 1));
           ship.y = Math.max(0, Math.min(mapData.height - 1, target.y + 1));

@@ -121,7 +121,7 @@ export class Renderer {
                         );
                     } else if (obj.type === ObjectType.WALL6) {
                         addOverlayPlanes(
-                            ['wall6-top', 'wall6-back', 'wall6-front', 'wall6-z-neg', 'wall6-z-pos'],
+                            ['wall6-back', 'wall6-front', 'wall6-z-neg', 'wall6-z-pos'],
                             this.scene, px, pz, `wall6_${obj.x}_${obj.y}`,
                         );
                     }

@@ -5,6 +5,7 @@ export const ALL_MODEL_NAMES = [
     'h-cannon', 'h-missiles', 'h-phasers', 'h-nuclear', 'h-electronics',
     'e-tracks', 'e-antigrav', 'e-bipod',
     'e-cannon', 'e-missiles', 'e-phasers', 'e-nuclear', 'e-electronics',
+    'n-tracks', 'n-cannon', 'n-missiles', 'n-phasers', 'n-nuclear', 'n-electronics',
     'highwall1', 'highwall2', 'lowwall1', 'lowwall2', 'lowwall3',
     'warbase', 'flag',
 ];

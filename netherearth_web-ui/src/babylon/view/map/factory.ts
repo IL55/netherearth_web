@@ -11,13 +11,19 @@ const FACTORY_PARTS = [
     { model: 'lowwall2',  overlays: ['factory-lowwall2', 'factory-lowwall2-front', 'factory-lowwall2-z-neg', 'factory-lowwall2-z-pos'], xo: 1, yo: 2 },
 ];
 
-const CENTRAL_PIECE_MODEL: Record<string, string> = {
-    electronics: 'e-electronics',
-    missiles:    'e-missiles',
-    phasers:     'e-phasers',
-    nuclear:     'e-nuclear',
-    chassis:     'e-tracks',
-    cannons:     'e-cannon',
+const CENTRAL_PIECE_SUFFIX: Record<string, string> = {
+    electronics: 'electronics',
+    missiles:    'missiles',
+    phasers:     'phasers',
+    nuclear:     'nuclear',
+    chassis:     'tracks',
+    cannons:     'cannon',
+};
+
+const ownerPrefix = (owner?: Owner): string => {
+    if (owner === Owner.RED)  return 'e-';
+    if (owner === Owner.BLUE) return 'h-';
+    return 'n-';
 };
 
 const CENTRAL_PIECE_OFFSET: Record<string, { x: number; y: number; z: number }> = {
@@ -83,7 +89,7 @@ export const addFactory = (
         });
     });
 
-    const modelName = CENTRAL_PIECE_MODEL[subtype];
+    const modelName = CENTRAL_PIECE_SUFFIX[subtype] ? ownerPrefix(owner) + CENTRAL_PIECE_SUFFIX[subtype] : undefined;
     const offset = CENTRAL_PIECE_OFFSET[subtype];
     if (modelName && offset) {
         const model = models.get(modelName);
