@@ -9,7 +9,7 @@ import {
 export const CY_LAYER_MASK = 0x10000000;
 
 export const CY_FONT = "bold 70px Arial";
-export const ROTATION_SPEED = 0.02;
+export const ROTATION_SPEED = 0.01;
 export const STACK_GAP = 0.15;
 
 /** How each row behaves when clicked. */

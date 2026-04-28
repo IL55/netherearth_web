@@ -2,6 +2,18 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { StartupMenu } from '../../view/startup-menu';
 import { bus } from '../../game/event-bus';
 
+function makeLocalStorageMock() {
+    let store: Record<string, string> = {};
+    return {
+        getItem:    (k: string) => store[k] ?? null,
+        setItem:    (k: string, v: string) => { store[k] = v; },
+        removeItem: (k: string) => { delete store[k]; },
+        clear:      () => { store = {}; },
+        get length() { return Object.keys(store).length; },
+        key:        (i: number) => Object.keys(store)[i] ?? null,
+    };
+}
+
 describe('StartupMenu', () => {
     let onSave: any;
     let onLoad: any;
@@ -9,13 +21,15 @@ describe('StartupMenu', () => {
     let menu: StartupMenu;
 
     beforeEach(() => {
+        vi.stubGlobal('localStorage', makeLocalStorageMock());
+
         onSave = vi.fn();
         onLoad = vi.fn();
         onNewGame = vi.fn();
-        
+
         // Ensure DOM is clean
         document.body.innerHTML = '';
-        
+
         // Mock bus.emit to spy on it
         vi.spyOn(bus, 'emit');
 
@@ -115,7 +129,7 @@ describe('StartupMenu', () => {
     });
 
     it('cleans up DOM on dispose', () => {
-        expect(document.body.children.length).toBe(3); // overlay, mapDialog, keysDialog
+        expect(document.body.children.length).toBe(4); // overlay, mapDialog, keysDialog, loadDialog
         menu.dispose();
         expect(document.body.children.length).toBe(0);
     });

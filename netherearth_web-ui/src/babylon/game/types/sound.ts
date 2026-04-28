@@ -2,7 +2,10 @@ export const SOUNDS = {
     CONSTRUCTION: 'construction',
     EXPLOSION:    'explosion',
     SELECT:       'select',
-    SHOT:         'shot',
+    CANNON:       'cannon',
+    MISSILES:     'missiles',
+    PHASERS:      'phaser',
+    NUCLEAR:      'nuclear',
     WRONG:        'wrong',
 } as const;
 

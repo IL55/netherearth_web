@@ -2,7 +2,8 @@ import { RobotAI } from "./core/warmap";
 import type { WarMap } from './core/warmap';
 import { buildOccupancy } from './core/occupancy';
 import { applyAction, ActionType, type RobotAction } from './actions';
-import { SOUNDS } from './types/sound';
+import { Weapon } from '../data/robot';
+import { SOUNDS, type SoundName } from './types/sound';
 import { simpleAI, applyAIStateUpdate } from './ai/simple';
 import { tickCapture } from './mechanics/capture';
 import { advanceProjectiles, SUB_TICKS } from './mechanics/projectile';
@@ -90,6 +91,12 @@ function gameTick(
 
     const occupancy = buildOccupancy(warMap, ship);
 
+    const WEAPON_SOUND: Record<Weapon, SoundName> = {
+        [Weapon.CANNON]:   SOUNDS.CANNON,
+        [Weapon.MISSILES]: SOUNDS.MISSILES,
+        [Weapon.PHASERS]:  SOUNDS.PHASERS,
+    };
+
     // Run AI only for live (non-dying) robots
     for (const obj of [...warMap.robots]) {
         if (obj.dyingTicks !== undefined) continue;
@@ -97,7 +104,9 @@ function gameTick(
             const action = getManualAction();
             if (action) {
                 if (action.type === ActionType.FIRE && applyAction(obj, action, warMap, occupancy))
-                    bus.emit({ type: 'sound:play', name: SOUNDS.SHOT });
+                    bus.emit({ type: 'sound:play', name: WEAPON_SOUND[action.weapon] });
+                else if (action.type === ActionType.DETONATE && applyAction(obj, action, warMap, occupancy))
+                    bus.emit({ type: 'sound:play', name: SOUNDS.NUCLEAR });
                 else
                     applyAction(obj, action, warMap, occupancy);
             }
@@ -109,7 +118,9 @@ function gameTick(
             : { action: { type: ActionType.IDLE } as const, stateUpdate: undefined };
         applyAIStateUpdate(obj, stateUpdate);
         if (action.type === ActionType.FIRE && applyAction(obj, action, warMap, occupancy))
-            bus.emit({ type: 'sound:play', name: SOUNDS.SHOT });
+            bus.emit({ type: 'sound:play', name: WEAPON_SOUND[action.weapon] });
+        else if (action.type === ActionType.DETONATE && applyAction(obj, action, warMap, occupancy))
+            bus.emit({ type: 'sound:play', name: SOUNDS.NUCLEAR });
         else
             applyAction(obj, action, warMap, occupancy);
     }

@@ -1,3 +1,45 @@
+// ─── Save slots ───────────────────────────────────────────────────────────────
+
+const STORAGE_KEY_SAVE_PREFIX = 'netherearth_save_';
+
+export interface SaveSlot {
+    timestamp: number;
+    mapName: string;
+    label: string;
+}
+
+/** Builds the localStorage key for a save slot. */
+export function saveKey(timestamp: number, mapName: string): string {
+    return `${STORAGE_KEY_SAVE_PREFIX}${timestamp}:${mapName}`;
+}
+
+export function listSaves(): SaveSlot[] {
+    const slots: SaveSlot[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key?.startsWith(STORAGE_KEY_SAVE_PREFIX)) continue;
+        const rest = key.slice(STORAGE_KEY_SAVE_PREFIX.length);
+        const colon = rest.indexOf(':');
+        if (colon === -1) continue;
+        const ts = parseInt(rest.slice(0, colon), 10);
+        const mapName = rest.slice(colon + 1);
+        if (!isNaN(ts) && mapName)
+            slots.push({ timestamp: ts, mapName, label: `${mapName} — ${new Date(ts).toLocaleString()}` });
+    }
+    return slots.sort((a, b) => b.timestamp - a.timestamp); // newest first
+}
+
+export function loadSave(timestamp: number, mapName: string): string | null {
+    try {
+        return localStorage.getItem(saveKey(timestamp, mapName));
+    } catch (e) {
+        console.error('Failed to load save', e);
+        return null;
+    }
+}
+
+// ─── Key bindings ──────────────────────────────────────────────────────────────
+
 export interface KeyBindings {
     up: string;
     down: string;

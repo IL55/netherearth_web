@@ -88,7 +88,7 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
 
   const startupMenu = new StartupMenu(
       () => { /* TODO: save */ },
-      () => { /* TODO: load */ },
+      (_timestamp: number, _mapName: string) => { /* TODO: load from timestamp */ },
   );
   // startupMenu.show(); // uncomment to show the startup dialog normally
 

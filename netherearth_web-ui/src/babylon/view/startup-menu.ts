@@ -1,6 +1,6 @@
 import { bus } from '../game/event-bus';
 import { formatKey } from '../controls/keybindings';
-import { loadKeyBindings, saveKeyBindings, loadSelectedMap, saveSelectedMap, type KeyBindings } from '../data/storage';
+import { loadKeyBindings, saveKeyBindings, loadSelectedMap, saveSelectedMap, listSaves, type KeyBindings } from '../data/storage';
 
 const OVERLAY_STYLE: Partial<CSSStyleDeclaration> = {
     position:       'fixed',
@@ -82,16 +82,17 @@ const AVAILABLE_MAPS = [
 ];
 
 export class StartupMenu {
-    private overlay:  HTMLDivElement;
-    private mapDialog: HTMLDivElement;
+    private overlay:    HTMLDivElement;
+    private mapDialog:  HTMLDivElement;
     private keysDialog: HTMLDivElement;
+    private loadDialog: HTMLDivElement;
     private visible = false;
     private onKeyDown: (e: KeyboardEvent) => void;
     private selectedMap = loadSelectedMap();
 
     constructor(
         private onSave:    () => void,
-        private onLoad:    () => void,
+        private onLoad:    (timestamp: number, mapName: string) => void,
         private onNewGame?: () => void,
     ) {
         this.overlay = document.createElement('div');
@@ -139,7 +140,7 @@ export class StartupMenu {
         }));
         this.overlay.appendChild(makeBtn('RESUME',    () => this.hide()));
         this.overlay.appendChild(makeBtn('SAVE GAME', () => this.onSave()));
-        this.overlay.appendChild(makeBtn('LOAD GAME', () => this.onLoad()));
+        this.overlay.appendChild(makeBtn('LOAD GAME', () => this.showLoadDialog()));
 
         // --- MAP DIALOG ---
         this.mapDialog = document.createElement('div');
@@ -208,6 +209,34 @@ export class StartupMenu {
         }));
         document.body.appendChild(this.keysDialog);
 
+        // --- LOAD DIALOG ---
+        this.loadDialog = document.createElement('div');
+        Object.assign(this.loadDialog.style, OVERLAY_STYLE, { background: 'rgba(0, 0, 0, 0.95)', display: 'none' });
+
+        const loadDialogTitle = document.createElement('div');
+        Object.assign(loadDialogTitle.style, TITLE_STYLE, { fontSize: '32px' });
+        loadDialogTitle.textContent = 'LOAD GAME';
+        this.loadDialog.appendChild(loadDialogTitle);
+
+        this.loadListContainer = document.createElement('div');
+        Object.assign(this.loadListContainer.style, {
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '50vh',
+            overflowY: 'auto',
+            marginBottom: '20px',
+            border: '1px solid rgba(255,255,255,0.2)',
+            padding: '10px',
+            width: '340px',
+        });
+        this.loadDialog.appendChild(this.loadListContainer);
+
+        this.loadDialog.appendChild(makeBtn('BACK', () => {
+            this.loadDialog.style.display = 'none';
+            this.overlay.style.display = 'flex';
+        }));
+        document.body.appendChild(this.loadDialog);
+
         const hint = document.createElement('div');
         Object.assign(hint.style, HINT_STYLE);
         hint.textContent = 'ESC — resume';
@@ -227,6 +256,7 @@ export class StartupMenu {
     }
 
     private keysContainer: HTMLDivElement;
+    private loadListContainer: HTMLDivElement;
     private waitingForKey: keyof KeyBindings | null = null;
     
     private updateKeysUI() {
@@ -271,6 +301,35 @@ export class StartupMenu {
         });
     }
 
+    private showLoadDialog(): void {
+        const saves = listSaves();
+        this.loadListContainer.innerHTML = '';
+
+        if (saves.length === 0) {
+            const empty = document.createElement('div');
+            Object.assign(empty.style, { padding: '12px', opacity: '0.5', fontFamily: 'monospace', fontSize: '13px' });
+            empty.textContent = 'NO SAVES FOUND';
+            this.loadListContainer.appendChild(empty);
+        } else {
+            saves.forEach(slot => {
+                const btn = document.createElement('button');
+                Object.assign(btn.style, BTN_STYLE, { width: '100%', textAlign: 'left', padding: '10px 8px' });
+                btn.textContent = slot.label;
+                btn.addEventListener('mouseenter', () => { btn.style.border = BTN_HOVER_BORDER; });
+                btn.addEventListener('mouseleave', () => { btn.style.border = BTN_NORMAL_BORDER; });
+                btn.addEventListener('click', () => {
+                    this.loadDialog.style.display = 'none';
+                    this.hide();
+                    this.onLoad(slot.timestamp, slot.mapName);
+                });
+                this.loadListContainer.appendChild(btn);
+            });
+        }
+
+        this.overlay.style.display = 'none';
+        this.loadDialog.style.display = 'flex';
+    }
+
     private bindKey(code: string) {
         if (!this.waitingForKey) return;
         
@@ -288,6 +347,7 @@ export class StartupMenu {
         this.overlay.style.display = 'flex';
         this.mapDialog.style.display = 'none';
         this.keysDialog.style.display = 'none';
+        this.loadDialog.style.display = 'none';
         this.waitingForKey = null;
     }
 
@@ -297,6 +357,7 @@ export class StartupMenu {
         this.overlay.style.display = 'none';
         this.mapDialog.style.display = 'none';
         this.keysDialog.style.display = 'none';
+        this.loadDialog.style.display = 'none';
         this.waitingForKey = null;
     }
 
@@ -313,5 +374,6 @@ export class StartupMenu {
         this.overlay.remove();
         this.mapDialog.remove();
         this.keysDialog.remove();
+        this.loadDialog.remove();
     }
 }

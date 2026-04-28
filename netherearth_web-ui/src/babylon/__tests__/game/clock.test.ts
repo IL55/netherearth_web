@@ -69,7 +69,7 @@ describe('startClock — controlled robot skips AI', () => {
         expect(robot.y).toBe(startY);
     });
 
-    it('emits sound:play SHOT when player-controlled robot successfully fires', () => {
+    it('emits sound:play CANNON when player-controlled robot successfully fires a cannon', () => {
         const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
         const shooter: RobotObject = {
             id: 'shooter', type: ObjectType.ROBOT, x: 5, y: 5,
@@ -97,10 +97,10 @@ describe('startClock — controlled robot skips AI', () => {
         clock.stop();
         bus.off('sound:play', handler);
 
-        expect(shotsFired).toContain(SOUNDS.SHOT);
+        expect(shotsFired).toContain(SOUNDS.CANNON);
     });
 
-    it('does not emit sound:play SHOT when fire is blocked (weapon reloading)', () => {
+    it('does not emit sound:play CANNON when fire is blocked (weapon reloading)', () => {
         const cfg = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON] };
         const shooter: RobotObject = {
             id: 'shooter', type: ObjectType.ROBOT, x: 5, y: 5,
@@ -129,7 +129,7 @@ describe('startClock — controlled robot skips AI', () => {
         clock.stop();
         bus.off('sound:play', handler);
 
-        expect(shotsFired).not.toContain(SOUNDS.SHOT);
+        expect(shotsFired).not.toContain(SOUNDS.CANNON);
     });
 
     it('emits sound:play EXPLOSION when a robot reaches 0 health', () => {
