@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 import { getGoalLabel, getRobotHealthPercent } from './queries';
 import { buildDirectionAction, buildFireAction, buildFireActionForWeapon } from './actions';
-import { setManualControl, setRobotGoal, setMoveGoal } from './mutations';
+import { setManualControl, setRobotGoal, setMoveGoal } from '../../game/robot-mutations';
 import { WEAPON_RENDER_ORDER } from '../../data/robot';
 import type { Weapon } from '../../data/robot';
 import { ORDERABLE_GOALS, GOAL_LABELS } from './constants';

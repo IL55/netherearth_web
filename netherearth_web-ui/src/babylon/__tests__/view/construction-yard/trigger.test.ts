@@ -42,7 +42,7 @@ describe('ConstructionYardTrigger — sound:play SELECT', () => {
     });
 
     it('emits sound:play SELECT when ship enters the warbase', () => {
-        const trigger = new ConstructionYardTrigger(null as any, null as any, null as any, () => {});
+        const trigger = new ConstructionYardTrigger(null as any, null as any, null as any, vi.fn(), () => {});
         trigger.check(makeWarMap(), SHIP_INSIDE);
 
         expect(soundEvents).toContain(SOUNDS.SELECT);
@@ -50,7 +50,7 @@ describe('ConstructionYardTrigger — sound:play SELECT', () => {
     });
 
     it('emits SELECT only once per entry (not on every check)', () => {
-        const trigger = new ConstructionYardTrigger(null as any, null as any, null as any, () => {});
+        const trigger = new ConstructionYardTrigger(null as any, null as any, null as any, vi.fn(), () => {});
         trigger.check(makeWarMap(), SHIP_INSIDE);
         trigger.check(makeWarMap(), SHIP_INSIDE);
         trigger.check(makeWarMap(), SHIP_INSIDE);
@@ -60,7 +60,7 @@ describe('ConstructionYardTrigger — sound:play SELECT', () => {
     });
 
     it('does not emit SELECT when ship is outside the warbase', () => {
-        const trigger = new ConstructionYardTrigger(null as any, null as any, null as any, () => {});
+        const trigger = new ConstructionYardTrigger(null as any, null as any, null as any, vi.fn(), () => {});
         trigger.check(makeWarMap(), SHIP_OUTSIDE);
 
         expect(soundEvents).not.toContain(SOUNDS.SELECT);
@@ -68,7 +68,7 @@ describe('ConstructionYardTrigger — sound:play SELECT', () => {
     });
 
     it('emits SELECT again after ship leaves and re-enters', () => {
-        const trigger = new ConstructionYardTrigger(null as any, null as any, null as any, () => {});
+        const trigger = new ConstructionYardTrigger(null as any, null as any, null as any, vi.fn(), () => {});
         trigger.check(makeWarMap(), SHIP_INSIDE);
         trigger.check(makeWarMap(), SHIP_OUTSIDE); // leave — resets hasTriggeredYard
         trigger.check(makeWarMap(), SHIP_INSIDE);  // re-enter

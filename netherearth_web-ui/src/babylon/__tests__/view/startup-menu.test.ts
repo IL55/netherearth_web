@@ -1,16 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { StartupMenu } from '../../view/startup-menu';
+import type { StartupMenuStorage } from '../../data/storage';
 import { bus } from '../../game/event-bus';
 
-function makeLocalStorageMock() {
-    let store: Record<string, string> = {};
+function makeStorage(selectedMap = 'small1.map'): StartupMenuStorage {
     return {
-        getItem:    (k: string) => store[k] ?? null,
-        setItem:    (k: string, v: string) => { store[k] = v; },
-        removeItem: (k: string) => { delete store[k]; },
-        clear:      () => { store = {}; },
-        get length() { return Object.keys(store).length; },
-        key:        (i: number) => Object.keys(store)[i] ?? null,
+        loadSelectedMap: () => selectedMap,
+        saveSelectedMap: vi.fn(),
+        listSaves:       () => [],
     };
 }
 
@@ -21,19 +18,14 @@ describe('StartupMenu', () => {
     let menu: StartupMenu;
 
     beforeEach(() => {
-        vi.stubGlobal('localStorage', makeLocalStorageMock());
-
         onSave = vi.fn();
         onLoad = vi.fn();
         onNewGame = vi.fn();
 
-        // Ensure DOM is clean
         document.body.innerHTML = '';
-
-        // Mock bus.emit to spy on it
         vi.spyOn(bus, 'emit');
 
-        menu = new StartupMenu(onSave, onLoad, onNewGame);
+        menu = new StartupMenu(makeStorage(), onSave, onLoad, onNewGame);
     });
 
     afterEach(() => {

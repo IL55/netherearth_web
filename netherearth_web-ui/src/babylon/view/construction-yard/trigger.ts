@@ -3,6 +3,7 @@ import type { WarMap } from '../../game/core/warmap';
 import { ConstructionYard3D } from './construction-yard-3d';
 import type * as BABYLON from '@babylonjs/core';
 import type { OwnerResources } from '../../game/resources';
+import type { RobotConfig } from '../../data/robot';
 import { bus } from '../../game/event-bus';
 import { SOUNDS } from '../../game/types/sound';
 
@@ -15,7 +16,8 @@ export class ConstructionYardTrigger {
         private scene: BABYLON.Scene,
         private models: Map<string, BABYLON.AbstractMesh>,
         private ownerResources: OwnerResources,
-        private onExit: () => void
+        private onCreate: (config: RobotConfig) => void,
+        private onExit: () => void,
     ) {}
 
     public check(warMap: WarMap, ship: { x: number; y: number; height: number }): void {
@@ -32,10 +34,11 @@ export class ConstructionYardTrigger {
                     bus.emit({ type: 'sound:play', name: SOUNDS.SELECT });
 
                     if (!this.constructionYard) {
-                        this.constructionYard = new ConstructionYard3D(this.scene, this.models, this.ownerResources, warMap, () => {
-                            this.isConstructionYardOpen = false;
-                            this.onExit();
-                        });
+                        this.constructionYard = new ConstructionYard3D(
+                            this.scene, this.models, this.ownerResources, warMap,
+                            this.onCreate,
+                            () => { this.isConstructionYardOpen = false; this.onExit(); },
+                        );
                     }
                     this.constructionYard.open();
                 }

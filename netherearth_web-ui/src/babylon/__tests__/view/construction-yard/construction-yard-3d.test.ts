@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ObjectType, Owner } from '../../../game/core/warmap';
-import type { WarMap } from '../../../game/core/warmap';
+import { Owner } from '../../../game/core/warmap';
 import { bus } from '../../../game/event-bus';
 import { SOUNDS } from '../../../game/types/sound';
 import { EMPTY_SELECTION } from '../../../view/construction-yard/construction-yard-logic';
@@ -14,14 +13,6 @@ function callHandleCreate(overrides: Partial<InstanceType<typeof ConstructionYar
         close: vi.fn(),
         ...overrides,
     });
-}
-
-function makeWarMap(): WarMap {
-    return {
-        width: 20, height: 20,
-        tiles: [{ id: 'wb', type: ObjectType.WARBASE, x: 0, y: 0, owner: Owner.RED }],
-        robots: [], projectiles: [], killCounts: {}, tick: 0,
-    };
 }
 
 describe('ConstructionYard3D.handleCreate — sound:play CONSTRUCTION', () => {
@@ -46,7 +37,7 @@ describe('ConstructionYard3D.handleCreate — sound:play CONSTRUCTION', () => {
 
         callHandleCreate({
             ownerResources,
-            warMap: makeWarMap(),
+            onCreate: vi.fn(),
             selection: { ...EMPTY_SELECTION, chassis: 'h-tracks', weapons: ['h-cannon'] },
         } as any);
 
@@ -59,8 +50,8 @@ describe('ConstructionYard3D.handleCreate — sound:play CONSTRUCTION', () => {
 
         callHandleCreate({
             ownerResources,
-            warMap: makeWarMap(),
-            selection: { ...EMPTY_SELECTION }, // no chassis selected
+            onCreate: vi.fn(),
+            selection: { ...EMPTY_SELECTION },
         } as any);
 
         expect(soundEvents).not.toContain(SOUNDS.CONSTRUCTION);
@@ -71,7 +62,7 @@ describe('ConstructionYard3D.handleCreate — sound:play CONSTRUCTION', () => {
 
         callHandleCreate({
             ownerResources,
-            warMap: makeWarMap(),
+            onCreate: vi.fn(),
             selection: { ...EMPTY_SELECTION, chassis: 'h-tracks', weapons: ['h-cannon'] },
         } as any);
 

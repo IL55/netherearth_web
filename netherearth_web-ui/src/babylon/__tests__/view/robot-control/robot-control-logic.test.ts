@@ -13,7 +13,7 @@ import {
     setManualControl,
     setRobotGoal,
     setMoveGoal,
-} from '../../../view/robot-control/mutations';
+} from '../../../game/robot-mutations';
 import {
     findRobotUnderShip,
 } from '../../../view/robot-control/physics';

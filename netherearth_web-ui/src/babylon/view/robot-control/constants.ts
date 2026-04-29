@@ -8,17 +8,7 @@ export const HOVER_DISTANCE = 0.6;  // Chebyshev radius in game tiles — ship m
 export const HOVER_HEIGHT   = 2.0;  // max ship height to trigger
 export const HOVER_GAP      = 0.5;  // Gap between robot's visual top and ship's underside while panel is open
 
-/** Goals the player can assign via "CHANGE ORDER". */
-export const ORDERABLE_GOALS: RobotGoal[] = [
-    RobotGoal.ATTACK_ROBOTS,
-    RobotGoal.CAPTURE_ENEMY_FACTORY,
-    RobotGoal.CAPTURE_NEUTRAL_FACTORY,
-    RobotGoal.CAPTURE_ENEMY_WARBASE,
-    RobotGoal.CAPTURE_NEUTRAL_WARBASE,
-    RobotGoal.NUKE_FACTORY,
-    RobotGoal.NUKE_WARBASE,
-    RobotGoal.DEFEND,
-];
+export { ORDERABLE_GOALS } from '../../game/robot-mutations';
 
 /** Human-readable labels for every RobotGoal value. */
 export const GOAL_LABELS: Record<string, string> = {

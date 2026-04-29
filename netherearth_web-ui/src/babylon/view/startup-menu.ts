@@ -1,6 +1,6 @@
 import { bus } from '../game/event-bus';
 import { formatKey } from '../controls/keybindings';
-import { loadKeyBindings, saveKeyBindings, loadSelectedMap, saveSelectedMap, listSaves, type KeyBindings } from '../data/storage';
+import { loadKeyBindings, saveKeyBindings, type KeyBindings, type StartupMenuStorage } from '../data/storage';
 
 const OVERLAY_STYLE: Partial<CSSStyleDeclaration> = {
     position:       'fixed',
@@ -88,13 +88,17 @@ export class StartupMenu {
     private loadDialog: HTMLDivElement;
     private visible = false;
     private onKeyDown: (e: KeyboardEvent) => void;
-    private selectedMap = loadSelectedMap();
+    private selectedMap: string;
+    private storage: StartupMenuStorage;
 
     constructor(
+        storage: StartupMenuStorage,
         private onSave:    () => void,
         private onLoad:    (timestamp: number, mapName: string) => void,
         private onNewGame?: () => void,
     ) {
+        this.storage = storage;
+        this.selectedMap = storage.loadSelectedMap();
         this.overlay = document.createElement('div');
         Object.assign(this.overlay.style, OVERLAY_STYLE);
         this.overlay.style.display = 'none';
@@ -166,7 +170,7 @@ export class StartupMenu {
         AVAILABLE_MAPS.forEach(mapName => {
             const btn = makeBtn(mapName, () => {
                 this.selectedMap = mapName;
-                saveSelectedMap(mapName);
+                this.storage.saveSelectedMap(mapName);
                 selectedMapLabel.textContent = `CURRENT MAP: ${this.selectedMap}`;
                 this.mapDialog.style.display = 'none';
                 this.overlay.style.display = 'flex';
@@ -302,7 +306,7 @@ export class StartupMenu {
     }
 
     private showLoadDialog(): void {
-        const saves = listSaves();
+        const saves = this.storage.listSaves();
         this.loadListContainer.innerHTML = '';
 
         if (saves.length === 0) {

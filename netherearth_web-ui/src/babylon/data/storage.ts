@@ -1,3 +1,11 @@
+// ─── StartupMenu storage contract ─────────────────────────────────────────────
+
+export interface StartupMenuStorage {
+    loadSelectedMap(): string;
+    saveSelectedMap(name: string): void;
+    listSaves(): SaveSlot[];
+}
+
 // ─── Save slots ───────────────────────────────────────────────────────────────
 
 const STORAGE_KEY_SAVE_PREFIX = 'netherearth_save_';

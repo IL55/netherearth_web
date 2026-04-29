@@ -11,12 +11,12 @@ import {
     isValidBuild,
     isSpawnOccupied,
     buildRobotConfig,
-    spawnManualRobot,
     type BuildSelection,
 } from './construction-yard-logic';
 import type { OwnerResources } from '../../game/resources';
 import { Owner } from '../../game/core/warmap';
 import type { WarMap } from '../../game/core/warmap';
+import type { RobotConfig } from '../../data/robot';
 import { bus } from '../../game/event-bus';
 import { SOUNDS } from '../../game/types/sound';
 
@@ -42,16 +42,20 @@ export class ConstructionYard3D {
     // CREATE button — dimmed when build is not valid/affordable
     private createBtnMesh: BABYLON.Mesh | null = null;
 
+    private onCreate: (config: RobotConfig) => void;
+
     constructor(
         scene: BABYLON.Scene,
         models: Map<string, BABYLON.AbstractMesh>,
         ownerResources: OwnerResources,
         warMap: WarMap,
+        onCreate: (config: RobotConfig) => void,
         onExit: () => void,
     ) {
         this.scene = scene;
         this.mainCamera = scene.activeCamera!;
         this.onExitCallback = onExit;
+        this.onCreate = onCreate;
         this.ownerResources = ownerResources;
         this.warMap = warMap;
         this.models = models;
@@ -219,7 +223,7 @@ export class ConstructionYard3D {
         const config = buildRobotConfig(this.selection);
         if (!config) return;
         deductSelectionCost(resources, this.selection);
-        spawnManualRobot(this.warMap, config, Owner.RED);
+        this.onCreate(config);
         bus.emit({ type: 'sound:play', name: SOUNDS.CONSTRUCTION });
         this.close();
     }
