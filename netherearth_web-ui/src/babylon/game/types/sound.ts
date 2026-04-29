@@ -1,4 +1,5 @@
 export const SOUNDS = {
+    INTRO:        'intro',
     CONSTRUCTION: 'construction',
     EXPLOSION:    'explosion',
     SELECT:       'select',

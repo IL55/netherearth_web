@@ -4,7 +4,7 @@ import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders';
 import { loadModels } from './view/shared/models';
 import { loadSounds } from './view/shared/sounds';
-import { ALL_SOUNDS } from './game/types/sound';
+import { SOUNDS } from './game/types/sound';
 import { loadMap } from './data/map';
 import { Renderer } from './view/map/renderer';
 import { ProjectileRenderer } from './view/map/projectile-renderer';
@@ -90,7 +90,8 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       () => { /* TODO: save */ },
       (_timestamp: number, _mapName: string) => { /* TODO: load from timestamp */ },
   );
-  // startupMenu.show(); // uncomment to show the startup dialog normally
+  startupMenu.show();
+  sounds.playSequence([SOUNDS.INTRO]);
 
   bus.on('game:menu', () => {
       startupMenu.show();
@@ -146,24 +147,6 @@ export const createScene = async (engine: BABYLON.Engine, canvas: HTMLCanvasElem
       () => robotControlTrigger.takePendingAction(),
   );
 
-  const debugStartVisualTest = () => {
-      resetGame(warMap, mapData, ownerResources, ship, clock, INITIAL_RESOURCES);
-      const factory = warMap.tiles.find(o => o.type === ObjectType.FACTORY);
-      if (factory) factory.owner = Owner.RED;
-
-      const target = warMap.tiles.find(o => o.type === ObjectType.FACTORY && o.subtype === 'nuclear');
-      if (target) {
-          ship.x = Math.max(0, Math.min(mapData.width - 1, target.x + 1));
-          ship.y = Math.max(0, Math.min(mapData.height - 1, target.y + 1));
-          ship.height = 1.5;
-          shipTarget.x = mapBegin.x + ship.x;
-          shipTarget.z = mapBegin.z + ship.y;
-      }
-      renderer.render(warMap);
-      hud.update(warMap, ship);
-      sounds.playSequence(ALL_SOUNDS);
-  };
-  debugStartVisualTest();
 
   return {
     scene,
