@@ -24,6 +24,7 @@ import { GameOverScreen } from './view/game-over';
 import { StartupMenu } from './view/startup-menu';
 import { bus } from './game/event-bus';
 import { resetGame } from './game/reset';
+import { saveGame, parseGameSave, applySave } from './game/save';
 import { spawnManualRobot } from './view/construction-yard/construction-yard-logic';
 import type { Sounds } from './view/shared/sounds';
 import { SOUNDS } from './game/types/sound';
@@ -119,8 +120,23 @@ export class GameSession {
         const storage: StartupMenuStorage = { loadSelectedMap, saveSelectedMap, listSaves };
         s.startupMenu = new StartupMenu(
             storage,
-            () => { /* TODO: save */ },
-            (_timestamp: number, _mapName: string) => { /* TODO: load */ },
+            () => { saveGame(s.currentMapName, s.warMap, s.ownerResources, s.ship); },
+            async (timestamp: number, mapName: string) => {
+                const save = parseGameSave(timestamp, mapName);
+                if (!save) return;
+                if (s.currentMapName !== mapName) {
+                    s.mapData = await loadMap(`/maps/${mapName}`);
+                    s.currentMapName = mapName;
+                    s.warMap.width = s.mapData.width;
+                    s.warMap.height = s.mapData.height;
+                }
+                s.clock.stop();
+                s.clock.reset();
+                applySave(save, s.warMap, s.ownerResources, s.ship);
+                s.clock.start();
+                s.renderer.render(s.warMap);
+                s.hud.update(s.warMap, s.ship);
+            },
         );
 
         s.clock = startClock(

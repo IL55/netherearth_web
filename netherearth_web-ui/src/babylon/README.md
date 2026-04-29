@@ -1,47 +1,52 @@
 # NetherEarth Web — Architecture
 
-Entry point and top-level wiring for the BabylonJS scene.
+Two entry points at the top level:
 
-- `main.ts` — creates the scene, loads assets, builds the initial `WarMap`, registers `bus` subscribers, and starts the clock.
+- `main.ts` — BabylonJS scene setup, asset loading, sound wiring. Thin — 28 lines.
+- `game-session.ts` — owns the full game lifecycle: state, renderers, triggers, menus, bus handlers, clock.
 
 ---
 
 ## MVC layer map
 
-| Layer | Directories | Rule |
+| Layer | Where | Rule |
 |---|---|---|
 | **Model** | `data/`, `game/` | Pure state and simulation. Zero BabylonJS, zero DOM. |
-| **View** | `view/` | Reads state, renders with BabylonJS. Must not mutate game logic. |
-| **Controller** | `main.ts`, `controls/` | Wires M↔V, handles user input, owns lifecycle. |
+| **View** | `view/` | Reads state, renders with BabylonJS or DOM. Must not mutate game logic. |
+| **Controller** | `main.ts`, `game-session.ts`, `controls/` | Wires M↔V, handles input, owns lifecycle. |
 
 ### What is clean
 
 - Every file in `game/` imports zero BabylonJS symbols. The model is fully headless and testable.
 - `data/` is pure types, parsing, and storage — no simulation or rendering.
 - `controls/` handles only input bindings — no game logic, no rendering.
-- The **event bus** is the formal M→V boundary: the model emits typed events; the view subscribes. Neither layer holds a direct reference to the other.
-- The **action system** (`game/actions/`) is the only legal way to mutate robot position or trigger combat. Direct field writes are an exception confined to AI nav state (intentional, for performance).
+- The **event bus** (`game/event-bus.ts`) is the formal M→V boundary. The model emits typed events; the view subscribes. Neither layer holds a direct reference to the other.
+- The **action system** (`game/actions/`) is the only legal way to mutate robot position or trigger combat.
+- `ConstructionYardTrigger` receives `onCreate: (config: RobotConfig) => void` from the controller — the view no longer calls `spawnManualRobot` directly.
+- `StartupMenu` receives a `StartupMenuStorage` interface — it no longer imports from `data/storage` directly.
+- Player-driven robot mutations (`cycleRobotGoal`, `setManualControl`, etc.) live in `game/robot-mutations.ts`, not in `view/`.
 
-### Where the boundary is blurred
+### Where the boundary is still blurred
 
 | File | Issue | Severity |
 |---|---|---|
-| `main.ts` | God controller — constructs all subsystems, holds all trigger refs, hardcodes initial robot loop, owns `clock` via closure. | High |
-| `view/construction-yard/construction-yard-3d.ts` | Calls `spawnManualRobot()` directly — view layer mutating model. Should go through a callback injected by the controller or a bus event. | High |
-| `view/robot-control/mutations.ts` | `setManualControl`, `cycleRobotGoal` etc. write `RobotObject` fields directly. Conceptually a controller; physically in `view/`. | Medium |
-| `view/startup-menu.ts` | Calls `saveSelectedMap` / `loadSelectedMap` / `listSaves` directly (model access). The bus events it emits (`game:new-map`) are correct; the storage calls should go through an injected service or the controller. | Medium |
-| `game/clock.ts` | Emits `sound:play` — sound playback is a view concern. Acceptable here because the bus is the boundary (clock signals an event; the sound system decides to play), but it does couple game simulation to audio vocabulary. | Low |
+| `view/construction-yard/construction-yard-3d.ts` | Calls `deductSelectionCost` directly — mutates `ownerResources` from view. `ownerResources` is an injected ref so the coupling is shallow, but it's still a write from view. | Low |
+| `view/robot-control/robot-control-3d.ts` | Calls `setManualControl`, `setRobotGoal`, `setMoveGoal` from `game/robot-mutations` — functions are now in the right layer, but they're still invoked by the view panel rather than dispatched as commands to the controller. | Low |
+| `game-session.ts` | `RobotControlTrigger` is constructed with an empty third callback `() => {}` — dead parameter. | Low |
 
 ---
 
 ## Directory map
 
 ```
+main.ts          BabylonJS scene + assets only (scene, light, models, sounds)
+game-session.ts  Controller: full game lifecycle, bus handlers, trigger/menu wiring
+
 data/            Pure data: types, parsing, persistence. Zero BabylonJS.
   map.ts           MapData interface + loadMap()
   robot.ts         RobotConfig, robotConfigs presets, calcHealth, calcRobotHeight
-  storage.ts       localStorage: save slots (saveKey/listSaves/loadSave),
-                   key bindings, selected map
+  storage.ts       localStorage: StartupMenuStorage interface, save slots
+                   (saveKey/listSaves/loadSave), key bindings, selected map
 
 game/            Live game state + simulation. Zero BabylonJS.
   core/
@@ -75,15 +80,18 @@ game/            Live game state + simulation. Zero BabylonJS.
   clock.ts         startClock() — drives gameTick every SUB_TICKS sub-ticks
   event-bus.ts     Typed EventBus singleton (bus) + GameEvent union
   reset.ts         resetGame() — restores warMap + resources + ship + clock
-                   to initial state without replacing the warMap reference
+                   in-place (preserves reference)
+  robot-mutations.ts  Player-driven robot state changes:
+                   ORDERABLE_GOALS, cycleRobotGoal, setManualControl,
+                   setRobotGoal, setMoveGoal
 
-view/            BabylonJS rendering. Reads state, never mutates game logic.
+view/            BabylonJS rendering + DOM UI. Reads state, must not mutate game logic.
   shared/
     models.ts        Asset loader — loads all .glb models via AssetsManager
     model-textures.ts Overlay texture planes for walls, factories, warbases
     scene-utils.ts   createOverlayPlane, toggleVisibility, paintFlag helpers
-    sounds.ts        loadSounds() — native HTMLAudioElement, fire-and-forget;
-                     playSequence() defers until first user gesture (autoplay policy)
+    sounds.ts        Sounds interface + loadSounds() — native HTMLAudioElement,
+                     fire-and-forget; playSequence() defers until first user gesture
   map/
     renderer.ts    Differential renderer — caches by object id, redraws on change
     robot.ts       Robot 3D mesh management
@@ -95,16 +103,21 @@ view/            BabylonJS rendering. Reads state, never mutates game logic.
     ship-renderer.ts
   construction-yard/
     construction-yard-logic.ts  Robot build & customisation (game-side)
-    construction-yard-3d.ts     Panel 3D rendering (view-side) ⚠ calls spawnManualRobot
-    trigger.ts     ConstructionYardTrigger — ship proximity check + open/close
+    construction-yard-3d.ts     Panel 3D rendering
+                   Constructor: (scene, models, ownerResources, warMap,
+                                 onCreate: (config) => void, onExit: () => void)
+    trigger.ts     ConstructionYardTrigger — proximity check + open/close
+                   Constructor: (scene, models, ownerResources,
+                                 onCreate: (config) => void, onExit: () => void)
     constants.ts   Layout + speed constants (ROTATION_SPEED, CY_LAYOUT, CY_PARTS)
   robot-control/
     queries.ts     Pure reads: isRobotAlive, getRobotHealthPercent, getGoalLabel
-    mutations.ts   Player-driven state changes: cycleRobotGoal, setManualControl,
-                   setRobotGoal, setMoveGoal ⚠ writes RobotObject directly
-    physics.ts     findRobotUnderShip, setHoverHeight, applyExitBump
     actions.ts     buildDirectionAction, buildFireAction
-    constants.ts   HOVER_DISTANCE, HOVER_GAP, ORDERABLE_GOALS, GOAL_LABELS, RC_LAYOUT
+    physics.ts     findRobotUnderShip, setHoverHeight, applyExitBump
+    constants.ts   HOVER_DISTANCE, HOVER_GAP, GOAL_LABELS, RC_LAYOUT
+                   Re-exports ORDERABLE_GOALS from game/robot-mutations
+    index.ts       Barrel: re-exports queries, game/robot-mutations, actions,
+                   physics, constants
     robot-control-3d.ts  Panel 3D rendering
     trigger.ts     RobotControlTrigger — ship proximity check + open/close
   hud/
@@ -113,10 +126,11 @@ view/            BabylonJS rendering. Reads state, never mutates game logic.
   game-over.ts     Victory / defeat screen
   startup-menu.ts  Full-screen pause/start menu with four nested dialogs:
                    main menu, map selector, key binder, load game list.
-                   Emits game:new-map; ⚠ reads/writes storage directly.
+                   Constructor: (storage: StartupMenuStorage, onSave, onLoad, onNewGame?)
+                   Emits game:new-map; reads/writes storage only through injected interface.
 
 controls/        User input bindings. Zero game logic.
-  camera.ts        Keyboard panning for ArcRotateCamera + smooth ship-follow
+  camera.ts        ArcRotateCamera setup + smooth ship-follow (updateCameraTarget)
   ship.ts          Ship movement input capture; syncs to ShipInput from key bindings
   game.ts          Debug/dev keyboard bindings
   keybindings.ts   formatKey() display helper; re-exports storage binding functions
@@ -141,7 +155,7 @@ setInterval(100ms)                ← sub-tick
   └─ bus.emit('tick:sub')         ← renderer + ship + UI subscribe here
 ```
 
-**EventBus** (`game/event-bus.ts`) — typed singleton with these events:
+**EventBus** (`game/event-bus.ts`) — typed singleton:
 
 | Event | When | Who listens |
 |---|---|---|
@@ -151,7 +165,7 @@ setInterval(100ms)                ← sub-tick
 | `game:menu` | ESC key / HUD button | `startupMenu.show()` |
 | `game:start` | after map load | `resetGame`, renderer, HUD |
 | `game:new-map` | NEW GAME button | loads map then emits `game:start` |
-| `sound:play` | weapon fire, explosion, UI triggers | `sounds.play()` |
+| `sound:play` | weapon fire, explosion, UI triggers | `sounds.play()` in `main.ts` |
 
 ---
 
@@ -209,7 +223,7 @@ applyAIStateUpdate(robot, stateUpdate)
 
 `RobotAction` is a discriminated union (`MOVE | ROTATE | FIRE | DETONATE | IDLE`).
 `applyAction()` dispatches to `applyMove`, `applyRotate`, `applyFire`, `applyNuclear`.
-Actions are the only legal way to change robot position or trigger combat outside of direct AI nav state writes.
+Actions are the only legal way to change robot position or trigger combat.
 
 ---
 
@@ -217,44 +231,32 @@ Actions are the only legal way to change robot position or trigger combat outsid
 
 `Renderer` (`view/map/renderer.ts`) uses a differential strategy: it caches the last-seen state of every object by id. Each `render(warMap)` call only rebuilds meshes for objects that changed. This keeps the render budget constant regardless of map size.
 
-The ship, projectiles, and HUD have their own dedicated renderers called from the `tick:sub` handler in `main.ts`.
+The ship, projectiles, and HUD have their own dedicated renderers, all called from the `tick:sub` handler inside `GameSession`.
 
 ---
 
 ## TODO
 
-### High priority
-
-- **`main.ts` is a god-object entry point.** It directly constructs all subsystems, holds references to all triggers, and hardcodes initial robot spawning with a magic loop. Extract a `GameSession` class or `setupGame()` function that owns the lifecycle, removing the free-standing closure and the `clock` variable capture.
-
-- **`construction-yard-3d.ts` calls `spawnManualRobot` directly.** View layer must not mutate game state. Inject a `onCreate(config)` callback from the controller (as is done for `onClose`), or emit a `game:build-robot` bus event handled in `main.ts`.
-
-- **Initial robots in `main.ts` bypass `spawnRobot` intent.** The loop at lines 82–94 places robots with `goal: DEFEND` at hardcoded `y: 14` — this is leftover scaffolding from development. The real spawn mechanism is `tickBuild`. Remove or gate behind a dev flag.
-
 ### Medium priority
 
-- **`startup-menu.ts` reads/writes storage directly.** The view layer should receive data via constructor arguments and report changes via callbacks, not call `saveSelectedMap` / `loadSelectedMap` itself. Move storage calls to `main.ts` (controller).
+- **`RobotControlTrigger` empty third callback.** `new RobotControlTrigger(scene, () => mapData.width, () => {})` — the third argument is a no-op. Remove the parameter or wire it up.
 
-- **`view/robot-control/mutations.ts` lives in `view/`.** It writes `RobotObject` fields (model mutation) but is physically in the view layer. Move to `game/` or `controls/`, or rename the directory to `player/` to signal it is a controller sub-layer.
+- **`constructionYardTrigger.check` and `robotControlTrigger.check` run on `tick:sub`.** They fire every 100ms. Proximity checks are cheap but panel open/close side-effects happen on sub-ticks. Moving to `tick:game` (500ms) would be more appropriate.
 
-- **`bus.on('tick:sub')` in `main.ts` does too much.** Ship physics, construction yard check, robot control check, render, projectile render, ship render, and HUD update are all in one handler. Extract per-concern sub-tick handlers or a `TickCoordinator` that calls each in turn.
+- **`bus.on('tick:sub')` in `GameSession` still does too much.** Ship physics, two trigger checks, four renders, and HUD update in one handler. Extract per-concern sub-tick handlers or a `TickCoordinator`.
 
-- **`RobotControlTrigger` receives an unused callback.** `new RobotControlTrigger(scene, mapData.width, () => {})` — the third argument is a no-op. Either remove the parameter or use it.
-
-- **`constructionYardTrigger.check` and `robotControlTrigger.check` are called inside `tick:sub`.** They run every 100ms. Proximity checks are cheap but the panel open/close side-effects run on sub-ticks. Consider moving trigger checks to `tick:game` so they run only on full game ticks.
-
-- **`warMap.tick ?? 0` in `gameTick`.** `tick` is required on `WarMap` now; the `?? 0` is a stale defensive pattern.
+- **`deductSelectionCost` called inside `construction-yard-3d.ts`.** Mutates `ownerResources` from the view layer. Could be rolled into the `onCreate` callback or moved to the controller.
 
 ### Low priority
 
-- **`index.ts` barrel in `robot-control/` re-exports everything including `robot-control-3d` and `trigger`.** BabylonJS-heavy modules are bundled with pure-logic ones. Callers that only need `queries` or `mutations` pull in the renderer. Split the barrel or use named re-exports that separate 3D from logic.
+- **`view/robot-control/index.ts` barrel** still re-exports `robot-control-3d` and `trigger`. BabylonJS-heavy modules are bundled with pure-logic ones. Callers that only need `queries` pull in the renderer.
 
-- **`setRobotGoal` and `setMoveGoal` in `mutations.ts` have no test coverage.**
+- **`setRobotGoal` and `setMoveGoal` in `game/robot-mutations.ts` have no test coverage.**
 
-- **`NavAlgo` is only used in `robotConfig.navAlgo` but not surfaced in `RobotConfig` type docs.** The Trémaux path is tested but not reachable from the construction UI.
+- **`GOAL_LABELS` type is `Record<string, string>`** instead of `Record<RobotGoal, string>`. Using the enum key would catch missing entries at compile time.
 
-- **`GOAL_LABELS` type is `Record<string, string>`** instead of `Record<RobotGoal, string>`. Using `RobotGoal` would catch missing label entries at compile time.
+- **`NavAlgo` is only used in `robotConfig.navAlgo`** but not surfaced in the construction UI. The Trémaux path is tested but unreachable by the player.
 
-- **`ship-height.test.ts` has a mid-file import** (line 24). `import { RobotGoal, RobotAI }` appears after a function definition. Move to top of file.
+- **`ship-height.test.ts` has a mid-file import** (line 24). Move to top of file.
 
-- **`game/core/utils.ts` import order.** Imports added during `spawnRobot` refactor appear after function definitions at the bottom of the file. Standard imports belong at the top.
+- **`game/core/utils.ts` import order.** Imports appear after function definitions at the bottom. Standard imports belong at the top.
