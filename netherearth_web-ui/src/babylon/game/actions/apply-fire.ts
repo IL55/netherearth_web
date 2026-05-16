@@ -1,6 +1,7 @@
-import { ObjectType } from '../core/warmap';
 import { Direction } from '../core/warmap';
 import type { WarMap, RobotObject } from '../core/warmap';
+import { ROBOT_HALF_SIZE } from '../core/occupancy';
+import type { OccupancyMap } from '../core/occupancy';
 import { Weapon, WEAPON_DAMAGE, WEAPON_RANGE, WEAPON_COOLDOWN, calcDamageFalloff } from '../../data/robot';
 import { spawnProjectile } from '../mechanics/projectile';
 
@@ -17,8 +18,6 @@ const FACING_VECTOR: Record<Direction, { dx: number; dy: number }> = {
     [Direction.S]: {  dx: 0,  dy: 1 },
     [Direction.N]: {  dx: 0,  dy: -1 },
 };
-
-import type { OccupancyMap } from '../core/occupancy';
 
 function findRaycastHit(
     robot: RobotObject, 
@@ -62,10 +61,10 @@ function findRaycastHit(
         const rx = r.x;
         const ry = r.y;
         // Assume robot collision box is 1x1
-        const x0 = rx - 0.5;
-        const x1 = rx + 0.5;
-        const y0 = ry - 0.5;
-        const y1 = ry + 0.5;
+        const x0 = rx - ROBOT_HALF_SIZE;
+        const x1 = rx + ROBOT_HALF_SIZE;
+        const y0 = ry - ROBOT_HALF_SIZE;
+        const y1 = ry + ROBOT_HALF_SIZE;
 
         if (fv.dx !== 0) { // Horizontal
             if (sy >= y0 && sy <= y1) {
@@ -91,7 +90,6 @@ function findRaycastHit(
 
 export function applyFire(
     robot: RobotObject,
-    targetId: string | undefined, // Not heavily used anymore, but kept for signature
     warMap: WarMap,
     occupancy: OccupancyMap,
     weapon: Weapon,
@@ -123,13 +121,7 @@ export function applyFire(
 
     // Always spawn a projectile going exactly straight, ending at `dist`
     const fv = FACING_VECTOR[robot.facing];
-    const dummyTarget = {
-        ...robot, // to satisfy RobotObject type
-        x: robot.x + fv.dx * dist,
-        y: robot.y + fv.dy * dist,
-    } as RobotObject;
-    
-    spawnProjectile(warMap, robot, dummyTarget, weapon);
+    spawnProjectile(warMap, robot, { x: robot.x + fv.dx * dist, y: robot.y + fv.dy * dist }, weapon);
     
     return true;
 }

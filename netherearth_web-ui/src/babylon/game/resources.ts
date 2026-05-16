@@ -5,6 +5,11 @@ import type { WarMap } from './core/warmap';
 /** Number of ticks in one in-game "day" — resources are credited at the end of each day. */
 export const DAY_TICKS = 40;
 
+/** Common resources credited per owned warbase each day. */
+export const WARBASE_INCOME = 4;
+/** Specific resources credited per owned factory each day. */
+export const FACTORY_INCOME = 2;
+
 export enum ResourceType {
     COMMON      = 'common',
     ELECTRONICS = 'electronics',
@@ -61,9 +66,9 @@ export function tickResources(warMap: WarMap, ownerResources: OwnerResources, ti
         const res = ownerResources[obj.owner];
 
         if (obj.type === ObjectType.WARBASE) {
-            res.common += 4;
+            res.common += WARBASE_INCOME;
         } else if (obj.type === ObjectType.FACTORY && obj.subtype && FACTORY_RESOURCE_SET.has(obj.subtype)) {
-            res[obj.subtype as FactoryResource] += 2;
+            res[obj.subtype as FactoryResource] += FACTORY_INCOME;
         }
     }
 }

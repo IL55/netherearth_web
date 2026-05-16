@@ -17,7 +17,7 @@ const WEAPON_STEP: Partial<Record<WeaponType, number>> = {
 
 let nextId = 0;
 
-export function spawnProjectile(warMap: WarMap, shooter: RobotObject, target: RobotObject, weapon: Weapon): void {
+export function spawnProjectile(warMap: WarMap, shooter: RobotObject, target: { x: number; y: number }, weapon: Weapon): void {
     const weaponType: WeaponType =
         weapon === Weapon.PHASERS  ? WeaponType.PHASER  :
         weapon === Weapon.MISSILES ? WeaponType.MISSILE : WeaponType.CANNON;

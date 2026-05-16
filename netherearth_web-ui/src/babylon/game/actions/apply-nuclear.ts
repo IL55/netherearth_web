@@ -1,5 +1,17 @@
 import { ObjectType } from '../core/warmap';
-import type { WarMap, RobotObject, WarObject } from '../core/warmap';
+import type { WarMap, RobotObject } from '../core/warmap';
+
+/** Chebyshev radius of the instant-kill zone (3×3 area centred on the blast). */
+export const NUKE_KILL_RADIUS = 1;
+/** Chebyshev radius of the half-damage zone (5×5 area, outside the kill zone). */
+export const NUKE_DAMAGE_RADIUS = 2;
+
+/** Width in tiles of a factory's bounding box (x … x+1). */
+export const FACTORY_FOOTPRINT_WIDTH = 2;
+/** Width in tiles of a warbase's bounding box (x … x+4). */
+export const WARBASE_FOOTPRINT_WIDTH = 5;
+/** Height in tiles shared by both factory and warbase bounding boxes (y … y+2). */
+export const STRUCTURE_FOOTPRINT_HEIGHT = 3;
 
 /**
  * Detonates the nuclear bomb equipped on the given robot.
@@ -26,11 +38,9 @@ export function applyNuclear(robot: RobotObject, warMap: WarMap): boolean {
         const dy = Math.abs(Math.round(obj.y) - ry);
         const chebyshev = Math.max(dx, dy);
 
-        if (chebyshev <= 1) {
-            // Inside 3x3 Kill Zone
+        if (chebyshev <= NUKE_KILL_RADIUS) {
             obj.health = 0;
-        } else if (chebyshev <= 2) {
-            // Inside 5x5 Damage Zone
+        } else if (chebyshev <= NUKE_DAMAGE_RADIUS) {
             obj.health = Math.max(0, Math.floor(obj.health / 2));
         }
     }
@@ -48,13 +58,13 @@ export function applyNuclear(robot: RobotObject, warMap: WarMap): boolean {
             // Factory is 2x3: x to x+1, y to y+2
             // Warbase is 5x3: x to x+4, y to y+2
             let intersects = false;
-            let width = obj.type === ObjectType.FACTORY ? 2 : 5;
-            let height = 3;
+            const width  = obj.type === ObjectType.FACTORY ? FACTORY_FOOTPRINT_WIDTH : WARBASE_FOOTPRINT_WIDTH;
+            const height = STRUCTURE_FOOTPRINT_HEIGHT;
 
             for (let bx = Math.round(obj.x); bx < Math.round(obj.x) + width; bx++) {
                 for (let by = Math.round(obj.y); by < Math.round(obj.y) + height; by++) {
                     // Quick overlap check for the 3x3 area
-                    if (Math.abs(bx - rx) <= 1 && Math.abs(by - ry) <= 1) {
+                    if (Math.abs(bx - rx) <= NUKE_KILL_RADIUS && Math.abs(by - ry) <= NUKE_KILL_RADIUS) {
                         intersects = true;
                         break;
                     }
@@ -82,8 +92,7 @@ export function applyNuclear(robot: RobotObject, warMap: WarMap): boolean {
             obj.type === ObjectType.ROCKS ||
             obj.type === ObjectType.HEAVYROCKS
         ) {
-            // Fences, walls, rocks are 1x1
-            if (chebyshev <= 1) {
+            if (chebyshev <= NUKE_KILL_RADIUS) {
                 objectsToRemove.add(obj.id);
                 newSandTiles.push({x: Math.round(obj.x), y: Math.round(obj.y)});
             }

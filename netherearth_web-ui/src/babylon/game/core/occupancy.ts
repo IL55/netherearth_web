@@ -1,12 +1,23 @@
 import { ObjectType } from './warmap';
 import type { WarMap } from './warmap';
+import { calcRobotHeight } from '../../data/robot';
 
 interface AABBDef { dx0: number; dy0: number; dx1: number; dy1: number; height?: number; }
+
+/** Minimum Chebyshev distance between two robot centers before they block each other. */
+export const ROBOT_COLLISION_DISTANCE = 1.0;
+/** Default collision height of a robot (used when no specific config height is known). */
+export const ROBOT_HEIGHT = 1.0;
+/** Half the width/height of a robot's bounding box (robots occupy a 1×1 grid cell). */
+export const ROBOT_HALF_SIZE = 0.5;
+
+/** Half the side of a 1×1 map tile — used for structure AABB extents. */
+const TILE_HALF_SIZE = 0.5;
 
 // All structures are 1×1 blocks. AABBs use exact visual boundaries (±0.5 from center).
 // isOccupied checks robot box [rx±0.5] vs structure box overlap — no inflation needed.
 
-const DEFAULT_AABB: AABBDef = { dx0: -0.5, dy0: -0.5, dx1: 0.5, dy1: 0.5 };
+const DEFAULT_AABB: AABBDef = { dx0: -TILE_HALF_SIZE, dy0: -TILE_HALF_SIZE, dx1: TILE_HALF_SIZE, dy1: TILE_HALF_SIZE };
 
 // Per-structure AABB parts (relative to obj.x, obj.y), one entry per 1×1 block.
 // Factory is C-shaped: left column at xo=0 (yo=0,1,2) + right top/bottom at xo=1 (yo=0,2).
@@ -38,12 +49,6 @@ const STRUCTURE_PARTS: Partial<Record<string, AABBDef[]>> = {
         { dx0:  1.0, dy0:  3.5, dx1:  2.0, dy1:  4.5, height: 1.0 },  // highwall2 (xo=1.5, yo=4)
     ],
 };
-
-// Minimum Chebyshev distance between two robot centers.
-export const ROBOT_COLLISION_DISTANCE = 1.0;
-export const ROBOT_HEIGHT = 1.0;
-
-import { calcRobotHeight } from '../../data/robot';
 
 export interface RobotPos { id: string; x: number; y: number; height: number; }
 
@@ -116,10 +121,10 @@ export function isOccupied(
     robotHeight?: number,
 ): boolean {
     if (occupancy.structures.some(s =>
-        tx - 0.5 < s.x1 && tx + 0.5 > s.x0 &&
-        ty - 0.5 < s.y1 && ty + 0.5 > s.y0,
+        tx - ROBOT_HALF_SIZE < s.x1 && tx + ROBOT_HALF_SIZE > s.x0 &&
+        ty - ROBOT_HALF_SIZE < s.y1 && ty + ROBOT_HALF_SIZE > s.y0,
     )) return true;
-    
+
     let movingHeight = robotHeight ?? ROBOT_HEIGHT;
     if (!robotHeight && excludeId) {
         const r = occupancy.robots.find(r => r.id === excludeId);

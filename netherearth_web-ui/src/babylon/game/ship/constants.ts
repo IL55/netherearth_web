@@ -6,3 +6,5 @@ export const DESCENT_SPEED = 0.01;  // automatic descent per sub-tick
 export const MIN_HEIGHT    = 0.0;  // logical ground level
 export const MAX_HEIGHT    = 5.0;  // max flying height
 export const SHIP_RADIUS   = 0.48;
+/** Height the ship returns to after exiting a panel or starting a new game. */
+export const SHIP_RESTING_HEIGHT = 1.5;

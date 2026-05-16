@@ -16,6 +16,7 @@ import { createOwnerResources } from './game/resources';
 import type { OwnerResources } from './game/resources';
 import { createShipInput, tickShip } from './game/ship/index';
 import type { ShipState, ShipInput } from './game/ship/types';
+import { SHIP_RESTING_HEIGHT } from './game/ship/constants';
 import { ShipRenderer } from './view/map/ship-renderer';
 import { buildOccupancy } from './game/core/occupancy';
 import { ConstructionYardTrigger } from './view/construction-yard';
@@ -58,6 +59,7 @@ export class GameSession {
 
     private removeGameControls!: () => void;
     private removeShipControls!: () => void;
+    private sounds!: Sounds;
 
     private constructor() {}
 
@@ -86,12 +88,12 @@ export class GameSession {
         const redWarbase = s.warMap.tiles.find(
             o => o.type === ObjectType.WARBASE && o.owner === Owner.RED,
         );
-        const rawX = redWarbase ? redWarbase.x + 1.5 : s.mapData.width / 2;
+        const rawX = redWarbase ? redWarbase.x + SHIP_RESTING_HEIGHT : s.mapData.width / 2;
         const rawY = redWarbase ? redWarbase.y - 3   : s.mapData.height / 2;
         s.ship = {
             x: Math.max(0, Math.min(s.mapData.width  - 1, rawX)),
             y: Math.max(0, Math.min(s.mapData.height - 1, rawY)),
-            height: 1.5,
+            height: SHIP_RESTING_HEIGHT,
         };
 
         s.shipInput    = createShipInput();
@@ -111,7 +113,7 @@ export class GameSession {
         s.constructionYardTrigger = new ConstructionYardTrigger(
             scene, models, s.ownerResources,
             (config) => spawnManualRobot(s.warMap, config, Owner.RED),
-            () => { s.ship.height = 1.5; },
+            () => { s.ship.height = SHIP_RESTING_HEIGHT; },
         );
 
         s.robotControlTrigger = new RobotControlTrigger(scene, () => s.mapData.width, () => {});
@@ -146,6 +148,7 @@ export class GameSession {
             () => s.robotControlTrigger.takePendingAction(),
         );
 
+        s.sounds = sounds;
         s.registerBusHandlers();
 
         s.startupMenu.show();
@@ -160,6 +163,7 @@ export class GameSession {
         });
 
         bus.on('game:start', () => {
+            this.sounds.stopSequence();
             resetGame(this.warMap, this.mapData, this.ownerResources, this.ship, this.clock, INITIAL_RESOURCES);
             this.renderer.render(this.warMap);
             this.hud.update(this.warMap, this.ship);

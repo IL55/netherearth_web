@@ -1,23 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import { applyFire } from '../../../game/actions/apply-fire';
-import { ObjectType, Owner, Direction } from '../../../game/core/warmap';
+import { ObjectType, Owner, Direction, RobotGoal, RobotAI, WeaponType } from '../../../game/core/warmap';
 import type { WarMap, RobotObject } from '../../../game/core/warmap';
-import { Weapon } from '../../../data/robot';
+import { Weapon, robotConfigs } from '../../../data/robot';
+
+const cfg = robotConfigs.cannon;
 
 function makeRobot(id: string, x: number, y: number, owner: Owner, facing: Direction = Direction.E): RobotObject {
     return {
-        id, type: ObjectType.ROBOT, x, y, owner, facing, health: 100,
+        id, type: ObjectType.ROBOT, x, y, owner, facing,
+        robotConfig: cfg, goal: RobotGoal.ATTACK_ROBOTS, ai: RobotAI.SIMPLE,
+        health: 100,
     };
 }
 
 describe('applyFire', () => {
-    it('damages a specific target if targetId is provided (AI homing)', () => {
+    it('damages the first enemy on a straight line (AI fires east at adjacent target)', () => {
         const shooter = makeRobot('r1', 10, 10, Owner.RED, Direction.E);
         const target = makeRobot('r2', 12, 10, Owner.BLUE);
         const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter, target], projectiles: [], killCounts: {}, tick: 0 };
         const occupancy = { robots: [], structures: [] };
 
-        applyFire(shooter, 'r2', warMap, occupancy, Weapon.CANNON);
+        applyFire(shooter, warMap, occupancy, Weapon.CANNON);
 
         // Cannon base damage is 4. Target distance to collision box is 1.5. Range is 5.
         // Falloff dist=1.5, max=5 -> 0.4 + 0.6 * (3.5/4) = 0.925. Damage = round(4 * 0.925) = 4.
@@ -25,7 +29,7 @@ describe('applyFire', () => {
         expect(warMap.projectiles?.length).toBe(1);
     });
 
-    it('finds and damages the first enemy on a straight line when targetId is undefined (Manual fire)', () => {
+    it('finds and damages the first enemy on a straight line (manual fire, facing south)', () => {
         const shooter = makeRobot('r1', 10, 10, Owner.RED, Direction.S); // Facing South
         // Enemy 1 is to the South (x=10, y=12)
         const targetSouth = makeRobot('r2', 10, 12, Owner.BLUE);
@@ -36,7 +40,7 @@ describe('applyFire', () => {
         const occupancy = { robots: [], structures: [] };
 
         // Fire without targetId
-        applyFire(shooter, undefined, warMap, occupancy, Weapon.CANNON);
+        applyFire(shooter, warMap, occupancy, Weapon.CANNON);
 
         // Should only hit the one South because facing is South
         expect(targetSouth.health).toBe(96); // Took damage
@@ -55,7 +59,7 @@ describe('applyFire', () => {
         const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter, targetNorth], projectiles: [], killCounts: {}, tick: 0 };
         const occupancy = { robots: [], structures: [] };
 
-        applyFire(shooter, undefined, warMap, occupancy, Weapon.CANNON); // Cannon maxRange is 5
+        applyFire(shooter, warMap, occupancy, Weapon.CANNON); // Cannon maxRange is 5
 
         expect(targetNorth.health).toBe(100); // Unharmed
         
@@ -76,7 +80,7 @@ describe('applyFire', () => {
         const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter, targetClose, targetFar], projectiles: [], killCounts: {}, tick: 0 };
         const occupancy = { robots: [], structures: [] };
 
-        applyFire(shooter, undefined, warMap, occupancy, Weapon.CANNON);
+        applyFire(shooter, warMap, occupancy, Weapon.CANNON);
 
         expect(targetClose.health).toBeLessThan(100); // Hit
         expect(targetFar.health).toBe(100);           // Blocked by closest
@@ -98,7 +102,7 @@ describe('applyFire', () => {
             ] 
         };
 
-        applyFire(shooter, undefined, warMap, occupancy, Weapon.CANNON);
+        applyFire(shooter, warMap, occupancy, Weapon.CANNON);
 
         // The target robot behind the wall should be completely unharmed
         expect(target.health).toBe(100);
@@ -114,12 +118,12 @@ describe('applyFire', () => {
         // Simulate a projectile already in the air owned by this shooter
         const warMap: WarMap = { 
             width: 30, height: 30, tiles: [], robots: [shooter], 
-            projectiles: [{ id: 'p1', ownerId: 'r1', weaponType: 'cannon', fromX: 10, fromY: 10, toX: 15, toY: 10, progress: 0.5, step: 0.1 }],
+            projectiles: [{ id: 'p1', ownerId: 'r1', weaponType: WeaponType.CANNON, fromX: 10, fromY: 10, toX: 15, toY: 10, progress: 0.5, step: 0.1 }],
             killCounts: {}, tick: 0
         };
         const occupancy = { robots: [], structures: [] };
 
-        const result = applyFire(shooter, undefined, warMap, occupancy, Weapon.CANNON);
+        const result = applyFire(shooter, warMap, occupancy, Weapon.CANNON);
 
         // Fire attempt should be rejected
         expect(result).toBe(false);
@@ -134,7 +138,7 @@ describe('applyFire', () => {
         const warMap: WarMap = { width: 30, height: 30, tiles: [], robots: [shooter], projectiles: [], killCounts: {}, tick: 95 }; // Current tick is 95
         const occupancy = { robots: [], structures: [] };
 
-        const result = applyFire(shooter, undefined, warMap, occupancy, Weapon.CANNON);
+        const result = applyFire(shooter, warMap, occupancy, Weapon.CANNON);
 
         // Fire attempt should be rejected because 95 < 100
         expect(result).toBe(false);

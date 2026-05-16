@@ -10,7 +10,7 @@ import { ObjectType } from '../core/warmap';
 import { Direction } from '../core/warmap';
 import type { WarMap, WarObject, RobotObject } from '../core/warmap';
 import type { OccupancyMap } from '../core/occupancy';
-import { isOccupied, isLOSBlocked } from '../core/occupancy';
+import { isOccupied, isLOSBlocked, ROBOT_HALF_SIZE, ROBOT_COLLISION_DISTANCE } from '../core/occupancy';
 import { ActionType, RotateDir, type RobotAction } from '../actions';
 import { Weapon, SIGHT_RANGE, WEAPON_RANGE, WEAPON_DAMAGE } from '../../data/robot';
 import { dirDelta, CW_DIRS } from './nav';
@@ -28,9 +28,7 @@ function scanAdjacentEnemy(
     const adjacent = enemies.filter(e => {
         const dx = Math.abs(e.x - robot.x);
         const dy = Math.abs(e.y - robot.y);
-        // Using Chebyshev-like distance to allow diagonal neighbors, or just Manhattan. 
-        // Manhattan distance <= 1.5 allows adjacent cardinal cells.
-        return dx + dy > 0 && dx + dy <= 1.5;
+        return dx + dy > 0 && dx + dy <= ROBOT_COLLISION_DISTANCE + ROBOT_HALF_SIZE;
     });
 
     if (adjacent.length === 0) return undefined;
@@ -66,7 +64,7 @@ function scanForwardEnemy(
         else if (dir === Direction.W) { along = -dx; perp = Math.abs(dy); }
         else if (dir === Direction.S) { along =  dy; perp = Math.abs(dx); }
         else                  { along = -dy; perp = Math.abs(dx); } // N
-        return along > 0 && along <= sightRange && perp < 0.5;
+        return along > 0 && along <= sightRange && perp < ROBOT_HALF_SIZE;
     });
 
     if (inSight.length === 0) return undefined;

@@ -19,6 +19,8 @@ import { dirDelta, rightOf, leftOf, backOf, isPassable, preferredDirs } from './
 /** Maximum cells the robot may retreat (opposite to primary direction) before
  *  wall-follow is forcibly exited and goal-mode is retried. */
 const MAX_BACKTRACK = 4; // grid cells
+/** Consecutive ticks with the primary direction blocked before wall-follow activates. */
+const STUCK_TICKS = 3;
 
 /** Bug2 wall-follow: greedy toward goal, right-hand wall-follow when stuck. */
 export function bug2Dirs(
@@ -94,7 +96,7 @@ export function bug2Dirs(
     if (nav.navMode !== NavMode.WALL_FOLLOW) {
         if (primaryBlocked) {
             nav.stuckTicks = (nav.stuckTicks ?? 0) + 1;
-            if (nav.stuckTicks >= 3) {
+            if (nav.stuckTicks >= STUCK_TICKS) {
                 nav.navMode = NavMode.WALL_FOLLOW;
                 nav.wallFollowStartDist = distToGoal;
                 nav.wallFollowBestPos = undefined;

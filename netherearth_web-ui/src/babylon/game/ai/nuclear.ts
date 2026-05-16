@@ -1,5 +1,12 @@
 import { ObjectType, Owner } from '../core/warmap';
 import type { WarMap, RobotObject } from '../core/warmap';
+import {
+    NUKE_KILL_RADIUS,
+    FACTORY_FOOTPRINT_WIDTH, WARBASE_FOOTPRINT_WIDTH, STRUCTURE_FOOTPRINT_HEIGHT,
+} from '../actions/apply-nuclear';
+
+/** Probability per tick that a nuclear-equipped robot considers detonating (when not stuck). */
+const NUKE_DETONATE_CHANCE = 0.05;
 
 /**
  * Evaluates whether a robot should detonate its nuclear bomb.
@@ -17,7 +24,7 @@ export function shouldDetonateNuclear(robot: RobotObject, warMap: WarMap, isStuc
     // Check if we hit the random chance OR we're stuck
     // If not stuck, we only have a small random chance to consider blowing up.
     // At 500ms/tick, 0.05 is 5% per tick, so ~10% per second.
-    if (!isStuck && Math.random() > 0.05) {
+    if (!isStuck && Math.random() > NUKE_DETONATE_CHANCE) {
         return false;
     }
 
@@ -33,7 +40,7 @@ export function shouldDetonateNuclear(robot: RobotObject, warMap: WarMap, isStuc
         if (obj.owner !== myOwner && obj.owner !== Owner.NEUTRAL) {
             // Check if enemy robot is in 3x3 kill zone
             const chebyshev = Math.max(Math.abs(Math.round(obj.x) - rx), Math.abs(Math.round(obj.y) - ry));
-            if (chebyshev <= 1) {
+            if (chebyshev <= NUKE_KILL_RADIUS) {
                 hasValuableTarget = true;
                 break;
             }
@@ -48,12 +55,12 @@ export function shouldDetonateNuclear(robot: RobotObject, warMap: WarMap, isStuc
             if (obj.owner === myOwner) continue;
 
             let intersects = false;
-            const width = obj.type === ObjectType.FACTORY ? 2 : 5;
-            const height = 3;
+            const width  = obj.type === ObjectType.FACTORY ? FACTORY_FOOTPRINT_WIDTH : WARBASE_FOOTPRINT_WIDTH;
+            const height = STRUCTURE_FOOTPRINT_HEIGHT;
 
             for (let bx = Math.round(obj.x); bx < Math.round(obj.x) + width; bx++) {
                 for (let by = Math.round(obj.y); by < Math.round(obj.y) + height; by++) {
-                    if (Math.abs(bx - rx) <= 1 && Math.abs(by - ry) <= 1) {
+                    if (Math.abs(bx - rx) <= NUKE_KILL_RADIUS && Math.abs(by - ry) <= NUKE_KILL_RADIUS) {
                         intersects = true;
                         break;
                     }
