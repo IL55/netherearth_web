@@ -42,11 +42,11 @@ export function tickShip(
     if (dx !== 0 && !checkCollision(ship.x + dx, ship.y)) ship.x += dx;
     if (dy !== 0 && !checkCollision(ship.x, ship.y + dy)) ship.y += dy;
 
-    if (input.ascend) {
-        ship.height += ASCEND_SPEED;
-    }
-    
     // The ship can't descend below the obstacle it is currently over
     const floorHeight = getFloorHeight(ship.x, ship.y, obstacles, robots);
-    ship.height = Math.max(floorHeight, Math.min(MAX_HEIGHT, ship.height - DESCENT_SPEED));
+    if (input.ascend) {
+        ship.height = Math.max(floorHeight, Math.min(MAX_HEIGHT, ship.height + ASCEND_SPEED));
+    } else {
+        ship.height = Math.max(floorHeight, Math.min(MAX_HEIGHT, ship.height - DESCENT_SPEED));
+    }
 }

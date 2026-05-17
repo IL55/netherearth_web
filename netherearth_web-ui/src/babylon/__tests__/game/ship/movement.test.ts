@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { tickShip } from '../../../game/ship/movement';
 import type { ShipState, ShipInput, ShipObstacle } from '../../../game/ship/types';
-import { BASE_SPEED, MAX_SPEED, ACCEL, ASCEND_SPEED, DESCENT_SPEED, MIN_HEIGHT, MAX_HEIGHT } from '../../../game/ship/constants';
+import { BASE_SPEED, MAX_SPEED, ACCEL, ASCEND_SPEED, DESCENT_SPEED, MIN_HEIGHT } from '../../../game/ship/constants';
 
 describe('Ship Movement', () => {
     let ship: ShipState;
@@ -55,14 +55,25 @@ describe('Ship Movement', () => {
         expect(ship.vx).toBe(0);
     });
 
-    it('should stop ascending/descending naturally over time', () => {
+    it('descends automatically when no input', () => {
         const startHeight = ship.height;
         tickShip(ship, input, mapWidth, mapHeight, obstacles, robots);
         expect(ship.height).toBeCloseTo(startHeight - DESCENT_SPEED, 5);
+    });
 
+    it('ascends when ascend input is held and descent is not applied simultaneously', () => {
+        const startHeight = ship.height;
         input.ascend = true;
         tickShip(ship, input, mapWidth, mapHeight, obstacles, robots);
-        expect(ship.height).toBeCloseTo(startHeight - DESCENT_SPEED + ASCEND_SPEED - DESCENT_SPEED, 5);
+        expect(ship.height).toBeCloseTo(startHeight + ASCEND_SPEED, 5);
+    });
+
+    it('height increases over multiple ascending ticks', () => {
+        ship.height = 1.0;
+        input.ascend = true;
+        tickShip(ship, input, mapWidth, mapHeight, obstacles, robots);
+        tickShip(ship, input, mapWidth, mapHeight, obstacles, robots);
+        expect(ship.height).toBeCloseTo(1.0 + ASCEND_SPEED * 2, 5);
     });
 
     it('should respect map boundaries', () => {

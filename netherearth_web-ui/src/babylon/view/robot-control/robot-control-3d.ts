@@ -72,6 +72,7 @@ export class RobotControl3D {
     private keyUpHandler: ((e: KeyboardEvent) => void) | null = null;
     private heldDirection: Direction | null = null;
     private weaponKeys: Weapon[] = [];
+    private canvas: HTMLCanvasElement;
 
     constructor(
         scene: BABYLON.Scene,
@@ -85,6 +86,7 @@ export class RobotControl3D {
         this.warMap = warMap;
 
         const canvas = scene.getEngine().getRenderingCanvas()!;
+        this.canvas = canvas;
         const parent = canvas.parentElement ?? document.body;
         parent.style.position = 'relative';
 
@@ -320,6 +322,7 @@ export class RobotControl3D {
         this.mainView.style.display = 'block';
         this.goalView.style.display = 'none';
         this.manualView.style.display = 'none';
+        this.canvas.focus();
     }
 
     private showGoalView(): void {
@@ -384,6 +387,7 @@ export class RobotControl3D {
         this.detachKeys();
         this.panel.style.display = 'none';
         this.currentRobot = null;
+        this.canvas.focus();
         this.onExitCallback();
     }
 

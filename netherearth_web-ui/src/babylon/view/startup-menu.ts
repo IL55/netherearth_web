@@ -96,6 +96,8 @@ export class StartupMenu {
         private onSave:    () => void,
         private onLoad:    (timestamp: number, mapName: string) => void,
         private onNewGame?: () => void,
+        private onShow?: () => void,
+        private onHide?: () => void,
     ) {
         this.storage = storage;
         this.selectedMap = storage.loadSelectedMap();
@@ -143,7 +145,7 @@ export class StartupMenu {
             this.updateKeysUI();
         }));
         this.overlay.appendChild(makeBtn('RESUME',    () => this.hide()));
-        this.overlay.appendChild(makeBtn('SAVE GAME', () => this.onSave()));
+        this.overlay.appendChild(makeBtn('SAVE GAME', () => { this.onSave(); this.showSaveConfirmation(); }));
         this.overlay.appendChild(makeBtn('LOAD GAME', () => this.showLoadDialog()));
 
         // --- MAP DIALOG ---
@@ -353,6 +355,7 @@ export class StartupMenu {
         this.keysDialog.style.display = 'none';
         this.loadDialog.style.display = 'none';
         this.waitingForKey = null;
+        this.onShow?.();
     }
 
     hide(): void {
@@ -363,6 +366,7 @@ export class StartupMenu {
         this.keysDialog.style.display = 'none';
         this.loadDialog.style.display = 'none';
         this.waitingForKey = null;
+        this.onHide?.();
     }
 
     toggle(): void {
@@ -371,6 +375,29 @@ export class StartupMenu {
 
     isVisible(): boolean {
         return this.visible;
+    }
+
+    private showSaveConfirmation(): void {
+        const toast = document.createElement('div');
+        Object.assign(toast.style, {
+            position:     'fixed',
+            bottom:       '24px',
+            left:         '50%',
+            transform:    'translateX(-50%)',
+            background:   'rgba(0,0,0,0.85)',
+            color:        '#66bb6a',
+            fontFamily:   'monospace',
+            fontSize:     '13px',
+            letterSpacing:'2px',
+            padding:      '8px 20px',
+            borderRadius: '3px',
+            border:       '1px solid #66bb6a',
+            zIndex:       '9999',
+            pointerEvents:'none',
+        } satisfies Partial<CSSStyleDeclaration>);
+        toast.textContent = 'GAME SAVED';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 1800);
     }
 
     dispose(): void {
