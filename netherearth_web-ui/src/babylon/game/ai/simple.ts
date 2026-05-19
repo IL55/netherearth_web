@@ -91,14 +91,14 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
         return { action, stateUpdate: hasUpdate ? su : undefined };
     };
 
-    // 0. Nuclear check (random chance, e.g. when close to multiple enemies)
+    // 1. Combat: fire or advance toward a visible enemy (conventional weapons first)
+    const combat = fightAction(robot, warMap, occupancy);
+    if (combat) return r(combat);
+
+    // 2. No conventional combat action — nuclear is the last resort before navigating
     if (shouldDetonateNuclear(robot, warMap, false)) {
         return r({ type: ActionType.DETONATE });
     }
-
-    // 1. Combat: fire or advance toward a visible enemy
-    const combat = fightAction(robot, warMap, occupancy);
-    if (combat) return r(combat);
 
     // 2. Waypoint goals (MOVE_FORWARD / MOVE_BACKWARD)
     if (robot.goal === RobotGoal.MOVE_FORWARD || robot.goal === RobotGoal.MOVE_BACKWARD) {

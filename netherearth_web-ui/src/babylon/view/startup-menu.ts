@@ -107,7 +107,7 @@ export class StartupMenu {
 
         const title = document.createElement('div');
         Object.assign(title.style, TITLE_STYLE);
-        title.textContent = 'NETHER EARTH RESTART';
+        title.textContent = 'NETHER EARTH WEB';
         this.overlay.appendChild(title);
 
         const subtitle = document.createElement('div');
