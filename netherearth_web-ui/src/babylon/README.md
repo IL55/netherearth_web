@@ -84,6 +84,9 @@ game/            Live game state + simulation. Zero BabylonJS.
   robot-mutations.ts  Player-driven robot state changes:
                    ORDERABLE_GOALS, cycleRobotGoal, setManualControl,
                    setRobotGoal, setMoveGoal
+  save.ts          GameSave interface + saveGame(), parseGameSave(), applySave()
+                   Serialises warMap/resources/ship to localStorage; strips
+                   nav and dyingTicks (transient fields) on save
 
 view/            BabylonJS rendering + DOM UI. Reads state, must not mutate game logic.
   shared/
@@ -110,6 +113,10 @@ view/            BabylonJS rendering + DOM UI. Reads state, must not mutate game
                    Constructor: (scene, models, ownerResources,
                                  onCreate: (config) => void, onExit: () => void)
     constants.ts   Layout + speed constants (ROTATION_SPEED, CY_LAYOUT, CY_PARTS)
+    model-utils.ts BabylonJS mesh helpers: createModelWrapper(),
+                   createRobotPreviewWrapper() — clone + auto-scale + stack parts
+    ui-utils.ts    DynamicTexture helpers: createTextPlane(), updateTextOnTexture(),
+                   createBackground()
   robot-control/
     queries.ts     Pure reads: isRobotAlive, getRobotHealthPercent, getGoalLabel
     actions.ts     buildDirectionAction, buildFireAction
