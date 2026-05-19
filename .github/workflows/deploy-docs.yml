@@ -1,0 +1,79 @@
+name: Documentation
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'zensical.toml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'zensical.toml'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PR_PATH: pull/${{github.event.number}}
+    steps:
+      - name: Comment on PR
+        uses: hasura/comment-progress@1d904b435730dd3d43ffa8a45522b8d06ebfbb43
+        if: github.ref != 'refs/heads/main'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.number }}
+          id: deploy-preview
+          message: "Starting deployment of preview ⏳..."
+
+      - name: Set domain
+        run: echo "DOMAIN=IL55.github.io" >> $GITHUB_ENV
+
+      - name: Checkout website repository
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+        with:
+          fetch-depth: 0
+
+      - name: Set production base URL
+        if: github.ref != 'refs/heads/main'
+        run: echo "BASE_URL=https://${{ env.DOMAIN }}/netherearth_web/${{ env.PR_PATH }}/" >> $GITHUB_ENV
+
+      - name: Set url in zensical.toml
+        if: github.ref != 'refs/heads/main'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          sed -i 's%site_url = "https://IL55.github.io/netherearth_web/"%site_url = "${{ env.BASE_URL }}"%' zensical.toml
+          echo -e "!!! warning\n\n    This is a preview of the [PR-${{ github.event.number }} ${PR_TITLE}](https://github.com/IL55/netherearth_web/${{env.PR_PATH}}). Go to [Main](https://IL55.github.io/netherearth_web/) if you need to.\n" > docs/includes/footer.md
+
+      - uses: actions/setup-python@28f2168f4d98ee0445e3c6321f6e6616c83dd5ec
+        with:
+          python-version: 3.x
+      - run: pip install zensical
+
+      - name: Run Zensical
+        run: zensical build --clean
+
+      - name: Deploy to PR preview
+        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847
+        if: github.ref != 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          destination_dir: ${{ env.PR_PATH }}
+
+      - name: Deploy docs
+        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+
+      - name: Update comment
+        uses: hasura/comment-progress@1d904b435730dd3d43ffa8a45522b8d06ebfbb43
+        if: github.ref != 'refs/heads/main'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.number }}
+          id: deploy-preview
+          message: "A preview of ${{ github.event.after }} is uploaded and can be seen here:\n\n ✨ ${{ env.BASE_URL }} ✨\n\nChanges may take a few minutes to propagate. Since this is a preview of production. The source is here: https://github.com/${{ github.repository }}/tree/gh-pages/${{ env.PR_PATH }}/"

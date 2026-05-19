@@ -1,0 +1,30 @@
+name: delete preview on PR close
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete_preview:
+    runs-on: ubuntu-20.04
+    env:
+      PR_PATH: pull/${{github.event.number}}
+    steps:
+      - name: make empty dir
+        run: mkdir site
+
+      - name: delete folder
+        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          destination_dir: ${{ env.PR_PATH }}
+
+      - name: Comment on PR
+        uses: hasura/comment-progress@1d904b435730dd3d43ffa8a45522b8d06ebfbb43
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.number }}
+          id: deploy-preview
+          message: "🪓 PR closed, deleted preview at https://github.com/${{ github.repository }}/tree/gh-pages/${{ env.PR_PATH }}/"
