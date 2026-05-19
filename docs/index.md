@@ -5,6 +5,10 @@ icon: lucide/home
 
 NetherEarth Web — browser-based 3D strategy game built with Vue 3, BabylonJS, and TypeScript.
 
+- [Play](https://IL55.github.io/netherearth_web/game/)
+- [GitHub](https://github.com/IL55/netherearth_web)
+- [Original game assets](https://github.com/4ndrej/nether-earth-pc)
+
 ---
 
 ## Overview
