@@ -5,7 +5,6 @@ export const RC_FONT = "bold 70px Arial";
 
 /** Trigger conditions for ship → robot interaction. */
 export const HOVER_DISTANCE = 0.6;  // Chebyshev radius in game tiles — ship must be over the robot tile
-export const HOVER_HEIGHT   = 2.0;  // max ship height to trigger
 export const HOVER_GAP      = 0.5;  // Gap between robot's visual top and ship's underside while panel is open
 
 export { ORDERABLE_GOALS } from '../../game/robot-mutations';

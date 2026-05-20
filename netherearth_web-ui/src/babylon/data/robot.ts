@@ -120,17 +120,23 @@ export function calcHealth(config: RobotConfig): number {
     return Math.max(1, Math.min(100, total));
 }
 
-// Clearance added above the estimated stack height so the ship never clips into the top part.
-// The hardcoded part heights are approximations; actual 3D bounding boxes can be larger.
-const ROBOT_HEIGHT_CLEARANCE = 0.4;
+// Must match stackGap in view/map/robot.ts — each part overlaps the one below by this much.
+const ROBOT_STACK_GAP = 0.15;
+// Safety margin so the ship doesn't clip into the top part if a model is slightly taller than estimated.
+const ROBOT_HEIGHT_CLEARANCE = 0.2;
 
-// Calculate the total physical height of the robot based on its configured parts
+// Calculate the total physical height of the robot based on its configured parts.
+// Parts are stacked with ROBOT_STACK_GAP overlap between each pair. Electronics gets an extra
+// overlap because the renderer subtracts an additional stackGap before placing it.
 export function calcRobotHeight(config: RobotConfig): number {
     let total = CHASSIS_HEIGHT[config.chassis] ?? 0.4;
-    for (const w of config.weapons ?? []) total += WEAPON_HEIGHT[w] ?? 0.3;
-    if (config.nuclear)     total += NUCLEAR_HEIGHT;
-    if (config.electronics) total += ELECTRONICS_HEIGHT[config.electronics] ?? 0.2;
-    return total + ROBOT_HEIGHT_CLEARANCE;
+    let n = 1; // chassis counts as first part
+    for (const w of config.weapons ?? []) { total += WEAPON_HEIGHT[w] ?? 0.3; n++; }
+    if (config.nuclear)     { total += NUCLEAR_HEIGHT; n++; }
+    if (config.electronics) { total += ELECTRONICS_HEIGHT[config.electronics] ?? 0.2; n++; }
+    // Without electronics: (n-1) gaps used for stacking. With electronics: n gaps (one extra from placement).
+    const gaps = config.electronics ? n : n - 1;
+    return total - gaps * ROBOT_STACK_GAP + ROBOT_HEIGHT_CLEARANCE;
 }
 
 // ─── Preset configs ───────────────────────────────────────────────────────────
