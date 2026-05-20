@@ -21,7 +21,7 @@ export function saveGame(
     warMap: WarMap,
     ownerResources: OwnerResources,
     ship: ShipState,
-): void {
+): boolean {
     const timestamp = Date.now();
     const save: GameSave = {
         mapName,
@@ -36,8 +36,10 @@ export function saveGame(
     };
     try {
         localStorage.setItem(saveKey(timestamp, mapName), JSON.stringify(save));
+        return true;
     } catch (e) {
         console.error('Failed to save game', e);
+        return false;
     }
 }
 

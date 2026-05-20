@@ -11,17 +11,17 @@ export function tickShip(
     robots: {x: number, y: number, height?: number}[] = []
 ): void {
     if (input.right) {
-        ship.vx = (ship.vx !== undefined && ship.vx >= BASE_SPEED) ? Math.min(ship.vx + ACCEL, MAX_SPEED) : BASE_SPEED;
+        ship.vx = ship.vx >= BASE_SPEED ? Math.min(ship.vx + ACCEL, MAX_SPEED) : BASE_SPEED;
     } else if (input.left) {
-        ship.vx = (ship.vx !== undefined && ship.vx <= -BASE_SPEED) ? Math.max(ship.vx - ACCEL, -MAX_SPEED) : -BASE_SPEED;
+        ship.vx = ship.vx <= -BASE_SPEED ? Math.max(ship.vx - ACCEL, -MAX_SPEED) : -BASE_SPEED;
     } else {
         ship.vx = 0;
     }
 
     if (input.backward) {
-        ship.vy = (ship.vy !== undefined && ship.vy >= BASE_SPEED) ? Math.min(ship.vy + ACCEL, MAX_SPEED) : BASE_SPEED;
+        ship.vy = ship.vy >= BASE_SPEED ? Math.min(ship.vy + ACCEL, MAX_SPEED) : BASE_SPEED;
     } else if (input.forward) {
-        ship.vy = (ship.vy !== undefined && ship.vy <= -BASE_SPEED) ? Math.max(ship.vy - ACCEL, -MAX_SPEED) : -BASE_SPEED;
+        ship.vy = ship.vy <= -BASE_SPEED ? Math.max(ship.vy - ACCEL, -MAX_SPEED) : -BASE_SPEED;
     } else {
         ship.vy = 0;
     }

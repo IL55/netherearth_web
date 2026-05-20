@@ -160,7 +160,7 @@ export function chooseBuildGoal(warMap: WarMap, owner: Owner): RobotGoal {
 
 let _builtCount = 0;
 
-/** Reset module state — call in tests that care about goal / ID sequencing. */
+/** Reset module state. Called from resetGame() and in tests that care about goal / ID sequencing. */
 export function _resetBuildState(): void { _builtCount = 0; }
 
 // ─── Option selection ─────────────────────────────────────────────────────────

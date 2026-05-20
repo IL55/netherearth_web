@@ -29,7 +29,6 @@ export function bug2Dirs(
     occupancy: OccupancyMap,
     tx: number,
     ty: number,
-    distToGoal: number,
 ): Direction[] {
     const facing = robot.facing;
     const [primaryDir] = preferredDirs(robot, tx, ty);
@@ -98,7 +97,6 @@ export function bug2Dirs(
             nav.stuckTicks = (nav.stuckTicks ?? 0) + 1;
             if (nav.stuckTicks >= STUCK_TICKS) {
                 nav.navMode = NavMode.WALL_FOLLOW;
-                nav.wallFollowStartDist = distToGoal;
                 nav.wallFollowBestPos = undefined;
                 nav.wallFollowPrimaryIsX = undefined;
                 nav.wallFollowPrimaryFwd = undefined;

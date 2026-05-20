@@ -93,7 +93,7 @@ export class StartupMenu {
 
     constructor(
         storage: StartupMenuStorage,
-        private onSave:    () => void,
+        private onSave:    () => boolean,
         private onLoad:    (timestamp: number, mapName: string) => void,
         private onNewGame?: () => void,
         private onShow?: () => void,
@@ -145,7 +145,9 @@ export class StartupMenu {
             this.updateKeysUI();
         }));
         this.overlay.appendChild(makeBtn('RESUME',    () => this.hide()));
-        this.overlay.appendChild(makeBtn('SAVE GAME', () => { this.onSave(); this.showSaveConfirmation(); }));
+        this.overlay.appendChild(makeBtn('SAVE GAME', () => {
+            if (this.onSave()) { this.showSaveConfirmation(); } else { this.showSaveError(); }
+        }));
         this.overlay.appendChild(makeBtn('LOAD GAME', () => this.showLoadDialog()));
 
         // --- MAP DIALOG ---
@@ -375,6 +377,29 @@ export class StartupMenu {
 
     isVisible(): boolean {
         return this.visible;
+    }
+
+    private showSaveError(): void {
+        const toast = document.createElement('div');
+        Object.assign(toast.style, {
+            position:     'fixed',
+            bottom:       '24px',
+            left:         '50%',
+            transform:    'translateX(-50%)',
+            background:   'rgba(0,0,0,0.85)',
+            color:        '#ef5350',
+            fontFamily:   'monospace',
+            fontSize:     '13px',
+            letterSpacing:'2px',
+            padding:      '8px 20px',
+            borderRadius: '3px',
+            border:       '1px solid #ef5350',
+            zIndex:       '9999',
+            pointerEvents:'none',
+        } satisfies Partial<CSSStyleDeclaration>);
+        toast.textContent = 'SAVE FAILED (storage full?)';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     }
 
     private showSaveConfirmation(): void {

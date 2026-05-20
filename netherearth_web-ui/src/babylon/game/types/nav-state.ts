@@ -11,9 +11,7 @@ export interface NavState {
     slowCounter?: number;
     /** Bug2 wall-follow state (h-electronics / e-electronics) */
     stuckTicks?: number;
-    stuckCheckDist?: number;
     navMode?: NavMode;
-    wallFollowStartDist?: number;
     /**
      * Best (most forward) position along the primary axis recorded since
      * wall-follow started.  Used to detect excessive backtrack and exit early.

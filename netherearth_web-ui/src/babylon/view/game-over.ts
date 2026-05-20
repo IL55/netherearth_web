@@ -40,6 +40,7 @@ const BTN_STYLE: Partial<CSSStyleDeclaration> = {
  */
 export class GameOverScreen {
     private overlay: HTMLDivElement;
+    private title: HTMLDivElement;
     private visible = false;
 
     constructor(private onDismiss?: () => void) {
@@ -47,9 +48,9 @@ export class GameOverScreen {
         Object.assign(this.overlay.style, OVERLAY_STYLE);
         this.overlay.style.display = 'none';
 
-        const title = document.createElement('div');
-        Object.assign(title.style, TITLE_STYLE);
-        this.overlay.appendChild(title);
+        this.title = document.createElement('div');
+        Object.assign(this.title.style, TITLE_STYLE);
+        this.overlay.appendChild(this.title);
 
         const btn = document.createElement('button');
         Object.assign(btn.style, BTN_STYLE);
@@ -58,16 +59,14 @@ export class GameOverScreen {
         this.overlay.appendChild(btn);
 
         document.body.appendChild(this.overlay);
-        // Keep a reference so we can update the title text on show()
-        (this.overlay as any).__title = title;
     }
 
     show(winner: Owner): void {
         if (this.visible) return;
         this.visible = true;
         const isHumanWin = winner === Owner.RED;
-        (this.overlay as any).__title.textContent = isHumanWin ? 'Humans win!' : 'Humans lose!';
-        (this.overlay as any).__title.style.color = isHumanWin ? '#66bb6a' : '#ef5350';
+        this.title.textContent = isHumanWin ? 'Humans win!' : 'Humans lose!';
+        this.title.style.color = isHumanWin ? '#66bb6a' : '#ef5350';
         this.overlay.style.display = 'flex';
     }
 

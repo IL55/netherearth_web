@@ -251,7 +251,6 @@ export class ConstructionYard3D {
     }
 
     public close(): void {
-        (this.scene as any).activeCameras = null;
         this.scene.activeCamera = this.mainCamera;
         this.light.setEnabled(false);
         this.root.setEnabled(false);

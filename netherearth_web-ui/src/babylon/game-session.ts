@@ -96,6 +96,7 @@ export class GameSession {
             x: Math.max(0, Math.min(s.mapData.width  - 1, rawX)),
             y: Math.max(0, Math.min(s.mapData.height - 1, rawY)),
             height: SHIP_RESTING_HEIGHT,
+            vx: 0, vy: 0,
         };
 
         s.shipInput    = createShipInput();
@@ -124,7 +125,7 @@ export class GameSession {
         const storage: StartupMenuStorage = { loadSelectedMap, saveSelectedMap, listSaves };
         s.startupMenu = new StartupMenu(
             storage,
-            () => { saveGame(s.currentMapName, s.warMap, s.ownerResources, s.ship); },
+            () => saveGame(s.currentMapName, s.warMap, s.ownerResources, s.ship),
             async (timestamp: number, mapName: string) => {
                 const save = parseGameSave(timestamp, mapName);
                 if (!save) return;

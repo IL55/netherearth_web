@@ -15,14 +15,14 @@ export type GameEvent =
 type Handler<E> = (event: E) => void;
 
 class EventBus {
-    private handlers = new Map<string, Handler<any>[]>();
+    private handlers = new Map<string, Handler<GameEvent>[]>();
 
     on<T extends GameEvent['type']>(
         type: T,
         handler: Handler<Extract<GameEvent, { type: T }>>,
     ): void {
         const list = this.handlers.get(type) ?? [];
-        this.handlers.set(type, [...list, handler]);
+        this.handlers.set(type, [...list, handler as Handler<GameEvent>]);
     }
 
     off<T extends GameEvent['type']>(
@@ -30,7 +30,7 @@ class EventBus {
         handler: Handler<Extract<GameEvent, { type: T }>>,
     ): void {
         const list = this.handlers.get(type) ?? [];
-        this.handlers.set(type, list.filter(h => h !== handler));
+        this.handlers.set(type, list.filter(h => h !== (handler as Handler<GameEvent>)));
     }
 
     emit<T extends GameEvent>(event: T): void {

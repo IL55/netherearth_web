@@ -14,7 +14,7 @@ const NUKE_DETONATE_CHANCE = 0.05;
  *
  * Rules:
  * - Must be equipped with a nuclear bomb.
- * - Detonates randomly (10% chance per tick when conditions are met)
+ * - Detonates randomly (5% per tick, ~10% per second at 500ms game ticks)
  *   OR if the robot is considered "stuck" (not implemented here directly, but could be passed in).
  * - MUST kill at least one enemy robot, or an enemy/neutral factory, or enemy/neutral warbase in the 3x3 kill zone.
  */

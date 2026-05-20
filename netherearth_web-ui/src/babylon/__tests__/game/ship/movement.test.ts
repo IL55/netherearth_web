@@ -12,7 +12,7 @@ describe('Ship Movement', () => {
     const robots: {x: number, y: number}[] = [];
 
     beforeEach(() => {
-        ship = { x: 5, y: 5, height: 1.0 };
+        ship = { x: 5, y: 5, height: 1.0, vx: 0, vy: 0 };
         input = { left: false, right: false, forward: false, backward: false, ascend: false };
     });
 
@@ -96,7 +96,7 @@ describe('Ship Movement', () => {
 
     it('should slide along walls when moving diagonally into them', () => {
         const obst: ShipObstacle[] = [{ x0: 5.5, y0: -1, x1: 6.5, y1: 10, height: 3.5 }]; // Wall blocking right movement
-        ship = { x: 4.8, y: 5, height: MIN_HEIGHT };
+        ship = { x: 4.8, y: 5, height: MIN_HEIGHT, vx: 0, vy: 0 };
         input.right = true;
         input.backward = true;
 
@@ -117,7 +117,7 @@ describe('Ship Movement', () => {
 
     it('should be blocked by walls/factories when low', () => {
         const obst: ShipObstacle[] = [{ x0: 5.5, y0: -1, x1: 6.5, y1: 10, height: 3.5 }];
-        ship = { x: 5.0, y: 5, height: MIN_HEIGHT }; // height 1.0 <= obstacle height (3.5)
+        ship = { x: 5.0, y: 5, height: MIN_HEIGHT, vx: 0, vy: 0 }; // height 1.0 <= obstacle height (3.5)
         input.right = true;
 
         tickShip(ship, input, mapWidth, mapHeight, obst, robots);
@@ -128,7 +128,7 @@ describe('Ship Movement', () => {
 
     it('should fly over walls when high enough', () => {
         const obst: ShipObstacle[] = [{ x0: 5.5, y0: -1, x1: 6.5, y1: 10, height: 3.5 }];
-        ship = { x: 5.0, y: 5, height: 4.0 }; // Flying high (above 3.5)
+        ship = { x: 5.0, y: 5, height: 4.0, vx: 0, vy: 0 }; // Flying high (above 3.5)
         input.right = true;
 
         tickShip(ship, input, mapWidth, mapHeight, obst, robots);
@@ -142,7 +142,7 @@ describe('Ship Movement', () => {
         // above the robot's visual top. Lateral blocking was removed because it prevented
         // the ship from approaching close enough to trigger robot control.
         const robs = [{ x: 6, y: 5, height: 1.5 }];
-        ship = { x: 5.0, y: 5, height: MIN_HEIGHT };
+        ship = { x: 5.0, y: 5, height: MIN_HEIGHT, vx: 0, vy: 0 };
         input.right = true;
 
         tickShip(ship, input, mapWidth, mapHeight, [], robs);
@@ -152,7 +152,7 @@ describe('Ship Movement', () => {
 
     it('should fly over robots if high enough', () => {
         const robs = [{ x: 6, y: 5 }];
-        ship = { x: 5.0, y: 5, height: 1.6 }; // flying over robots (height > 1.5)
+        ship = { x: 5.0, y: 5, height: 1.6, vx: 0, vy: 0 }; // flying over robots (height > 1.5)
         input.right = true;
 
         tickShip(ship, input, mapWidth, mapHeight, [], robs);
@@ -165,7 +165,7 @@ describe('Ship Movement', () => {
             { x0: 4.5, y0: 4.5, x1: 5.5, y1: 5.5, height: 1.5 }, // Low Factory part at 5,5
             { x0: 5.5, y0: 4.5, x1: 6.5, y1: 5.5, height: 1.5 }  // Low Factory part at 6,5
         ];
-        ship = { x: 4.0, y: 5, height: 1.6 }; // height 1.6 > factory height 1.5
+        ship = { x: 4.0, y: 5, height: 1.6, vx: 0, vy: 0 }; // height 1.6 > factory height 1.5
         input.right = true;
 
         tickShip(ship, input, mapWidth, mapHeight, obst, []);

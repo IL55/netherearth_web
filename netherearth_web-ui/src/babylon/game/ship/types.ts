@@ -2,8 +2,8 @@ export interface ShipState {
     x: number;
     y: number;
     height: number;
-    vx?: number;
-    vy?: number;
+    vx: number;
+    vy: number;
 }
 
 export interface ShipInput {

@@ -74,69 +74,60 @@ intersect 3x3 zone".
 
 ## Low
 
-### L1 — Dead code to remove
+### ~~L1 — Dead code removed~~ ✓ Done
 
-| File | Symbol | Reason |
-|---|---|---|
-| `game/types/nav-state.ts:14` | `stuckCheckDist?` | Never written or read in production |
-| `game/ai/bug2.ts:101` | `nav.wallFollowStartDist` | Written on wall-follow entry, never read |
-| `game/core/occupancy.ts:178` | `export function key(x, y)` | Never imported outside tests |
+- `stuckCheckDist?` removed from `nav-state.ts`
+- `nav.wallFollowStartDist` write + `distToGoal` parameter removed from `bug2.ts`; call sites in `simple.ts` updated
+- `export function key(x, y)` removed from `occupancy.ts`
 
 ---
 
-### L2 — TypeScript loose types
+### ~~L2 — TypeScript loose types fixed~~ ✓ Done
 
-| File | Issue |
-|---|---|
-| `game/core/occupancy.ts:26` | `Partial<Record<string, AABBDef[]>>` → `Partial<Record<ObjectType, AABBDef[]>>` |
-| `view/robot-control/constants.ts:14` | `Record<string, string>` → `Partial<Record<RobotGoal, string>>` |
-| `game/event-bus.ts:18` | `Handler<any>[]` in internal map → `Handler<GameEvent>` |
-| `view/construction-yard/construction-yard-3d.ts:254` | `(this.scene as any).activeCameras = null` → `scene.activeCamera = this.mainCamera` |
-| `view/game-over.ts:62` | `(this.overlay as any).__title` → typed private field |
+- `occupancy.ts`: `Record<string, AABBDef[]>` → `Record<ObjectType, AABBDef[]>`
+- `constants.ts`: `Record<string, string>` → `Partial<Record<RobotGoal, string>>`
+- `event-bus.ts`: `Handler<any>[]` → `Handler<GameEvent>[]` (with safe cast on store)
+- `construction-yard-3d.ts`: `(this.scene as any).activeCameras = null` line removed
+- `game-over.ts`: `(this.overlay as any).__title` → `private title: HTMLDivElement`
 
 ---
 
-### L3 — `game/save.ts:37`: silent save failure
+### ~~L3 — `game/save.ts:37`: silent save failure~~ ✓ Done
 
-Save failures are caught and logged but the player gets no feedback. The save button
-appears to succeed even when `localStorage` quota is exceeded.
-
-**Fix:** return `boolean` from `saveGame` and surface the error in the UI.
+`saveGame` now returns `boolean`. `StartupMenu.onSave` updated to `() => boolean`.
+On failure, a red "SAVE FAILED (storage full?)" toast is shown.
 
 ---
 
-### L4 — `game/mechanics/nuclear.ts`: JSDoc says 10%, code is 5%
+### ~~L4 — `game/mechanics/nuclear.ts`: JSDoc says 10%, code is 5%~~ ✓ Done
 
-`NUKE_DETONATE_CHANCE = 0.05` — the JSDoc block at the top says "10% per tick".
-Update the comment to say "5% per tick (~10% per second at 500ms game ticks)".
-
----
-
-### L5 — `view/shared/models.ts:36`: debug `console.log` left in production
-
-Fires on every model load. Remove or guard with `import.meta.env.DEV`.
+Comment updated to "5% per tick, ~10% per second at 500ms game ticks".
 
 ---
 
-### L6 — `game/event-bus.ts`: `off()` not covered by any test
+### ~~L5 — `view/shared/models.ts:36`: debug `console.log` left in production~~ ✓ Done
 
-A double-register + remove sequence is untested. Add a unit test for `off()`.
-
----
-
-### L7 — `game/ship/movement.ts:29`: optional `vx`/`vy` read without narrowing
-
-`ShipState.vx` and `vy` are optional but read as `const dx = ship.vx` after
-conditional assignment. In practice always a number, but the type still allows
-`undefined`. Make them required (`vx: number; vy: number`) in `ShipState`.
+Guarded with `import.meta.env.DEV`.
 
 ---
 
-### L8 — `game/mechanics/build.ts`: `_builtCount` exported as `_resetBuildState`
+### ~~L6 — `game/event-bus.ts`: `off()` not covered by any test~~ ✓ Done
 
-The reset helper exists only for tests. Once M2 is fixed and it's called from
-`resetGame()`, ensure the export is kept only for test use (rename to convey intent
-or document it explicitly).
+`__tests__/game/event-bus.test.ts` created; covers `on/emit`, `off` isolation,
+no-op off, and multi-handler scenarios.
+
+---
+
+### ~~L7 — `game/ship/movement.ts:29`: optional `vx`/`vy` read without narrowing~~ ✓ Done
+
+`ShipState.vx`/`vy` made required. `movement.ts` simplified (no `!== undefined`
+guards). All affected test and production sites updated.
+
+---
+
+### ~~L8 — `game/mechanics/build.ts`: `_resetBuildState` comment~~ ✓ Done
+
+Comment updated to reflect it's now called from `resetGame()` as well as tests.
 
 ---
 

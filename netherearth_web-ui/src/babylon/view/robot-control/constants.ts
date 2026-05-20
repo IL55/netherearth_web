@@ -10,7 +10,7 @@ export const HOVER_GAP      = 0.5;  // Gap between robot's visual top and ship's
 export { ORDERABLE_GOALS } from '../../game/robot-mutations';
 
 /** Human-readable labels for every RobotGoal value. */
-export const GOAL_LABELS: Record<string, string> = {
+export const GOAL_LABELS: Partial<Record<RobotGoal, string>> = {
     [RobotGoal.ATTACK_ROBOTS]:           'Attack Robots',
     [RobotGoal.CAPTURE_FACTORY]:         'Capture Factory',
     [RobotGoal.CAPTURE_ENEMY_FACTORY]:   'Capture Enemy Factory',

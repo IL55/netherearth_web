@@ -24,7 +24,7 @@ import { Direction, RobotAI } from '../../../game/core/warmap';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function makeShip(x: number, y: number, height = 1.5): ShipState {
-    return { x, y, height };
+    return { x, y, height, vx: 0, vy: 0 };
 }
 
 const DEFAULT_CONFIG = { chassis: Chassis.TRACKS, weapons: [Weapon.CANNON], electronics: Electronics.STANDARD };

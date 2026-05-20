@@ -110,8 +110,7 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
             return r({ type: ActionType.IDLE });
         }
         const facing = robot.facing;
-        const dirs = bug2Dirs(robot, warMap, occupancy, wx, wy,
-            Math.abs(robot.x - wx) + Math.abs(robot.y - wy));
+        const dirs = bug2Dirs(robot, warMap, occupancy, wx, wy);
         for (const dir of dirs) {
             const { dx, dy } = dirDelta(dir);
             if (!isPassable(warMap, occupancy, robot, robot.x + dx, robot.y + dy)) continue;
@@ -201,13 +200,12 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
     let dirsToTry: Direction[];
     if (isMoveOut) {
         // Just use greedy directions for the initial move out
-        dirsToTry = bug2Dirs(robot, warMap, occupancy, tx, ty, Math.abs(robot.x - tx) + Math.abs(robot.y - ty));
+        dirsToTry = bug2Dirs(robot, warMap, occupancy, tx, ty);
     } else if (robot.robotConfig.navAlgo === NavAlgo.TREMAUX) {
         recordCell(robot); // must run before tremauxDirs reads visitCounts
         dirsToTry = tremauxDirs(robot, warMap, occupancy, tx, ty);
     } else {
-        dirsToTry = bug2Dirs(robot, warMap, occupancy, tx, ty,
-            Math.abs(robot.x - tx) + Math.abs(robot.y - ty));
+        dirsToTry = bug2Dirs(robot, warMap, occupancy, tx, ty);
     }
 
     for (const dir of dirsToTry) {

@@ -23,7 +23,7 @@ const DEFAULT_AABB: AABBDef = { dx0: -TILE_HALF_SIZE, dy0: -TILE_HALF_SIZE, dx1:
 // Factory is C-shaped: left column at xo=0 (yo=0,1,2) + right top/bottom at xo=1 (yo=0,2).
 // Hole at (xo=1, yo=1) is the capture slot.
 // Warbase: 15 blocks; hole at (xo≈3.5, yo≈2) is the capture slot.
-const STRUCTURE_PARTS: Partial<Record<string, AABBDef[]>> = {
+const STRUCTURE_PARTS: Partial<Record<ObjectType, AABBDef[]>> = {
     factory: [
         { dx0: -0.5, dy0: -0.5, dx1:  0.5, dy1:  0.5, height: 1.0 },  // highwall1 (xo=0, yo=0)
         { dx0: -0.5, dy0:  0.5, dx1:  0.5, dy1:  1.5, height: 1.5 },  // highwall1 (xo=0, yo=1)
@@ -175,6 +175,3 @@ export function updateRobotPosition(
     if (pos) { pos.x = x; pos.y = y; }
 }
 
-export function key(x: number, y: number): string {
-    return `${x},${y}`;
-}

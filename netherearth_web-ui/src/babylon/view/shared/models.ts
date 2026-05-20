@@ -35,7 +35,7 @@ export const loadModels = (assetsManager: BABYLON.AssetsManager): Map<string, BA
                 rootMesh.rotation = new BABYLON.Vector3(0, 0, 0);
                 rootMesh.computeWorldMatrix(true);
                 const center = rootMesh.getBoundingInfo().boundingSphere.center;
-                console.log(`Center of ${modelNameWithoutExtension}:`, center);
+                if (import.meta.env.DEV) console.log(`Center of ${modelNameWithoutExtension}:`, center);
                 //const translationMatrix = BABYLON.Matrix.Translation(-center.x, -center.y, -center.z);
                 //rootMesh._worldMatrix = translationMatrix;
             }
