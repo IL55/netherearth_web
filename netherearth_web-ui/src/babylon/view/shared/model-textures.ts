@@ -1,4 +1,4 @@
-const T = '/models/textures';
+const T = `${import.meta.env.BASE_URL}models/textures`;
 
 export interface OverlayConfig {
     texture: string;

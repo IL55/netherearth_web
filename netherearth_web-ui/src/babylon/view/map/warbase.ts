@@ -3,6 +3,8 @@ import { setVisibleAll, setFlagColor } from '../shared/scene-utils';
 import { MODEL_OVERLAY } from '../shared/model-textures';
 import { Owner } from '../../game/types/owner';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 const B   = 'warbase-brick-back';
 const BF  = 'warbase-front';
 const ZN  = 'warbase-brick-z-neg';
@@ -52,7 +54,7 @@ export const addWarbase = (
 
         if (part.model === 'warbase' && owner === Owner.RED && OWNER_TEXTURE[Owner.RED]) {
             const decalMaterial = new BABYLON.StandardMaterial(`decalMat_${owner}`, scene);
-            decalMaterial.diffuseTexture = new BABYLON.Texture(`${import.meta.env.BASE_URL}models/textures/${OWNER_TEXTURE[1]}`, scene);
+            decalMaterial.diffuseTexture = new BABYLON.Texture(`${BASE_URL}models/textures/${OWNER_TEXTURE[1]}`, scene);
             decalMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
             decalMaterial.emissiveColor = new BABYLON.Color3(0.01, 0.01, 0.01);
             decalMaterial.zOffset = -2;

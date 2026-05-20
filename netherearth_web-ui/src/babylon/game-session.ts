@@ -32,6 +32,8 @@ import { SOUNDS } from './game/types/sound';
 import { loadSelectedMap, saveSelectedMap, listSaves } from './data/storage';
 import type { StartupMenuStorage } from './data/storage';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 const INITIAL_RESOURCES = 5;
 const INITIAL_MAP = 'small1.map';
 
@@ -72,7 +74,7 @@ export class GameSession {
         const s = new GameSession();
 
         s.currentMapName = INITIAL_MAP;
-        s.mapData = await loadMap(`/maps/${INITIAL_MAP}`);
+        s.mapData = await loadMap(`${BASE_URL}maps/${INITIAL_MAP}`);
         s.mapBegin = new BABYLON.Vector3(0, 0, 0);
 
         s.warMap = createWarMap(s.mapData);
@@ -127,7 +129,7 @@ export class GameSession {
                 const save = parseGameSave(timestamp, mapName);
                 if (!save) return;
                 if (s.currentMapName !== mapName) {
-                    s.mapData = await loadMap(`/maps/${mapName}`);
+                    s.mapData = await loadMap(`${BASE_URL}maps/${mapName}`);
                     s.currentMapName = mapName;
                     s.warMap.width = s.mapData.width;
                     s.warMap.height = s.mapData.height;
@@ -173,7 +175,7 @@ export class GameSession {
 
         bus.on('game:new-map', async ({ mapName }) => {
             if (this.currentMapName !== mapName) {
-                this.mapData = await loadMap(`/maps/${mapName}`);
+                this.mapData = await loadMap(`${BASE_URL}maps/${mapName}`);
                 this.currentMapName = mapName;
             }
             bus.emit({ type: 'game:start' });

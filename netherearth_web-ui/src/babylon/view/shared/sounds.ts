@@ -1,5 +1,7 @@
 import type { SoundName } from '../../game/types/sound';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 export interface Sounds {
     play(name: SoundName): void;
     playSequence(names: SoundName[]): void;
@@ -8,7 +10,7 @@ export interface Sounds {
 
 export const loadSounds = (): Sounds => {
     const play = (name: SoundName) => {
-        new Audio(`${import.meta.env.BASE_URL}sound/${name}.wav`).play().catch(() => {});
+        new Audio(`${BASE_URL}sound/${name}.wav`).play().catch(() => {});
     };
 
     let currentAudio: HTMLAudioElement | null = null;
@@ -29,7 +31,7 @@ export const loadSounds = (): Sounds => {
     const playSequence = (names: SoundName[]) => {
         const step = (i: number) => {
             if (i >= names.length) { currentAudio = null; return; }
-            const audio = new Audio(`/sound/${names[i]}.wav`);
+            const audio = new Audio(`${BASE_URL}sound/${names[i]}.wav`);
             currentAudio = audio;
             audio.addEventListener('ended', () => { if (currentAudio === audio) step(i + 1); }, { once: true });
             audio.play().catch(() => { if (currentAudio === audio) step(i + 1); });

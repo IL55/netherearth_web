@@ -1,5 +1,7 @@
 import * as BABYLON from '@babylonjs/core';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 const modelNames: string[] = [
     "bullet1.glb", "bullet2.glb", "bullet3.glb", "construction.glb", "construction1.glb", 
     "construction2.glb", "construction3.glb", "e-antigrav.glb", "e-bipod-base.glb", 
@@ -24,7 +26,7 @@ export const loadModels = (assetsManager: BABYLON.AssetsManager): Map<string, BA
     const models = new Map<string, BABYLON.AbstractMesh>();
 
     modelNames.forEach(modelName => {
-        const task = assetsManager.addMeshTask(modelName, "", import.meta.env.BASE_URL + "models/", modelName);
+        const task = assetsManager.addMeshTask(modelName, "", BASE_URL + "models/", modelName);
         task.onSuccess = (task) => {
             const modelNameWithoutExtension = modelName.split('.')[0];
             const rootMesh = task.loadedMeshes[0];
