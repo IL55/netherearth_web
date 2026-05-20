@@ -62,7 +62,7 @@ export function applySave(
 
     warMap.tiles = save.tiles.map(t => ({ ...t }));
 
-    warMap.robots = save.robots.map(r => ({ ...r, id: `loaded_${r.id}` } as RobotObject));
+    warMap.robots = save.robots.map(r => ({ ...r, id: `loaded_${r.id.replace(/^(loaded_)+/, '')}` } as RobotObject));
     warMap.projectiles = [];
     warMap.killCounts = { ...save.killCounts };
 

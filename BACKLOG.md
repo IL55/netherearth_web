@@ -13,18 +13,10 @@ Tests added in `__tests__/data/map.test.ts` (HTTP errors, dimensions, tiles, obj
 
 ---
 
-### H2 — `game/save.ts:65`: robot IDs accumulate `loaded_` prefix on every load
+### ~~H2 — `game/save.ts:65`: robot IDs accumulate `loaded_` prefix on every load~~ ✓ Done
 
-Each `applySave` call wraps every robot ID:
-```ts
-warMap.robots = save.robots.map(r => ({ ...r, id: `loaded_${r.id}` }));
-```
-A player who saves and reloads a loaded game gets `loaded_loaded_robot_0`.
-Repeats on every load cycle.
-
-**Fix:** strip any existing `loaded_` prefix before prepending, or drop the prefix
-entirely and use a counter (`save_${i}`) to guarantee uniqueness.  
-**Tests needed:** save → load → save → load round-trip, verify IDs don't accumulate.
+`applySave` now strips existing `loaded_` prefixes before applying a new one.
+Round-trip tests added to `save.integration.test.ts` (1 cycle, 2 cycles, 3 cycles).
 
 ---
 

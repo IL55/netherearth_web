@@ -145,6 +145,63 @@ describe('scenario: save round-trip', () => {
     });
 });
 
+// ─── Robot ID stability across save / load cycles ────────────────────────────
+
+describe('scenario: robot ID stability', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+        vi.stubGlobal('localStorage', makeLocalStorageMock());
+    });
+    afterEach(() => vi.useRealTimers());
+
+    it('robot IDs get a loaded_ prefix after applySave', () => {
+        const warMap = makeWarMap(makeRobot('robot_0', 1, 1, Owner.RED));
+        const resources = createOwnerResources();
+        const ship = makeShip();
+
+        saveGame('test.map', warMap, resources, ship);
+        const save = parseGameSave(listSavesFromStorage()[0].timestamp, 'test.map')!;
+        applySave(save, warMap, resources, ship);
+
+        expect(warMap.robots[0].id).toBe('loaded_robot_0');
+    });
+
+    it('save → load → save → load does not accumulate loaded_ prefixes', () => {
+        const warMap = makeWarMap(makeRobot('robot_0', 1, 1, Owner.RED));
+        const resources = createOwnerResources();
+        const ship = makeShip();
+
+        // First cycle
+        saveGame('test.map', warMap, resources, ship);
+        let save = parseGameSave(listSavesFromStorage()[0].timestamp, 'test.map')!;
+        applySave(save, warMap, resources, ship);
+        expect(warMap.robots[0].id).toBe('loaded_robot_0');
+
+        // Second cycle — save the already-loaded game and reload it
+        saveGame('test.map', warMap, resources, ship);
+        const saves = listSavesFromStorage();
+        save = parseGameSave(saves[saves.length - 1].timestamp, 'test.map')!;
+        applySave(save, warMap, resources, ship);
+
+        expect(warMap.robots[0].id).toBe('loaded_robot_0');
+    });
+
+    it('ID is stable across three load cycles', () => {
+        const warMap = makeWarMap(makeRobot('robot_0', 1, 1, Owner.RED));
+        const resources = createOwnerResources();
+        const ship = makeShip();
+
+        for (let cycle = 0; cycle < 3; cycle++) {
+            saveGame('test.map', warMap, resources, ship);
+            const saves = listSavesFromStorage();
+            const save = parseGameSave(saves[saves.length - 1].timestamp, 'test.map')!;
+            applySave(save, warMap, resources, ship);
+        }
+
+        expect(warMap.robots[0].id).toBe('loaded_robot_0');
+    });
+});
+
 // ─── Helper: read saves back from the mocked localStorage ────────────────────
 
 function listSavesFromStorage(): { timestamp: number; mapName: string }[] {
