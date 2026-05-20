@@ -6,14 +6,13 @@
  * Returns a RobotAction if combat is appropriate this tick, or null
  * to let the navigation layer decide.
  */
-import { ObjectType } from '../core/warmap';
 import { Direction } from '../core/warmap';
 import type { WarMap, WarObject, RobotObject } from '../core/warmap';
 import type { OccupancyMap } from '../core/occupancy';
 import { isOccupied, isLOSBlocked, ROBOT_HALF_SIZE, ROBOT_COLLISION_DISTANCE } from '../core/occupancy';
 import { ActionType, RotateDir, type RobotAction } from '../actions';
 import { Weapon, SIGHT_RANGE, WEAPON_RANGE, WEAPON_DAMAGE } from '../../data/robot';
-import { dirDelta, CW_DIRS } from './nav';
+import { dirDelta, CW_DIRS, isPassable } from './nav';
 
 // Nearest living enemy robot adjacent (within ~1.5 units) with unblocked LOS.
 function scanAdjacentEnemy(
@@ -163,7 +162,8 @@ export function fightAction(
         const nx = robot.x + dx;
         const ny = robot.y + dy;
         if (nx >= 0 && ny >= 0 && nx < warMap.width && ny < warMap.height
-                && !isOccupied(occupancy, nx, ny, robot.id)) {
+                && !isOccupied(occupancy, nx, ny, robot.id)
+                && isPassable(warMap, occupancy, robot, nx, ny)) {
             return { type: ActionType.MOVE, direction: facing };
         }
     }

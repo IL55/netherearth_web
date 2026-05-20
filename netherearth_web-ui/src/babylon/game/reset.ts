@@ -4,6 +4,7 @@ import type { MapData } from '../data/map';
 import type { OwnerResources } from './resources';
 import type { ShipState } from './ship/index';
 import type { Clock } from './clock';
+import { _resetBuildState } from './mechanics/build';
 
 export function resetGame(
     warMap: WarMap,
@@ -47,6 +48,9 @@ export function resetGame(
         ship.y = mapData.height / 2;
     }
     ship.height = 1.5;
+
+    // Reset build counters so robot IDs restart from 0 on a new game
+    _resetBuildState();
 
     // Reset clock
     clock.reset();

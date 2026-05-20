@@ -70,6 +70,7 @@ export class RobotControl3D {
     private weaponBtnsContainer!: HTMLDivElement;
     private keyHandler: ((e: KeyboardEvent) => void) | null = null;
     private keyUpHandler: ((e: KeyboardEvent) => void) | null = null;
+    private keyBindings: ReturnType<typeof loadKeyBindings> | null = null;
     private heldDirection: Direction | null = null;
     private weaponKeys: Weapon[] = [];
     private canvas: HTMLCanvasElement;
@@ -261,8 +262,9 @@ export class RobotControl3D {
     // ── Key bindings ───────────────────────────────────────────────────────────
 
     private attachKeys(): void {
+        this.keyBindings = loadKeyBindings();
         this.keyHandler = (e: KeyboardEvent) => {
-            const bindings = loadKeyBindings();
+            const bindings = this.keyBindings!;
             const code = e.code;
 
             if (code === bindings.up) { e.preventDefault(); this.heldDirection = Direction.W; }
@@ -283,7 +285,7 @@ export class RobotControl3D {
             }
         };
         this.keyUpHandler = (e: KeyboardEvent) => {
-            const bindings = loadKeyBindings();
+            const bindings = this.keyBindings!;
             const code = e.code;
             if (code === bindings.up || code === bindings.down || code === bindings.left || code === bindings.right) {
                 this.heldDirection = null;
@@ -302,6 +304,7 @@ export class RobotControl3D {
             document.removeEventListener('keyup', this.keyUpHandler);
             this.keyUpHandler = null;
         }
+        this.keyBindings = null;
         this.heldDirection = null;
     }
 

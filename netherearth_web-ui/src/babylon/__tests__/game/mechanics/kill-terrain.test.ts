@@ -122,6 +122,20 @@ describe('recordKill — mountains → wall (7th kill)', () => {
     });
 });
 
+describe('recordKill — pre-existing wall (loaded save scenario)', () => {
+    it('does not push a second wall when one already exists at the cell', () => {
+        // Simulate a loaded save: tile is mountain, killCount=6, wall already present
+        const map = makeMap('M');
+        map.killCounts = { '5,5': 6 };
+        map.tiles.push({ id: 'wall_kill_5,5', type: ObjectType.WALL1, x: 5, y: 5 } as MapObject);
+
+        recordKill(map, makeRobot()); // count → 7, should not push duplicate
+
+        const walls = map.tiles.filter(o => o.type === ObjectType.WALL1);
+        expect(walls).toHaveLength(1);
+    });
+});
+
 describe('recordKill — no tile at position', () => {
     it('does not throw when there is no tile at robot position', () => {
         const map: WarMap = { width: 10, height: 10, tiles: [], robots: [], projectiles: [], killCounts: {}, tick: 0 };

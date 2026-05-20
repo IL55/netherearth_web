@@ -1,11 +1,19 @@
 import { ObjectType } from '../game/core/warmap';
 import { Owner } from '../game/types/owner';
 
+export interface MapDataObject {
+    type: string;
+    x: number;
+    y: number;
+    subtype?: string;
+    owner?: Owner;
+}
+
 export interface MapData {
     width: number;
     height: number;
     tiles: string[][];
-    objects: { type: string; x: number; y: number; [key: string]: any }[];
+    objects: MapDataObject[];
 }
 
 export const loadMap = async (url: string): Promise<MapData> => {
@@ -22,7 +30,7 @@ export const loadMap = async (url: string): Promise<MapData> => {
         tiles.push(lines[i + 2].split(' '));
     }
 
-    const objects: { type: string; x: number; y: number; [key: string]: any }[] = [];
+    const objects: MapDataObject[] = [];
     for (let i = height + 2; i < lines.length; i++) {
         const parts = lines[i].split(' ');
         const type = parts[0];

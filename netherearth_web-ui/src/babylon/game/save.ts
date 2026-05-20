@@ -12,7 +12,7 @@ export interface GameSave {
     ship: { x: number; y: number; height: number };
     tiles: MapObject[];
     robots: RobotSave[];
-    resources: Record<Owner.RED | Owner.BLUE, Record<string, number>>;
+    resources: OwnerResources;
     killCounts: Record<string, number>;
 }
 

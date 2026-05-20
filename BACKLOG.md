@@ -22,76 +22,53 @@ Round-trip tests added to `save.integration.test.ts` (1 cycle, 2 cycles, 3 cycle
 
 ## Medium
 
-### M1 — `game/ai/fight.ts:160`: combat advance ignores terrain passability
+### ~~M1 — `game/ai/fight.ts:160`: combat advance ignores terrain passability~~ ✓ Done
 
-`fightAction` returns `ActionType.MOVE` after checking only `isOccupied` (robots /
-structures). It does not call `isPassable`, which also guards mountains and holes.
-A robot with an enemy across a hole wastes every tick issuing a MOVE that
-`applyMove` silently rejects, instead of wall-following around the obstacle.
-
-**Fix:** call `isPassable(warMap, nx, ny, robot.robotConfig.chassis)` in the advance
-branch of `fightAction`, same as the nav layer does.  
-**Tests needed:** robot facing impassable terrain toward enemy should not stall.
+`isPassable()` now checked in the advance branch of `fightAction`.
+Test added in `fight.test.ts` (impassable HOLE tile blocks advance toward enemy).
 
 ---
 
-### M2 — `game/mechanics/build.ts:203`: `_builtCount` not reset on `resetGame()`
+### ~~M2 — `game/mechanics/build.ts:203`: `_builtCount` not reset on `resetGame()`~~ ✓ Done
 
-Module-level `_builtCount` keeps incrementing across game resets. Robot IDs after
-a new game continue from where the previous game left off (`robot_47`, `robot_48`,
-…) instead of restarting from 0. Same issue in
-`view/construction-yard/construction-yard-logic.ts` (`_manualBuildCount`).
-
-**Fix:** expose a `_resetBuildState()` equivalent (already exists for tests) and
-call it from `resetGame()` in `game/reset.ts`. Do the same for `_manualBuildCount`.
+`_resetBuildState()` called from `resetGame()` in `game/reset.ts`.
+`_resetManualBuildCount()` called in `game-session.ts` after `resetGame()`.
 
 ---
 
-### M3 — `data/map.ts` + `game/save.ts`: weak internal types
+### ~~M3 — `data/map.ts` + `game/save.ts`: weak internal types~~ ✓ Done
 
-- `MapData.objects` uses `[key: string]: any` — replace with a union of the concrete
-  object shapes so wrong field access is caught at compile time.
-- `GameSave.resources` inner record is `Record<string, number>` — should match the
-  actual `Resources` type so `applySave`'s `Object.assign` is type-safe.
+- `MapData.objects` now uses `MapDataObject` interface (typed optional fields).
+- `GameSave.resources` now typed as `OwnerResources` (from `./resources`).
 
 ---
 
-### M4 — `game/mechanics/build.ts`: dead RED-owner branch + untested scoring
+### ~~M4 — `game/mechanics/build.ts`: dead RED-owner branch + untested scoring~~ ✓ Done
 
-- `tickBuild` exits immediately for any non-BLUE owner (line 203), making
-  `BUILD_COOLDOWN_RED` and the RED branch of the cooldown calculation dead code.
-  Remove the dead branch or implement RED building.
-- `scoreBuildOption` and the late-game `chooseBuildGoal` paths (fighters ratio,
-  enemy-capture fallback) have no unit tests.
+`BUILD_COOLDOWN_RED` and the dead ternary removed from `tickBuild`.
+`scoreBuildOption` and late-game `chooseBuildGoal` paths already covered by
+existing tests in `build.test.ts`.
 
 ---
 
-### M5 — `view/robot-control/robot-control-3d.ts:265`: `loadKeyBindings()` on every keypress
+### ~~M5 — `view/robot-control/robot-control-3d.ts:265`: `loadKeyBindings()` on every keypress~~ ✓ Done
 
-`loadKeyBindings()` (a `localStorage.getItem`) is called on every `keydown` and
-`keyup` event during robot-control panel use. Key bindings never change while the
-panel is open.
-
-**Fix:** load bindings once when the panel opens and store in an instance field.
+`loadKeyBindings()` now called once in `attachKeys()` and stored in `this.keyBindings`.
+Cleared in `detachKeys()`.
 
 ---
 
-### M6 — `game/mechanics/kill-terrain.ts:42`: duplicate wall tile on repeated kill at same cell
+### ~~M6 — `game/mechanics/kill-terrain.ts:42`: duplicate wall tile on repeated kill at same cell~~ ✓ Done
 
-If a cell already has a `wall_kill_${key}` tile (from a previous game or loaded
-save) and the kill counter reaches 7 again, a second tile with the same ID is pushed
-into `warMap.tiles`. Renderer skips it (cache hit) but `buildOccupancy` adds a
-duplicate AABB.
-
-**Fix:** guard with `if (!warMap.tiles.find(t => t.id === id))` before pushing.  
-**Tests needed:** 7th kill at a cell that already has a wall tile.
+Guard added: wall is only pushed if no tile with the same id already exists.
+Test added in `kill-terrain.test.ts` (pre-existing wall scenario).
 
 ---
 
-### M7 — `game/ai/nuclear.ts`: no test for friendly-structure-only scenario
+### ~~M7 — `game/ai/nuclear.ts`: no test for friendly-structure-only scenario~~ ✓ Done
 
-`shouldDetonateNuclear` has a branch that checks for nearby structures. No test
-verifies the robot does NOT detonate when only its own structures are in range.
+Test already present in `nuclear.test.ts`: "returns false if only friendly structures
+intersect 3x3 zone".
 
 ---
 

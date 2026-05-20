@@ -9,6 +9,7 @@ import { fightAction } from '../../../game/ai/fight';
 import { buildOccupancy } from '../../../game/core/occupancy';
 import { Chassis, Electronics, Weapon } from '../../../data/robot';
 import { RobotAI, type WarMap, type RobotObject, type WarObject } from '../../../game/core/warmap';
+import { TileSubtype } from '../../../game/core/terrain';
 
 function makeRobot(
     id: string,
@@ -115,6 +116,20 @@ describe('fightAction', () => {
         
         // Ensure lastHealth was updated
         expect(robot.nav.lastHealth).toBe(80);
+    });
+
+    it('does not advance into impassable terrain toward enemy', () => {
+        // Robot at (5,5) facing East; enemy at (12,5) — within sight (8) but beyond CANNON range (5).
+        // A HOLE tile sits at (6,5), the only step forward. The robot should not return MOVE.
+        const robot = makeRobot('r1', 5, 5, Direction.E, Owner.RED, Weapon.CANNON);
+        const enemy = makeRobot('e1', 12, 5, Direction.W, Owner.BLUE);
+        const holeTile = { type: ObjectType.TILE, x: 6, y: 5, subtype: TileSubtype.HOLE1 } as any;
+        const map = makeMap([robot, enemy]);
+        map.tiles = [holeTile];
+        const occupancy = buildOccupancy(map);
+
+        const action = fightAction(robot, map, occupancy);
+        expect(action?.type).not.toBe(ActionType.MOVE);
     });
 
     it('does not rotate if health did not drop', () => {

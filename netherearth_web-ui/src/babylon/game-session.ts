@@ -26,7 +26,7 @@ import { StartupMenu } from './view/startup-menu';
 import { bus } from './game/event-bus';
 import { resetGame } from './game/reset';
 import { saveGame, parseGameSave, applySave } from './game/save';
-import { spawnManualRobot } from './view/construction-yard/construction-yard-logic';
+import { spawnManualRobot, _resetManualBuildCount } from './view/construction-yard/construction-yard-logic';
 import type { Sounds } from './view/shared/sounds';
 import { SOUNDS } from './game/types/sound';
 import { loadSelectedMap, saveSelectedMap, listSaves } from './data/storage';
@@ -169,6 +169,7 @@ export class GameSession {
         bus.on('game:start', () => {
             this.sounds.stopSequence();
             resetGame(this.warMap, this.mapData, this.ownerResources, this.ship, this.clock, INITIAL_RESOURCES);
+            _resetManualBuildCount();
             this.renderer.render(this.warMap);
             this.hud.update(this.warMap, this.ship);
         });

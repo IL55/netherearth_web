@@ -39,12 +39,9 @@ export function recordKill(warMap: WarMap, robot: RobotObject): void {
     } else if (count === WALL_THRESHOLD && tile && tile.subtype === TileSubtype.MOUNTAIN) {
         const rx = Math.round(robot.x);
         const ry = Math.round(robot.y);
-        const wall: MapObject = {
-            id: `wall_kill_${key}`,
-            type: ObjectType.WALL1,
-            x: rx,
-            y: ry,
-        };
-        warMap.tiles.push(wall);
+        const id = `wall_kill_${key}`;
+        if (!warMap.tiles.some(t => t.id === id)) {
+            warMap.tiles.push({ id, type: ObjectType.WALL1, x: rx, y: ry });
+        }
     }
 }

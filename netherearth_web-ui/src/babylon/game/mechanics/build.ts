@@ -33,7 +33,6 @@ export const NUCLEAR_BUILD_COST:     Cost = { [ResourceType.NUCLEAR]: 2 };
 
 // Ticks to wait before a warbase can build another robot.
 export const BUILD_COOLDOWN_BLUE = 100;
-export const BUILD_COOLDOWN_RED = 10;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -205,9 +204,8 @@ export function tickBuild(warMap: WarMap, ownerResources: OwnerResources): void 
         const spawnX = obj.x + zone.dx;
         const spawnY = obj.y + zone.dy;
 
-        const cooldown = obj.owner === Owner.BLUE ? BUILD_COOLDOWN_BLUE : BUILD_COOLDOWN_RED;
         // Check warbase build cooldown (treat never-built as lastBuiltAt=0)
-        if ((obj.lastBuiltAt ?? 0) + cooldown > (warMap.tick ?? 0)) continue;
+        if ((obj.lastBuiltAt ?? 0) + BUILD_COOLDOWN_BLUE > (warMap.tick ?? 0)) continue;
 
         // Block if any robot (enemy capturing or own robot) is at the spawn point.
         if (isOccupied(occupancy, spawnX, spawnY)) continue;
