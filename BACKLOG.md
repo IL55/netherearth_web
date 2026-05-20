@@ -172,3 +172,14 @@ conditional assignment. In practice always a number, but the type still allows
 The reset helper exists only for tests. Once M2 is fixed and it's called from
 `resetGame()`, ensure the export is kept only for test use (rename to convey intent
 or document it explicitly).
+
+---
+
+### L9 — Remove the `babylon/` nesting from `src/`
+
+All source files live under `netherearth_web-ui/src/babylon/`. Since there is only
+one engine and no plans for another, the folder adds a pointless path segment to
+every import and every `__tests__` path.
+
+**Fix:** move the contents of `src/babylon/` up to `src/` and update all import
+paths, `tsconfig` path aliases, and test globs accordingly.
