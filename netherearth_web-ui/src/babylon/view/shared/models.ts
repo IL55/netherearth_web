@@ -24,7 +24,7 @@ export const loadModels = (assetsManager: BABYLON.AssetsManager): Map<string, BA
     const models = new Map<string, BABYLON.AbstractMesh>();
 
     modelNames.forEach(modelName => {
-        const task = assetsManager.addMeshTask(modelName, "", "/models/", modelName);
+        const task = assetsManager.addMeshTask(modelName, "", import.meta.env.BASE_URL + "models/", modelName);
         task.onSuccess = (task) => {
             const modelNameWithoutExtension = modelName.split('.')[0];
             const rootMesh = task.loadedMeshes[0];

@@ -52,7 +52,7 @@ export const addWarbase = (
 
         if (part.model === 'warbase' && owner === Owner.RED && OWNER_TEXTURE[Owner.RED]) {
             const decalMaterial = new BABYLON.StandardMaterial(`decalMat_${owner}`, scene);
-            decalMaterial.diffuseTexture = new BABYLON.Texture(`/models/textures/${OWNER_TEXTURE[1]}`, scene);
+            decalMaterial.diffuseTexture = new BABYLON.Texture(`${import.meta.env.BASE_URL}models/textures/${OWNER_TEXTURE[1]}`, scene);
             decalMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
             decalMaterial.emissiveColor = new BABYLON.Color3(0.01, 0.01, 0.01);
             decalMaterial.zOffset = -2;

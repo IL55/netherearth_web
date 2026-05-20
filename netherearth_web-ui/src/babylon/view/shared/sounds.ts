@@ -8,7 +8,7 @@ export interface Sounds {
 
 export const loadSounds = (): Sounds => {
     const play = (name: SoundName) => {
-        new Audio(`/sound/${name}.wav`).play().catch(() => {});
+        new Audio(`${import.meta.env.BASE_URL}sound/${name}.wav`).play().catch(() => {});
     };
 
     let currentAudio: HTMLAudioElement | null = null;
