@@ -6,14 +6,10 @@ Findings from project review (2026-05-19). Ordered by priority within each sever
 
 ## High
 
-### H1 — `data/map.ts`: no `response.ok` check + no tests
+### ~~H1 — `data/map.ts`: no `response.ok` check + no tests~~ ✓ Done
 
-`loadMap` does a raw `fetch()` with no status check. A 404 silently returns an HTML
-error page; `text.split('\n')` then runs on it and crashes with a cryptic
-`parseInt(NaN)` or wrong map dimensions.
-
-**Fix:** add `if (!response.ok) throw new Error(...)` after `await fetch(...)`.  
-**Tests needed:** mock `fetch` to return 404, malformed content, missing fields.
+`loadMap` now throws a descriptive error on non-2xx responses.
+Tests added in `__tests__/data/map.test.ts` (HTTP errors, dimensions, tiles, objects).
 
 ---
 

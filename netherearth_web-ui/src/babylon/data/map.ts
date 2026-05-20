@@ -10,6 +10,7 @@ export interface MapData {
 
 export const loadMap = async (url: string): Promise<MapData> => {
     const response = await fetch(url);
+    if (!response.ok) throw new Error(`Failed to load map "${url}": ${response.status} ${response.statusText}`);
     const text = await response.text();
     const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
