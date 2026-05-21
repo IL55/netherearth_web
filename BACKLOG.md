@@ -131,11 +131,10 @@ Comment updated to reflect it's now called from `resetGame()` as well as tests.
 
 ---
 
-### L9 — Remove the `babylon/` nesting from `src/`
+### ~~L9 — Remove the `babylon/` nesting from `src/`~~ ✓ Done
 
-All source files live under `netherearth_web-ui/src/babylon/`. Since there is only
-one engine and no plans for another, the folder adds a pointless path segment to
-every import and every `__tests__` path.
-
-**Fix:** move the contents of `src/babylon/` up to `src/` and update all import
-paths, `tsconfig` path aliases, and test globs accordingly.
+All files moved from `src/babylon/` up to `src/`. `babylon/main.ts` renamed to
+`scene.ts` to avoid conflict with the Vue entry `src/main.ts`. No import path
+updates were needed within the moved files (all relative imports remained valid).
+`src/App.vue` import updated: `./babylon/main` → `./scene`.
+Zero TS errors; 534 tests passing.

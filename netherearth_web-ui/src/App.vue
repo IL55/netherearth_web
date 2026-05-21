@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 import { Engine, Scene } from '@babylonjs/core';
-import { createScene } from './babylon/main';
+import { createScene } from './scene';
 
 const canvas = ref<HTMLCanvasElement | null>(null);
 
