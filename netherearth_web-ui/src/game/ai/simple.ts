@@ -23,10 +23,10 @@ import { bug2Dirs } from './bug2';
 import { recordCell, tremauxDirs } from './tremaux';
 import { shouldDetonateNuclear } from './nuclear';
 
-/** Manhattan distance threshold for detecting that a robot is at its spawn point. */
-const SPAWN_PROXIMITY = 0.2;
-/** Cells the robot moves away from spawn before switching to goal-directed navigation. */
-const MOVEOUT_DISTANCE = 4;
+import {
+    SPAWN_PROXIMITY, MOVEOUT_DISTANCE,
+    WAYPOINT_ARRIVAL_DIST, MOVEOUT_ARRIVAL_DIST, MOVEOUT_MIN_DIST_FROM_SPAWN,
+} from '../config';
 
 /**
  * State changes the AI wants to apply to a robot, separate from the game
@@ -104,7 +104,7 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
     if (robot.goal === RobotGoal.MOVE_FORWARD || robot.goal === RobotGoal.MOVE_BACKWARD) {
         if (!robot.goalPosition) return r({ type: ActionType.IDLE });
         const { x: wx, y: wy } = robot.goalPosition;
-        if (Math.abs(robot.x - wx) + Math.abs(robot.y - wy) < 0.3) {
+        if (Math.abs(robot.x - wx) + Math.abs(robot.y - wy) < WAYPOINT_ARRIVAL_DIST) {
             su.goal = RobotGoal.DEFEND;
             su.clearGoalPosition = true;
             return r({ type: ActionType.IDLE });
@@ -172,7 +172,7 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
         const spawnPos = robot.nav.spawnPos;
         const distFromSpawn = spawnPos ? (Math.abs(robot.x - spawnPos.x) + Math.abs(robot.y - spawnPos.y)) : 0;
         
-        if (Math.abs(robot.x - tx) + Math.abs(robot.y - ty) < 0.1 || distFromSpawn >= 3) {
+        if (Math.abs(robot.x - tx) + Math.abs(robot.y - ty) < MOVEOUT_ARRIVAL_DIST || distFromSpawn >= MOVEOUT_MIN_DIST_FROM_SPAWN) {
             su.clearMoveOut = true;
             isMoveOut = false;
         }

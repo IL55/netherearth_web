@@ -2,14 +2,7 @@ import { ObjectType } from '../types/object-type';
 import type { WarMap, RobotObject, MapObject } from '../core/warmap';
 import { TileSubtype } from '../core/terrain';
 
-// Terrain upgrade thresholds (cumulative kills at a position):
-//   1st kill  → grass becomes sand
-//   4th kill  → sand becomes mountains  (3 more kills while on sand)
-//   7th kill  → mountains get a wall    (3 more kills while on mountains)
-
-const SAND_THRESHOLD     = 1;
-const MOUNTAIN_THRESHOLD = 4;
-const WALL_THRESHOLD     = 7;
+import { SAND_THRESHOLD, MOUNTAIN_THRESHOLD, WALL_THRESHOLD } from '../config';
 
 function posKey(x: number, y: number): string {
     return `${Math.round(x)},${Math.round(y)}`;

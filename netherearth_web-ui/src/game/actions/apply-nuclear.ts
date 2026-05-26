@@ -1,10 +1,7 @@
 import { ObjectType } from '../core/warmap';
 import type { WarMap, RobotObject } from '../core/warmap';
-
-/** Chebyshev radius of the instant-kill zone (3×3 area centred on the blast). */
-export const NUKE_KILL_RADIUS = 1;
-/** Chebyshev radius of the half-damage zone (5×5 area, outside the kill zone). */
-export const NUKE_DAMAGE_RADIUS = 2;
+import { NUKE_KILL_RADIUS, NUKE_DAMAGE_RADIUS, NUKE_OUTER_HP_FRACTION } from '../config';
+export { NUKE_KILL_RADIUS, NUKE_DAMAGE_RADIUS };
 
 /** Width in tiles of a factory's bounding box (x … x+1). */
 export const FACTORY_FOOTPRINT_WIDTH = 2;
@@ -41,7 +38,7 @@ export function applyNuclear(robot: RobotObject, warMap: WarMap): boolean {
         if (chebyshev <= NUKE_KILL_RADIUS) {
             obj.health = 0;
         } else if (chebyshev <= NUKE_DAMAGE_RADIUS) {
-            obj.health = Math.max(0, Math.floor(obj.health / 2));
+            obj.health = Math.max(0, Math.floor(obj.health * NUKE_OUTER_HP_FRACTION));
         }
     }
 

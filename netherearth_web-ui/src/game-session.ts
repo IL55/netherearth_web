@@ -34,7 +34,7 @@ import type { StartupMenuStorage } from './data/storage';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
-const INITIAL_RESOURCES = 5;
+import { INITIAL_RESOURCES } from './game/config';
 const INITIAL_MAP = 'small1.map';
 
 export class GameSession {

@@ -5,8 +5,7 @@ import {
     FACTORY_FOOTPRINT_WIDTH, WARBASE_FOOTPRINT_WIDTH, STRUCTURE_FOOTPRINT_HEIGHT,
 } from '../actions/apply-nuclear';
 
-/** Probability per tick that a nuclear-equipped robot considers detonating (when not stuck). */
-const NUKE_DETONATE_CHANCE = 0.05;
+import { NUKE_DETONATE_CHANCE } from '../config';
 
 /**
  * Evaluates whether a robot should detonate its nuclear bomb.

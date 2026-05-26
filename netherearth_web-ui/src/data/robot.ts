@@ -1,4 +1,15 @@
 import type { NavAlgo } from '../game/ai/nav-algo';
+import {
+    SIGHT_RANGE_STANDARD,
+    WEAPON_DAMAGE as _WEAPON_DAMAGE,
+    WEAPON_RANGE  as _WEAPON_RANGE,
+    WEAPON_COOLDOWN as _WEAPON_COOLDOWN,
+    CHASSIS_HP as _CHASSIS_HP,
+    WEAPON_HP  as _WEAPON_HP,
+    ELECTRONICS_HP as _ELECTRONICS_HP,
+    NUCLEAR_HP,
+    DAMAGE_FALLOFF_BASE,
+} from '../game/config';
 
 // ─── Part enums ───────────────────────────────────────────────────────────────
 
@@ -41,48 +52,23 @@ export const WEAPON_RENDER_ORDER: Weapon[] = [Weapon.CANNON, Weapon.MISSILES, We
 
 // How far a robot can see an enemy in its forward direction (cells).
 export const SIGHT_RANGE: Record<Electronics, number> = {
-    [Electronics.STANDARD]: 8,
+    [Electronics.STANDARD]: SIGHT_RANGE_STANDARD,
 };
 
 // Maximum fire range per weapon (cells).
-export const WEAPON_RANGE: Record<Weapon, number> = {
-    [Weapon.CANNON]:   5,
-    [Weapon.MISSILES]: 7,
-    [Weapon.PHASERS]:  5,
-};
+export const WEAPON_RANGE: Record<Weapon, number> = _WEAPON_RANGE;
 
 // Minimum game ticks between shots (firing cooldown per weapon type).
-export const WEAPON_COOLDOWN: Record<Weapon, number> = {
-    [Weapon.PHASERS]:  6,
-    [Weapon.CANNON]:   7,
-    [Weapon.MISSILES]: 12,
-};
+export const WEAPON_COOLDOWN: Record<Weapon, number> = _WEAPON_COOLDOWN;
 
 // HP dealt to target per shot.
-export const WEAPON_DAMAGE: Record<Weapon, number> = {
-    [Weapon.CANNON]:   4,
-    [Weapon.MISSILES]: 6,
-    [Weapon.PHASERS]:  8,
-};
+export const WEAPON_DAMAGE: Record<Weapon, number> = _WEAPON_DAMAGE;
 
 // Damage contribution per part (1–100 scale) used by calcHealth.
-const CHASSIS_HP: Record<Chassis, number> = {
-    [Chassis.TRACKS]:   15,
-    [Chassis.ANTIGRAV]: 10,
-    [Chassis.BIPOD]:    12,
-};
-
-const WEAPON_HP: Record<Weapon, number> = {
-    [Weapon.CANNON]:   30,
-    [Weapon.MISSILES]: 42,
-    [Weapon.PHASERS]:  25,
-};
-
-const ELECTRONICS_HP: Record<Electronics, number> = {
-    [Electronics.STANDARD]: 5,
-};
-
-const NUCLEAR_HP = 18;
+const CHASSIS_HP: Record<Chassis, number>     = _CHASSIS_HP;
+const WEAPON_HP: Record<Weapon, number>       = _WEAPON_HP;
+const ELECTRONICS_HP: Record<Electronics, number> = _ELECTRONICS_HP;
+// NUCLEAR_HP imported from config
 
 // Physical height contribution per part (used for collision with the ship)
 export const CHASSIS_HEIGHT: Record<Chassis, number> = {
@@ -108,7 +94,7 @@ export const NUCLEAR_HEIGHT = 0.6;
 // Damage multiplier based on shot distance (linear from 100% at dist=1 to 40% at maxRange).
 export function calcDamageFalloff(dist: number, maxRange: number): number {
     if (maxRange <= 1) return 1;
-    return 0.4 + 0.6 * Math.max(0, (maxRange - dist) / (maxRange - 1));
+    return DAMAGE_FALLOFF_BASE + (1 - DAMAGE_FALLOFF_BASE) * Math.max(0, (maxRange - dist) / (maxRange - 1));
 }
 
 // Sum health from all parts present in the config; clamp to [1, 100].

@@ -7,6 +7,7 @@ import { SOUNDS, type SoundName } from './types/sound';
 import { simpleAI, applyAIStateUpdate } from './ai/simple';
 import { tickCapture } from './mechanics/capture';
 import { advanceProjectiles, SUB_TICKS } from './mechanics/projectile';
+import { DEATH_BLINK_TICKS, SUB_TICK_MS } from './config';
 import { tickResources, createOwnerResources, type OwnerResources } from './resources';
 import { tickBuild } from './mechanics/build';
 import { recordKill } from './mechanics/kill-terrain';
@@ -28,7 +29,7 @@ export function startClock(
     warMap: WarMap,
     ownerResources: OwnerResources = createOwnerResources(),
     ship?: ShipState,
-    subTickMs = 100,
+    subTickMs = SUB_TICK_MS,
     isPaused: () => boolean = () => false,
     getControlledRobotId: () => string | null = () => null,
     getManualAction: () => RobotAction | null = () => null,
@@ -67,8 +68,6 @@ export function startClock(
     return { stop, reset, start };
 }
 
-// Number of ticks for the death-blink animation (show/hide alternates each tick).
-const DEATH_BLINK_TICKS = 6; // 3 blinks: show@6, hide@5, show@4, hide@3, show@2, hide@1 → removed
 
 function gameTick(
     warMap: WarMap,

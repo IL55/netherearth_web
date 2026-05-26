@@ -16,11 +16,7 @@ import type { OccupancyMap } from '../core/occupancy';
 import { MOVE_STEP } from '../actions';
 import { dirDelta, rightOf, leftOf, backOf, isPassable, preferredDirs } from './nav';
 
-/** Maximum cells the robot may retreat (opposite to primary direction) before
- *  wall-follow is forcibly exited and goal-mode is retried. */
-const MAX_BACKTRACK = 4; // grid cells
-/** Consecutive ticks with the primary direction blocked before wall-follow activates. */
-const STUCK_TICKS = 3;
+import { MAX_BACKTRACK, STUCK_TICKS, STEPS_PER_CELL } from '../config';
 
 /** Bug2 wall-follow: greedy toward goal, right-hand wall-follow when stuck. */
 export function bug2Dirs(
@@ -34,9 +30,9 @@ export function bug2Dirs(
     const [primaryDir] = preferredDirs(robot, tx, ty);
     const { dx: pdx, dy: pdy } = dirDelta(primaryDir);
 
-    // Check if primary direction is blocked for the next full grid cell (4 steps)
+    // Check if primary direction is blocked for the next full grid cell (STEPS_PER_CELL steps)
     let primaryBlocked = false;
-    for (let step = 1; step <= 4; step++) {
+    for (let step = 1; step <= STEPS_PER_CELL; step++) {
         if (!isPassable(warMap, occupancy, robot, robot.x + pdx * step, robot.y + pdy * step)) {
             primaryBlocked = true;
             break;

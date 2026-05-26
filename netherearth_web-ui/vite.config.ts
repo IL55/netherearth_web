@@ -15,6 +15,7 @@ export default defineConfig({
     environmentOptions: {
       jsdom: { url: 'http://localhost' },
     },
+    exclude: ['**/node_modules/**', '**/e2e/**'],
   },
   plugins: [
     vue(),

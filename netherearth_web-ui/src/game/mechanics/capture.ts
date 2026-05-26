@@ -1,6 +1,7 @@
 import { ObjectType } from '../core/warmap';
 import type { WarMap, WarObject, RobotObject, MapObject } from '../core/warmap';
 import { DAY_TICKS } from '../resources';
+import { FACTORY_CAPTURE_DAYS, WARBASE_CAPTURE_DAYS } from '../config';
 
 interface CaptureZone {
     dx: number;    // offset from obj.x to zone center
@@ -12,8 +13,8 @@ interface CaptureZone {
 // Factory: open slot at (xo=1, yo=1) in C-shaped layout, 1 day to capture.
 // Warbase: right-side gap between (xo=3,yo=1) and (xo=3,yo=3), 3 days to capture.
 export const CAPTURE_ZONES: Partial<Record<ObjectType, CaptureZone>> = {
-    [ObjectType.FACTORY]: { dx: 1,   dy: 1,   radius: 0.1, ticks: 1 * DAY_TICKS },
-    [ObjectType.WARBASE]: { dx: 3.5, dy: 2.0, radius: 0.1, ticks: 3 * DAY_TICKS },
+    [ObjectType.FACTORY]: { dx: 1,   dy: 1,   radius: 0.1, ticks: FACTORY_CAPTURE_DAYS * DAY_TICKS },
+    [ObjectType.WARBASE]: { dx: 3.5, dy: 2.0, radius: 0.1, ticks: WARBASE_CAPTURE_DAYS * DAY_TICKS },
 };
 
 export function isInCaptureZone(robot: RobotObject, structure: MapObject): boolean {

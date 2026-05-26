@@ -3,11 +3,12 @@ import { WeaponType } from "../core/warmap";
 import type { WarMap, RobotObject } from '../core/warmap';
 import { Weapon, WEAPON_RANGE } from '../../data/robot';
 
-// How much progress advances per sub-tick (5 sub-ticks = full travel at normal speed).
-export const SUB_TICKS = 5;
-const STEP_NORMAL = 1 / SUB_TICKS;
-const STEP_SLOW   = STEP_NORMAL / 4; // missiles travel at quarter speed (20 sub-ticks)
-const STEP_MED    = STEP_NORMAL / 2; // cannon travels at half speed (10 sub-ticks)
+import { SUB_TICKS, PROJECTILE_SPEED_NORMAL, PROJECTILE_SPEED_CANNON, PROJECTILE_SPEED_SLOW } from '../config';
+export { SUB_TICKS };
+
+const STEP_NORMAL = PROJECTILE_SPEED_NORMAL / SUB_TICKS;
+const STEP_SLOW   = STEP_NORMAL * PROJECTILE_SPEED_SLOW;   // missile/phaser — slow travel
+const STEP_MED    = STEP_NORMAL * PROJECTILE_SPEED_CANNON; // cannon — medium travel
 
 const WEAPON_STEP: Partial<Record<WeaponType, number>> = {
     missile: STEP_SLOW,

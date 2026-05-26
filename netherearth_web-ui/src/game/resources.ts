@@ -2,13 +2,8 @@ import { ObjectType } from './core/warmap';
 import { Owner } from './types/owner';
 import type { WarMap } from './core/warmap';
 
-/** Number of ticks in one in-game "day" — resources are credited at the end of each day. */
-export const DAY_TICKS = 40;
-
-/** Common resources credited per owned warbase each day. */
-export const WARBASE_INCOME = 4;
-/** Specific resources credited per owned factory each day. */
-export const FACTORY_INCOME = 2;
+import { DAY_TICKS, WARBASE_INCOME, FACTORY_INCOME } from './config';
+export { DAY_TICKS, WARBASE_INCOME, FACTORY_INCOME };
 
 export enum ResourceType {
     COMMON      = 'common',

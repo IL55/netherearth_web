@@ -25,10 +25,5 @@ export type RobotAction =
     | { type: ActionType.DETONATE }
     | { type: ActionType.IDLE };
 
-// Robots move in 1/4 grid increments per tick (4 ticks to cross one cell)
-export const MOVE_STEP = 0.25;
-
-// Minimum ticks between consecutive move / rotate actions.
-// At 500 ms/tick: MOVE_COOLDOWN=2 → 1 move/s; ROTATE_COOLDOWN=4 → 1 rotation/2 s.
-export const MOVE_COOLDOWN   = 2;
-export const ROTATE_COOLDOWN = 4;
+import { MOVE_STEP, MOVE_COOLDOWN, ROTATE_COOLDOWN } from '../config';
+export { MOVE_STEP, MOVE_COOLDOWN, ROTATE_COOLDOWN };

@@ -1,5 +1,11 @@
 import { ObjectType } from '../core/warmap';
 import { Direction } from "../core/warmap";
+import {
+    CHASSIS_COST, WEAPON_COST, ELECTRONICS_COST, NUCLEAR_COST,
+    BUILD_COOLDOWN_BLUE as _BUILD_COOLDOWN_BLUE,
+    EARLY_GAME_CAPTORS_LIMIT as _EARLY_CAPTORS,
+    FIGHTER_RATIO_DIVISOR, LATE_GAME_FIGHTER_RATIO,
+} from '../config';
 
 import { Chassis, Weapon, Electronics, calcRobotHeight } from '../../data/robot';
 import type { RobotConfig } from '../../data/robot';
@@ -17,22 +23,22 @@ type Cost = Partial<Resources>;
 // ─── Part costs ───────────────────────────────────────────────────────────────
 
 export const CHASSIS_BUILD_COST: Record<Chassis, Cost> = {
-    [Chassis.TRACKS]:   { [ResourceType.CHASSIS]: 1 },
-    [Chassis.ANTIGRAV]: { [ResourceType.CHASSIS]: 2 },
-    [Chassis.BIPOD]:    { [ResourceType.CHASSIS]: 3 },
+    [Chassis.TRACKS]:   { [ResourceType.CHASSIS]: CHASSIS_COST.tracks },
+    [Chassis.ANTIGRAV]: { [ResourceType.CHASSIS]: CHASSIS_COST.antigrav },
+    [Chassis.BIPOD]:    { [ResourceType.CHASSIS]: CHASSIS_COST.bipod },
 };
 
 export const WEAPON_BUILD_COST: Record<Weapon, Cost> = {
-    [Weapon.CANNON]:   { [ResourceType.CANNONS]: 1 },
-    [Weapon.MISSILES]: { [ResourceType.MISSILES]: 2 },
-    [Weapon.PHASERS]:  { [ResourceType.PHASERS]: 3 },
+    [Weapon.CANNON]:   { [ResourceType.CANNONS]:  WEAPON_COST.cannon },
+    [Weapon.MISSILES]: { [ResourceType.MISSILES]: WEAPON_COST.missiles },
+    [Weapon.PHASERS]:  { [ResourceType.PHASERS]:  WEAPON_COST.phasers },
 };
 
-export const ELECTRONICS_BUILD_COST: Cost = { [ResourceType.ELECTRONICS]: 1 };
-export const NUCLEAR_BUILD_COST:     Cost = { [ResourceType.NUCLEAR]: 2 };
+export const ELECTRONICS_BUILD_COST: Cost = { [ResourceType.ELECTRONICS]: ELECTRONICS_COST };
+export const NUCLEAR_BUILD_COST:     Cost = { [ResourceType.NUCLEAR]:     NUCLEAR_COST };
 
-// Ticks to wait before a warbase can build another robot.
-export const BUILD_COOLDOWN_BLUE = 100;
+export const BUILD_COOLDOWN_BLUE     = _BUILD_COOLDOWN_BLUE;
+export const EARLY_GAME_CAPTORS_LIMIT = _EARLY_CAPTORS;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -109,9 +115,6 @@ const NUKE_GOALS: RobotGoal[] = [
     RobotGoal.NUKE_WARBASE,
 ];
 
-/** Number of robots to build for capturing neutral structures before starting to mix in fighters */
-export const EARLY_GAME_CAPTORS_LIMIT = 10;
-
 /**
  * Chooses a goal for a newly built (non-nuclear) robot based on the current
  * map state and the team's existing robot composition.
@@ -140,7 +143,7 @@ export function chooseBuildGoal(warMap: WarMap, owner: Owner): RobotGoal {
     }
 
     // Rule 2: always maintain at least 1 fighter per 3 other robots
-    if (fighters < Math.ceil(myRobots.length / 3)) {
+    if (fighters < Math.ceil(myRobots.length / FIGHTER_RATIO_DIVISOR)) {
         return RobotGoal.ATTACK_ROBOTS;
     }
 
@@ -149,7 +152,7 @@ export function chooseBuildGoal(warMap: WarMap, owner: Owner): RobotGoal {
     if (neutralWarbases  > 0) return RobotGoal.CAPTURE_NEUTRAL_WARBASE;
 
     // Rule 4: no neutrals left → ramp to 50 % fighters, then capture enemy
-    if (myRobots.length === 0 || fighters / myRobots.length < 0.5) {
+    if (myRobots.length === 0 || fighters / myRobots.length < LATE_GAME_FIGHTER_RATIO) {
         return RobotGoal.ATTACK_ROBOTS;
     }
     if (enemyFactories > 0) return RobotGoal.CAPTURE_ENEMY_FACTORY;
