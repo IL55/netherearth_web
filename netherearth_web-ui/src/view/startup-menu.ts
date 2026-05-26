@@ -16,9 +16,9 @@ const OVERLAY_STYLE: Partial<CSSStyleDeclaration> = {
 };
 
 const TITLE_STYLE: Partial<CSSStyleDeclaration> = {
-    fontSize:      '52px',
+    fontSize:      'min(52px, 8vw)',
     fontWeight:    'bold',
-    letterSpacing: '6px',
+    letterSpacing: 'clamp(2px, 1vw, 6px)',
     marginBottom:  '8px',
 };
 
@@ -31,7 +31,8 @@ const SUBTITLE_STYLE: Partial<CSSStyleDeclaration> = {
 
 const BTN_STYLE: Partial<CSSStyleDeclaration> = {
     display:       'block',
-    width:         '220px',
+    width:         'min(220px, 80vw)',
+    minHeight:     '44px',
     padding:       '10px 0',
     marginBottom:  '10px',
     fontSize:      '14px',
@@ -81,11 +82,14 @@ const AVAILABLE_MAPS = [
     'vulturia.map'
 ];
 
+const isTouchDevice = () => navigator.maxTouchPoints > 0;
+
 export class StartupMenu {
     private overlay:    HTMLDivElement;
     private mapDialog:  HTMLDivElement;
     private keysDialog: HTMLDivElement;
     private loadDialog: HTMLDivElement;
+    private pauseBtn:   HTMLButtonElement;
     private visible = false;
     private onKeyDown: (e: KeyboardEvent) => void;
     private selectedMap: string;
@@ -119,8 +123,8 @@ export class StartupMenu {
             const btn = document.createElement('button');
             Object.assign(btn.style, BTN_STYLE);
             btn.textContent = label;
-            btn.addEventListener('mouseenter', () => { btn.style.border = BTN_HOVER_BORDER; });
-            btn.addEventListener('mouseleave', () => { btn.style.border = BTN_NORMAL_BORDER; });
+            btn.addEventListener('pointerenter', () => { btn.style.border = BTN_HOVER_BORDER; });
+            btn.addEventListener('pointerleave', () => { btn.style.border = BTN_NORMAL_BORDER; });
             btn.addEventListener('click', onClick);
             return btn;
         };
@@ -139,7 +143,7 @@ export class StartupMenu {
             this.overlay.style.display = 'none';
             this.mapDialog.style.display = 'flex';
         }));
-        this.overlay.appendChild(makeBtn('BIND KEYS', () => {
+        if (!isTouchDevice()) this.overlay.appendChild(makeBtn('BIND KEYS', () => {
             this.overlay.style.display = 'none';
             this.keysDialog.style.display = 'flex';
             this.updateKeysUI();
@@ -163,12 +167,12 @@ export class StartupMenu {
         Object.assign(listContainer.style, {
             display: 'flex',
             flexDirection: 'column',
-            maxHeight: '50vh',
+            maxHeight: 'min(50vh, 40dvh)',
             overflowY: 'auto',
             marginBottom: '20px',
             border: '1px solid rgba(255,255,255,0.2)',
             padding: '10px',
-            width: '300px',
+            width: 'min(300px, 90vw)',
         });
 
         AVAILABLE_MAPS.forEach(mapName => {
@@ -207,7 +211,7 @@ export class StartupMenu {
             marginBottom: '20px',
             border: '1px solid rgba(255,255,255,0.2)',
             padding: '10px',
-            width: '300px',
+            width: 'min(300px, 90vw)',
         });
         this.keysDialog.appendChild(this.keysContainer);
 
@@ -230,12 +234,12 @@ export class StartupMenu {
         Object.assign(this.loadListContainer.style, {
             display: 'flex',
             flexDirection: 'column',
-            maxHeight: '50vh',
+            maxHeight: 'min(50vh, 40dvh)',
             overflowY: 'auto',
             marginBottom: '20px',
             border: '1px solid rgba(255,255,255,0.2)',
             padding: '10px',
-            width: '340px',
+            width: 'min(340px, 90vw)',
         });
         this.loadDialog.appendChild(this.loadListContainer);
 
@@ -247,10 +251,34 @@ export class StartupMenu {
 
         const hint = document.createElement('div');
         Object.assign(hint.style, HINT_STYLE);
-        hint.textContent = 'ESC — resume';
+        hint.textContent = isTouchDevice() ? 'TAP ≡ TO RESUME' : 'ESC — resume';
         this.overlay.appendChild(hint);
 
         document.body.appendChild(this.overlay);
+
+        this.pauseBtn = document.createElement('button');
+        Object.assign(this.pauseBtn.style, {
+            position:   'fixed',
+            top:        'max(12px, env(safe-area-inset-top))',
+            right:      'max(12px, env(safe-area-inset-right))',
+            width:      '44px',
+            height:     '44px',
+            fontSize:   '22px',
+            lineHeight: '44px',
+            textAlign:  'center',
+            padding:    '0',
+            background: 'rgba(0,0,0,0.55)',
+            border:     '1px solid rgba(255,255,255,0.35)',
+            color:      'white',
+            fontFamily: 'monospace',
+            cursor:     'pointer',
+            zIndex:     '9997',
+            display:    'none',
+        } satisfies Partial<CSSStyleDeclaration>);
+        this.pauseBtn.textContent = '≡';
+        this.pauseBtn.setAttribute('aria-label', 'Menu');
+        this.pauseBtn.addEventListener('click', () => this.toggle());
+        document.body.appendChild(this.pauseBtn);
 
         this.onKeyDown = (e: KeyboardEvent) => {
             if (this.waitingForKey) {
@@ -323,8 +351,8 @@ export class StartupMenu {
                 const btn = document.createElement('button');
                 Object.assign(btn.style, BTN_STYLE, { width: '100%', textAlign: 'left', padding: '10px 8px' });
                 btn.textContent = slot.label;
-                btn.addEventListener('mouseenter', () => { btn.style.border = BTN_HOVER_BORDER; });
-                btn.addEventListener('mouseleave', () => { btn.style.border = BTN_NORMAL_BORDER; });
+                btn.addEventListener('pointerenter', () => { btn.style.border = BTN_HOVER_BORDER; });
+                btn.addEventListener('pointerleave', () => { btn.style.border = BTN_NORMAL_BORDER; });
                 btn.addEventListener('click', () => {
                     this.loadDialog.style.display = 'none';
                     this.hide();
@@ -356,6 +384,7 @@ export class StartupMenu {
         this.mapDialog.style.display = 'none';
         this.keysDialog.style.display = 'none';
         this.loadDialog.style.display = 'none';
+        this.pauseBtn.style.display = 'none';
         this.waitingForKey = null;
         this.onShow?.();
     }
@@ -367,6 +396,7 @@ export class StartupMenu {
         this.mapDialog.style.display = 'none';
         this.keysDialog.style.display = 'none';
         this.loadDialog.style.display = 'none';
+        this.pauseBtn.style.display = 'block';
         this.waitingForKey = null;
         this.onHide?.();
     }
@@ -431,5 +461,6 @@ export class StartupMenu {
         this.mapDialog.remove();
         this.keysDialog.remove();
         this.loadDialog.remove();
+        this.pauseBtn.remove();
     }
 }

@@ -9,7 +9,19 @@ export interface Sounds {
 }
 
 export const loadSounds = (): Sounds => {
+    // Track whether audio has been unlocked by a user gesture.
+    // On mobile, Audio.play() is blocked until the first interaction.
+    let audioUnlocked = false;
+    const unlock = () => {
+        audioUnlocked = true;
+        window.removeEventListener('pointerdown', unlock);
+        window.removeEventListener('keydown', unlock);
+    };
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+
     const play = (name: SoundName) => {
+        if (!audioUnlocked) return;
         new Audio(`${BASE_URL}sound/${name}.wav`).play().catch(() => {});
     };
 
@@ -38,6 +50,7 @@ export const loadSounds = (): Sounds => {
         };
 
         const start = () => {
+            audioUnlocked = true;
             pendingStart = null;
             window.removeEventListener('pointerdown', start);
             window.removeEventListener('keydown', start);

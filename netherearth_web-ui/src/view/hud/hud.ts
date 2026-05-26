@@ -63,6 +63,7 @@ function ownerColor(owner?: Owner): string {
 
 const PANEL_STYLE: Partial<CSSStyleDeclaration> = {
     position: 'absolute',
+    zIndex: '100',
     background: 'rgba(0,0,0,0.75)',
     color: 'white',
     fontFamily: 'monospace',

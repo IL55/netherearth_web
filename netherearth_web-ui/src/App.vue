@@ -54,12 +54,13 @@ onUnmounted(() => {
 .game-container {
   position: relative;
   width: 100%;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 canvas {
   width: 100%;
-  height: 500px;
-  border: 1px solid black;
+  height: 100dvh;
   display: block;
 }
 </style>

@@ -17,5 +17,6 @@ export default defineConfig({
         command: 'npm run dev',
         url: 'http://localhost:5173/netherearth_web/',
         reuseExistingServer: !process.env.CI,
+        env: { VITE_E2E: '1' },
     },
 });

@@ -19,9 +19,9 @@ export default defineConfig({
   },
   plugins: [
     vue(),
-    vueDevTools(),
+    !process.env.VITE_E2E && vueDevTools(),
     tailwindcss(),
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

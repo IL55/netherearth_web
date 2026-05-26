@@ -10,6 +10,7 @@ import { calcRobotHeight } from './data/robot';
 import { setupCamera, updateCameraTarget } from './controls/camera';
 import { attachGameControls } from './controls/game';
 import { attachShipControls } from './controls/ship';
+import { attachTouchZones } from './controls/touch-zones';
 import { startClock } from './game/clock';
 import type { Clock } from './game/clock';
 import { createOwnerResources } from './game/resources';
@@ -61,6 +62,7 @@ export class GameSession {
 
     private removeGameControls!: () => void;
     private removeShipControls!: () => void;
+    private removeTouchZones!: () => void;
     private sounds!: Sounds;
 
     private constructor() {}
@@ -106,6 +108,7 @@ export class GameSession {
 
         s.removeGameControls = attachGameControls(scene, s.warMap, () => s.renderer.render(s.warMap));
         s.removeShipControls = attachShipControls(scene, s.shipInput);
+        s.removeTouchZones   = attachTouchZones(s.shipInput);
 
         s.ownerResources = createOwnerResources();
         for (const owner of [Owner.RED, Owner.BLUE] as const) {
@@ -218,6 +221,7 @@ export class GameSession {
         this.constructionYardTrigger.dispose();
         this.removeGameControls();
         this.removeShipControls();
+        this.removeTouchZones();
         this.camera.detachControl();
         bus.clear();
     }

@@ -121,7 +121,7 @@ describe('StartupMenu', () => {
     });
 
     it('cleans up DOM on dispose', () => {
-        expect(document.body.children.length).toBe(4); // overlay, mapDialog, keysDialog, loadDialog
+        expect(document.body.children.length).toBe(5); // overlay, mapDialog, keysDialog, loadDialog, pauseBtn
         menu.dispose();
         expect(document.body.children.length).toBe(0);
     });

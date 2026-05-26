@@ -13,15 +13,18 @@ import type { RobotObject, WarMap } from '../../game/core/warmap';
 import { ActionType } from '../../game/actions';
 import type { RobotAction } from '../../game/actions';
 
+const isTouch = navigator.maxTouchPoints > 0;
+
 const PANEL_STYLE: Partial<CSSStyleDeclaration> = {
     position: 'absolute',
+    zIndex: '100',
     bottom: '8px',
     right: '8px',
     background: 'rgba(0,0,0,0.75)',
     color: 'white',
     fontFamily: 'monospace',
-    fontSize: '11px',
-    padding: '4px 8px',
+    fontSize: isTouch ? '15px' : '11px',
+    padding: isTouch ? '8px 12px' : '4px 8px',
     borderRadius: '3px',
     opacity: '0.85',
     userSelect: 'none',
@@ -33,11 +36,12 @@ const BTN_STYLE: Partial<CSSStyleDeclaration> = {
     background: 'none',
     border: 'none',
     fontFamily: 'monospace',
-    fontSize: '11px',
+    fontSize: isTouch ? '15px' : '11px',
     cursor: 'pointer',
-    padding: '0',
+    padding: isTouch ? '10px 0' : '0',
     margin: '0',
     textAlign: 'left',
+    minHeight: isTouch ? '44px' : 'auto',
 };
 
 const MOVE_DISTANCE_MIN = 1;
@@ -192,16 +196,25 @@ export class RobotControl3D {
         this.manualView.style.cssText = 'margin-top:3px;display:none';
 
         // D-pad grid: 3×2 grid with Up in top-center, Left/Down/Right in bottom row
+        const cell = isTouch ? '44px' : '1.5em';
+        const row  = isTouch ? '44px' : '1.2em';
+        const gap  = isTouch ? '4px'  : '1px';
         const dpad = document.createElement('div');
-        dpad.style.cssText = 'display:grid;grid-template-columns:repeat(3,1.5em);grid-template-rows:repeat(2,1.2em);gap:1px;margin-bottom:3px';
+        dpad.style.cssText = `display:grid;grid-template-columns:repeat(3,${cell});grid-template-rows:repeat(2,${row});gap:${gap};margin-bottom:${isTouch ? '6px' : '3px'}`;
 
         const arrowBtn = (label: string, dir: Direction) => {
             const b = document.createElement('button');
             Object.assign(b.style, BTN_STYLE, {
-                display: 'inline',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 color: 'white',
                 textAlign: 'center',
-                width: '1.5em',
+                width: cell,
+                height: row,
+                padding: '0',
+                minHeight: 'unset',
+                fontSize: isTouch ? '22px' : '11px',
             });
             b.textContent = label;
             b.addEventListener('click', () => this.dispatchDir(dir));
@@ -220,12 +233,12 @@ export class RobotControl3D {
         dpad.appendChild(arrowBtn('→', Direction.S));
         this.manualView.appendChild(dpad);
 
-        this.manualView.appendChild(makeBtn('FIRE BEST  [Key]', '#ffa726', () => this.dispatchFire()));
+        this.manualView.appendChild(makeBtn(isTouch ? 'FIRE BEST' : 'FIRE BEST  [Key]', '#ffa726', () => this.dispatchFire()));
 
         this.weaponBtnsContainer = document.createElement('div');
         this.manualView.appendChild(this.weaponBtnsContainer);
 
-        this.detonateBtn = makeBtn('DETONATE A-BOMB  [X]', '#ef5350', () => this.dispatchDetonate());
+        this.detonateBtn = makeBtn(isTouch ? 'DETONATE A-BOMB' : 'DETONATE A-BOMB  [X]', '#ef5350', () => this.dispatchDetonate());
         this.manualView.appendChild(this.detonateBtn);
 
         this.manualView.appendChild(makeBtn('RETURN', '#888', () => this.showMainView()));
@@ -346,7 +359,7 @@ export class RobotControl3D {
         let keyIndex = 1;
         for (const w of WEAPON_RENDER_ORDER) {
             if (!robotWeapons.has(w)) continue;
-            const label = `FIRE ${w.toUpperCase()}  [${keyIndex}]`;
+            const label = isTouch ? `FIRE ${w.toUpperCase()}` : `FIRE ${w.toUpperCase()}  [${keyIndex}]`;
             const weapon = w;
             this.weaponBtnsContainer.appendChild(
                 makeBtn(label, '#ce93d8', () => this.dispatchFireWeapon(weapon)),
