@@ -12,7 +12,8 @@ export function resetGame(
     ownerResources: OwnerResources,
     ship: ShipState,
     clock: Clock,
-    initialResources: number
+    initialResources: number,
+    initialResourcesRed: number = initialResources,
 ): void {
     // Regenerate the base map structure to get original tiles and ownerships
     const freshMap = createWarMap(mapData);
@@ -32,9 +33,14 @@ export function resetGame(
     warMap.killCounts = freshMap.killCounts;
 
     // Reset resources
+    const startValues: Record<Owner.RED | Owner.BLUE, number> = {
+        [Owner.RED]:  initialResourcesRed,
+        [Owner.BLUE]: initialResources,
+    };
     for (const owner of [Owner.RED, Owner.BLUE] as const) {
         const r = ownerResources[owner];
-        r.common = r.chassis = r.cannons = r.missiles = r.phasers = r.electronics = r.nuclear = initialResources;
+        const v = startValues[owner];
+        r.common = r.chassis = r.cannons = r.missiles = r.phasers = r.electronics = r.nuclear = v;
     }
 
     // Reset ship position

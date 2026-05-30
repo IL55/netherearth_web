@@ -177,9 +177,14 @@ export const LATE_GAME_FIGHTER_RATIO = 0.5;
 
 // ── Resources ─────────────────────────────────────────────────────────────────
 
-/** Starting amount of every resource type for both players at game begin.
+/** Starting amount of every resource type for BLUE (player) at game begin.
  * @unit resources  @range 0–50 */
 export const INITIAL_RESOURCES = 5;
+
+/** Starting amount of every resource type for RED (AI) at game begin.
+ * Lower than BLUE to give the player a head-start advantage.
+ * @unit resources  @range 0–50 */
+export const INITIAL_RESOURCES_RED = 1;
 
 /** Common resources earned per owned warbase per in-game day.
  * @unit resources/day  @range 1–20 */

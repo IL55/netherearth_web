@@ -25,6 +25,7 @@ A decision may be **"proposed"** if the project stakeholders haven't agreed with
 | [ADR-0007](../explanation/architecture/adrs/0007-nullengine-headless-tests.md) | BabylonJS NullEngine for headless unit tests | Accepted | 2026-05-20 | - | - |
 | [ADR-0008](../explanation/architecture/adrs/0008-sub-tick-game-tick-split.md) | Sub-tick / game-tick split (100 ms / 500 ms) | Accepted | 2026-05-20 | - | - |
 | [ADR-0009](../explanation/architecture/adrs/0009-vite-base-url-github-pages.md) | Vite base URL set to `/netherearth_web/` for GitHub Pages | Accepted | 2026-05-20 | - | - |
+| [ADR-0010](../explanation/architecture/adrs/0010-resource-economy-model.md) | Resource economy model | Accepted | 2026-05-27 | - | - |
 
 ## Conventions
 

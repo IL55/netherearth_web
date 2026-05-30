@@ -35,7 +35,7 @@ import type { StartupMenuStorage } from './data/storage';
 
 const BASE_URL = import.meta.env.BASE_URL;
 
-import { INITIAL_RESOURCES } from './game/config';
+import { INITIAL_RESOURCES, INITIAL_RESOURCES_RED } from './game/config';
 const INITIAL_MAP = 'small1.map';
 
 export class GameSession {
@@ -113,7 +113,8 @@ export class GameSession {
         s.ownerResources = createOwnerResources();
         for (const owner of [Owner.RED, Owner.BLUE] as const) {
             const r = s.ownerResources[owner];
-            r.common = r.chassis = r.cannons = r.missiles = r.phasers = r.electronics = r.nuclear = INITIAL_RESOURCES;
+            const v = owner === Owner.RED ? INITIAL_RESOURCES_RED : INITIAL_RESOURCES;
+            r.common = r.chassis = r.cannons = r.missiles = r.phasers = r.electronics = r.nuclear = v;
         }
 
         s.constructionYardTrigger = new ConstructionYardTrigger(
@@ -172,7 +173,7 @@ export class GameSession {
 
         bus.on('game:start', () => {
             this.sounds.stopSequence();
-            resetGame(this.warMap, this.mapData, this.ownerResources, this.ship, this.clock, INITIAL_RESOURCES);
+            resetGame(this.warMap, this.mapData, this.ownerResources, this.ship, this.clock, INITIAL_RESOURCES, INITIAL_RESOURCES_RED);
             _resetManualBuildCount();
             this.renderer.render(this.warMap);
             this.hud.update(this.warMap, this.ship);

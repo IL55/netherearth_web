@@ -138,3 +138,39 @@ All files moved from `src/babylon/` up to `src/`. `babylon/main.ts` renamed to
 updates were needed within the moved files (all relative imports remained valid).
 `src/App.vue` import updated: `./babylon/main` → `./scene`.
 Zero TS errors; 534 tests passing.
+
+---
+
+## Mobile (known gaps — 2026-05-26)
+
+### MB1 — Camera rotation limited on mobile
+
+The BabylonJS ArcRotateCamera relies on pointer events that are blocked by the
+touch-zone overlay covering the right half of the screen (fire zone, z-index 5).
+Only the dead-corner areas of the left half pass through to the camera.
+Full camera rotation on mobile is not supported until the touch zones are
+redesigned (e.g. smaller buttons, edge swipe strips, or a camera drag mode).
+
+---
+
+### MB2 — No visual feedback on touch zone press
+
+Zone divs do not highlight when pressed. A pressed state (e.g. `background:
+rgba(255,255,255,0.15)`) should be applied on `pointerdown` and cleared on
+`pointerup`/`pointercancel` for each active zone.
+
+---
+
+### MB3 — Construction yard (warbase landing) not tested on mobile
+
+The BabylonJS 3D dialog that opens when a ship lands on a warbase has not been
+exercised with touch controls. Tap targets and scroll behaviour inside that
+dialog are unknown.
+
+---
+
+### MB4 — All mobile testing is Playwright emulation only
+
+No testing has been done on a real mobile device (iOS Safari, Android Chrome).
+Playwright emulation covers viewport and pointer events but not GPU rendering,
+audio policy enforcement, or iOS-specific scroll/overscroll quirks.
