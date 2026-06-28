@@ -6,8 +6,10 @@ export type GameEvent =
     | { type: 'tick:sub';  warMap: WarMap }
     | { type: 'tick:game'; warMap: WarMap }
     | { type: 'game:over'; winner: Owner }
-    | { type: 'game:menu' } // Requested to show the startup menu
-    | { type: 'game:start' } // Start a new game
+    | { type: 'game:menu' }          // Requested to show the startup menu
+    | { type: 'game:menu:show' }     // Startup menu became visible
+    | { type: 'game:menu:hide' }     // Startup menu was dismissed
+    | { type: 'game:start' }         // Start a new game
     | { type: 'game:new-map'; mapName: string } // Start a new game with a different map
     | { type: 'sound:play'; name: SoundName };
 

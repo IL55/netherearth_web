@@ -35,6 +35,8 @@ export class ConstructionYard3D {
     private selection: BuildSelection = { ...EMPTY_SELECTION };
     // Per-row highlight materials (keyed by part id)
     private rowHighlightMats: Map<string, BABYLON.StandardMaterial> = new Map();
+    // Per-row dim overlays — shown when a part cannot be afforded
+    private rowDimMats: Map<string, BABYLON.StandardMaterial> = new Map();
     // Left-panel part models that spin continuously
     private partWrappers: BABYLON.TransformNode[] = [];
     // Right-panel dynamic preview (rebuilt on each selection change)
@@ -165,6 +167,25 @@ export class ConstructionYard3D {
                 );
 
                 this.rowHighlightMats.set(part.id, hlMat);
+
+                const dimMat = new BABYLON.StandardMaterial(`dimMat_${part.id}`, scene);
+                dimMat.diffuseColor  = new BABYLON.Color3(0, 0, 0);
+                dimMat.emissiveColor = new BABYLON.Color3(0, 0, 0);
+                dimMat.alpha = 0;
+                dimMat.disableLighting = true;
+
+                const dimMesh = BABYLON.MeshBuilder.CreatePlane(
+                    `dim_${part.id}`,
+                    { width: CY_LAYOUT.rowHighlightWidth, height: CY_LAYOUT.rowHighlightHeight },
+                    scene,
+                );
+                dimMesh.parent = this.root;
+                dimMesh.position = new BABYLON.Vector3(CY_LAYOUT.rowHighlightCenterX, y, -0.4);
+                dimMesh.material = dimMat;
+                dimMesh.layerMask = CY_LAYER_MASK;
+                dimMesh.renderingGroupId = 2;
+
+                this.rowDimMats.set(part.id, dimMat);
             }
         });
 
@@ -191,6 +212,17 @@ export class ConstructionYard3D {
         });
         this.rebuildPreview();
         this.updateCreateBtnState();
+        this.updateAffordability();
+        this.updateLabels();
+    }
+
+    private updateAffordability(): void {
+        const resources = this.ownerResources[Owner.RED];
+        this.rowDimMats.forEach((mat, partId) => {
+            const proposed = applyPartToggle(this.selection, partId);
+            const affordable = canAffordSelection(resources, proposed);
+            mat.alpha = affordable ? 0 : 0.55;
+        });
     }
 
     private rebuildPreview(): void {
@@ -231,12 +263,14 @@ export class ConstructionYard3D {
     // ── Public API ─────────────────────────────────────────────────────────────
 
     public updateLabels(): void {
-        const redResources = this.ownerResources[Owner.RED];
+        const actual = this.ownerResources[Owner.RED];
+        // Show what stock would remain after paying for the current selection
+        const preview = { ...actual };
+        deductSelectionCost(preview, this.selection);
         CY_PARTS.forEach(part => {
             const dt = this.countTextures.get(part.id);
             if (dt) {
-                const count = redResources[part.resourceType];
-                updateTextOnTexture(dt, String(count), CY_FONT);
+                updateTextOnTexture(dt, String(preview[part.resourceType]), CY_FONT);
             }
         });
     }

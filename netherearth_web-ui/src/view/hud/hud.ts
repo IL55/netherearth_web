@@ -83,7 +83,13 @@ export class GameHud {
         parent.style.position = 'relative';
 
         this.resourcesEl = document.createElement('div');
-        Object.assign(this.resourcesEl.style, PANEL_STYLE, { top: '8px', right: '8px' });
+        this.resourcesEl.dataset.testid = 'resource-panel';
+        // The ≡ pause button sits at top-right (44px tall, max(12px, safe-area) from top).
+        // Always offset below it so they don't overlap on any device or browser.
+        Object.assign(this.resourcesEl.style, PANEL_STYLE, {
+            top: 'calc(max(12px, env(safe-area-inset-top)) + 52px)',
+            right: '8px',
+        });
         parent.appendChild(this.resourcesEl);
 
         this.minimapCanvas = document.createElement('canvas');

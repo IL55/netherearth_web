@@ -27,4 +27,6 @@ export interface NavState {
     moveOutTarget?: { x: number; y: number };
     /** Health of the robot at the end of the previous tick, used to detect incoming damage */
     lastHealth?: number;
+    /** Consecutive ticks spent on DEFEND with no active order. Resets when goal changes. */
+    idleTicks?: number;
 }

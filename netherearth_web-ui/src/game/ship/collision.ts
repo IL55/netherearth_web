@@ -1,6 +1,6 @@
 import type { ShipObstacle } from './types';
 import { SHIP_RADIUS, MIN_HEIGHT } from './constants';
-import { ROBOT_COLLISION_DISTANCE, ROBOT_HEIGHT } from '../core/occupancy';
+import { ROBOT_COLLISION_DISTANCE, ROBOT_HEIGHT, ROBOT_HALF_SIZE } from '../core/occupancy';
 
 export function hitsObstacle(x: number, y: number, height: number, obstacles: ShipObstacle[]): boolean {
     return obstacles.some(o =>
@@ -12,6 +12,22 @@ export function hitsObstacle(x: number, y: number, height: number, obstacles: Sh
 
 export function shipHitsObstacle(shipX: number, shipY: number, height: number, obstacles: ShipObstacle[]): boolean {
     return hitsObstacle(shipX, shipY, height, obstacles);
+}
+
+/**
+ * Returns true if the ship at (x, y) with the given height would laterally clip
+ * through a robot's body. Only blocks when the ship is strictly below the robot's
+ * top — above the top the ship can fly freely over robots.
+ */
+export function hitsRobot(x: number, y: number, height: number, robots: { x: number; y: number; height?: number }[]): boolean {
+    return robots.some(r => {
+        const rh = r.height ?? ROBOT_HEIGHT;
+        return height < rh &&
+            x + SHIP_RADIUS > r.x - ROBOT_HALF_SIZE &&
+            x - SHIP_RADIUS < r.x + ROBOT_HALF_SIZE &&
+            y + SHIP_RADIUS > r.y - ROBOT_HALF_SIZE &&
+            y - SHIP_RADIUS < r.y + ROBOT_HALF_SIZE;
+    });
 }
 
 export function getFloorHeight(x: number, y: number, obstacles: ShipObstacle[], robots: {x: number, y: number, height?: number}[]): number {

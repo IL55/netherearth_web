@@ -16,7 +16,7 @@ export const CAMERA_WHEEL_PRECISION  = 10;
 export const CAMERA_INERTIA          = 0.95;
 
 export const setupCamera = (scene: BABYLON.Scene, canvas: HTMLCanvasElement, shipTarget: BABYLON.Vector3) => {
-    const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 3, Math.PI / 4, 8, shipTarget, scene);
+    const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 8, Math.PI / 4, 14, shipTarget, scene);
     camera.attachControl(canvas, true);
     camera.inputs.removeByType("ArcRotateCameraKeyboardMoveInput");
 

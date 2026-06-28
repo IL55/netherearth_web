@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { hitsObstacle, shipHitsObstacle } from '../../../game/ship/collision';
+import { hitsObstacle, shipHitsObstacle, hitsRobot } from '../../../game/ship/collision';
 import type { ShipObstacle } from '../../../game/ship/types';
-import { SHIP_RADIUS } from '../../../game/ship/constants';
 
 describe('Ship Collision', () => {
     const obstacles: ShipObstacle[] = [
@@ -26,5 +25,28 @@ describe('Ship Collision', () => {
         // Ship at x=1.5 has right edge at 1.5 + 0.5 = 2.0.
         // hitsObstacle condition: x + SHIP_RADIUS > o.x0 -> 2.0 > 2.0 is FALSE.
         expect(hitsObstacle(1.5, 2.5, 1.0, obstacles)).toBe(false);
+    });
+});
+
+describe('hitsRobot — lateral clipping prevention', () => {
+    const robot = { x: 5, y: 5, height: 0.75 };
+
+    it('blocks lateral movement when ship is below robot height', () => {
+        // Ship center at (5, 5), height 0.3 < robot height 0.75 → clipping
+        expect(hitsRobot(5, 5, 0.3, [robot])).toBe(true);
+    });
+
+    it('does not block when ship is at or above robot height', () => {
+        expect(hitsRobot(5, 5, 0.75, [robot])).toBe(false);
+        expect(hitsRobot(5, 5, 1.5,  [robot])).toBe(false);
+    });
+
+    it('does not block when ship footprint does not overlap robot', () => {
+        // Ship far enough away that SHIP_RADIUS footprint clears the robot AABB
+        expect(hitsRobot(6.0, 5, 0.3, [robot])).toBe(false);
+    });
+
+    it('does not block when robot list is empty', () => {
+        expect(hitsRobot(5, 5, 0.0, [])).toBe(false);
     });
 });

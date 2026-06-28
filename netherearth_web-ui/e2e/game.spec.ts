@@ -35,6 +35,30 @@ test.describe('game startup', () => {
     });
 });
 
+// ── HUD ────────────────────────────────────────────────────────────────────────
+
+test.describe('HUD layout', () => {
+    test('resource panel does not overlap the pause button', async ({ page }) => {
+        await page.goto('/');
+        await page.waitForSelector('canvas');
+        await page.getByRole('button', { name: 'NEW GAME' }).click();
+
+        const pauseBtn = page.getByRole('button', { name: 'Menu' });
+        const resourcePanel = page.locator('[data-testid="resource-panel"]');
+
+        await expect(pauseBtn).toBeVisible({ timeout: 5_000 });
+        await expect(resourcePanel).toBeVisible({ timeout: 5_000 });
+
+        const [pauseBox, resBox] = await Promise.all([
+            pauseBtn.boundingBox(),
+            resourcePanel.boundingBox(),
+        ]);
+
+        // Resource panel top edge must be at or below the pause button bottom edge
+        expect(resBox!.y).toBeGreaterThanOrEqual(pauseBox!.y + pauseBox!.height);
+    });
+});
+
 // ── Mobile ─────────────────────────────────────────────────────────────────────
 // These run under the 'mobile' project (iPhone 14 viewport + touch enabled).
 

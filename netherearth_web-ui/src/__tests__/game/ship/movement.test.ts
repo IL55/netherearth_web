@@ -137,17 +137,25 @@ describe('Ship Movement', () => {
         expect(ship.x).toBeCloseTo(5.0 + BASE_SPEED, 5);
     });
 
-    it('moves through a robot tile laterally — floor height prevents descent into it', () => {
-        // Robots no longer block lateral movement; the floor height system keeps the ship
-        // above the robot's visual top. Lateral blocking was removed because it prevented
-        // the ship from approaching close enough to trigger robot control.
-        const robs = [{ x: 6, y: 5, height: 1.5 }];
+    it('blocks lateral movement into a robot when ship is below robot height', () => {
+        // Ship at ground level (height 0) cannot pass laterally through a robot's body.
+        const robs = [{ x: 5.5, y: 5, height: 1.5 }];
         ship = { x: 5.0, y: 5, height: MIN_HEIGHT, vx: 0, vy: 0 };
         input.right = true;
 
         tickShip(ship, input, mapWidth, mapHeight, [], robs);
 
-        expect(ship.x).toBeCloseTo(5.0 + BASE_SPEED, 5); // not blocked laterally
+        expect(ship.x).toBeCloseTo(5.0, 5); // blocked
+    });
+
+    it('allows lateral movement past a robot when ship is above robot height', () => {
+        const robs = [{ x: 5.5, y: 5, height: 0.75 }];
+        ship = { x: 5.0, y: 5, height: 1.5, vx: 0, vy: 0 }; // above robot height
+        input.right = true;
+
+        tickShip(ship, input, mapWidth, mapHeight, [], robs);
+
+        expect(ship.x).toBeGreaterThan(5.0); // not blocked — flying over
     });
 
     it('should fly over robots if high enough', () => {

@@ -90,7 +90,10 @@ export class StartupMenu {
     private keysDialog: HTMLDivElement;
     private loadDialog: HTMLDivElement;
     private pauseBtn:   HTMLButtonElement;
+    private resumeBtn!: HTMLButtonElement;
+    private saveBtn!:   HTMLButtonElement;
     private visible = false;
+    private gameStarted = false;
     private onKeyDown: (e: KeyboardEvent) => void;
     private selectedMap: string;
     private storage: StartupMenuStorage;
@@ -100,8 +103,6 @@ export class StartupMenu {
         private onSave:    () => boolean,
         private onLoad:    (timestamp: number, mapName: string) => void,
         private onNewGame?: () => void,
-        private onShow?: () => void,
-        private onHide?: () => void,
     ) {
         this.storage = storage;
         this.selectedMap = storage.loadSelectedMap();
@@ -148,11 +149,16 @@ export class StartupMenu {
             this.keysDialog.style.display = 'flex';
             this.updateKeysUI();
         }));
-        this.overlay.appendChild(makeBtn('RESUME',    () => this.hide()));
-        this.overlay.appendChild(makeBtn('SAVE GAME', () => {
+        this.resumeBtn = makeBtn('RESUME',    () => this.hide());
+        this.saveBtn   = makeBtn('SAVE GAME', () => {
             if (this.onSave()) { this.showSaveConfirmation(); } else { this.showSaveError(); }
-        }));
+        });
+        this.overlay.appendChild(this.resumeBtn);
+        this.overlay.appendChild(this.saveBtn);
         this.overlay.appendChild(makeBtn('LOAD GAME', () => this.showLoadDialog()));
+        this.setGameButtonsEnabled(false);
+        bus.on('game:new-map', this.onGameStarted);
+        bus.on('game:start',   this.onGameStarted);
 
         // --- MAP DIALOG ---
         this.mapDialog = document.createElement('div');
@@ -377,6 +383,21 @@ export class StartupMenu {
         this.updateKeysUI();
     }
 
+    private setGameButtonsEnabled(enabled: boolean): void {
+        for (const btn of [this.resumeBtn, this.saveBtn]) {
+            btn.style.pointerEvents = enabled ? '' : 'none';
+            btn.style.opacity       = enabled ? '' : '0.3';
+            btn.style.cursor        = enabled ? 'pointer' : 'default';
+            btn.style.border        = BTN_NORMAL_BORDER;
+        }
+    }
+
+    private readonly onGameStarted = () => {
+        if (this.gameStarted) return;
+        this.gameStarted = true;
+        this.setGameButtonsEnabled(true);
+    };
+
     show(): void {
         if (this.visible) return;
         this.visible = true;
@@ -386,7 +407,7 @@ export class StartupMenu {
         this.loadDialog.style.display = 'none';
         this.pauseBtn.style.display = 'none';
         this.waitingForKey = null;
-        this.onShow?.();
+        bus.emit({ type: 'game:menu:show' });
     }
 
     hide(): void {
@@ -398,7 +419,7 @@ export class StartupMenu {
         this.loadDialog.style.display = 'none';
         this.pauseBtn.style.display = 'block';
         this.waitingForKey = null;
-        this.onHide?.();
+        bus.emit({ type: 'game:menu:hide' });
     }
 
     toggle(): void {
@@ -456,6 +477,8 @@ export class StartupMenu {
     }
 
     dispose(): void {
+        bus.off('game:new-map', this.onGameStarted);
+        bus.off('game:start',   this.onGameStarted);
         document.removeEventListener('keydown', this.onKeyDown);
         this.overlay.remove();
         this.mapDialog.remove();

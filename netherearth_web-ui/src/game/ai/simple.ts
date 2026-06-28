@@ -26,6 +26,7 @@ import { shouldDetonateNuclear } from './nuclear';
 import {
     SPAWN_PROXIMITY, MOVEOUT_DISTANCE,
     WAYPOINT_ARRIVAL_DIST, MOVEOUT_ARRIVAL_DIST, MOVEOUT_MIN_DIST_FROM_SPAWN,
+    IDLE_ESCALATE_TICKS,
 } from '../config';
 
 /**
@@ -90,6 +91,20 @@ export function simpleAI(robot: RobotObject, warMap: WarMap, occupancy: Occupanc
         const hasUpdate = Object.keys(su).length > 0;
         return { action, stateUpdate: hasUpdate ? su : undefined };
     };
+
+    // 0. Idle escalation — if DEFEND for too long, auto-assign a capture goal
+    if (robot.goal === RobotGoal.DEFEND) {
+        if (!robot.nav) robot.nav = {};
+        robot.nav.idleTicks = (robot.nav.idleTicks ?? 0) + 1;
+        if (robot.nav.idleTicks >= IDLE_ESCALATE_TICKS) {
+            robot.nav.idleTicks = 0;
+            su.goal = Math.random() < 0.5
+                ? RobotGoal.CAPTURE_ENEMY_FACTORY
+                : RobotGoal.CAPTURE_ENEMY_WARBASE;
+        }
+    } else if (robot.nav) {
+        robot.nav.idleTicks = 0;
+    }
 
     // 1. Combat: fire or advance toward a visible enemy (conventional weapons first)
     const combat = fightAction(robot, warMap, occupancy);

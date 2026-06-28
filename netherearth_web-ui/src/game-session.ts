@@ -146,10 +146,10 @@ export class GameSession {
                 s.renderer.render(s.warMap);
                 s.hud.update(s.warMap, s.ship);
             },
-            undefined,
-            () => sounds.playSequence([SOUNDS.INTRO]),
-            () => sounds.stopSequence(),
         );
+
+        bus.on('game:menu:show', () => sounds.playSequence([SOUNDS.INTRO]));
+        bus.on('game:menu:hide', () => sounds.stopSequence());
 
         s.clock = startClock(
             s.warMap, s.ownerResources, s.ship, 100,

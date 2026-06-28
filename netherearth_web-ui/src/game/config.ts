@@ -290,3 +290,8 @@ export const MAX_BACKTRACK = 4;
 /** Consecutive ticks blocked in the primary direction before activating wall-follow.
  * @unit ticks  @range 1–10 */
 export const STUCK_TICKS = 3;
+
+/** Consecutive DEFEND ticks before a robot auto-escalates to capture enemy targets.
+ * 2 in-game weeks = 2 × 7 × DAY_TICKS. At defaults (DAY_TICKS=40): 560 ticks = 280 real seconds.
+ * @unit ticks  @range 40–5000 */
+export const IDLE_ESCALATE_TICKS = 2 * 7 * DAY_TICKS;
