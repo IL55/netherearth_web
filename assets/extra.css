@@ -1,0 +1,22 @@
+.md-grid {
+  max-width: 1900px;
+}
+
+/* for project.extra.status.done */
+.md-status--done::before {
+  content: "✓" !important;
+}
+.md-status--done::after {
+  content: none !important;
+}
+
+/* for project.extra.status.in-progress */
+.md-status--in-progress::before {
+  content: "↻" !important;
+  font-size: 1.05em;
+  font-weight: 700;
+}
+
+.md-status--in-progress::after {
+  content: none !important;
+}

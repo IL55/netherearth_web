@@ -1,0 +1,1691 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="NetherEarth Web — browser-based 3D strategy game">
+      
+      
+        <meta name="author" content="@IL55">
+      
+      
+        <link rel="canonical" href="https://IL55.github.io/netherearth_web/explanation/architecture/architecture-overview/">
+      
+      
+        <link rel="prev" href="../../../reference/adr-index/">
+      
+      
+        <link rel="next" href="../adrs/0001-record-architecture-decisions/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.62">
+    
+    
+      
+        <title>Architecture Overview - NetherEarth Web Documentation</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.ce62732f.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/modern/palette.812a03bb.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#architecture-overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="NetherEarth Web Documentation" class="md-header__button md-logo" aria-label="NetherEarth Web Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-gamepad-2" viewBox="0 0 24 24"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01M17.32 5H6.68a4 4 0 0 0-3.978 3.59q-.008.077-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258q-.01-.075-.017-.151A4 4 0 0 0 17.32 5"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            NetherEarth Web Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture Overview
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/IL55/netherearth_web" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+  </div>
+  <div class="md-source__repository">
+    IL55/netherearth_web
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  NetherEarth Web
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+      
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/adr-index/" class="md-tabs__link">
+          
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+      
+      
+        
+      
+    
+    
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+      
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="././" class="md-tabs__link">
+          
+  
+  Explanation
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../how-to-guides/" class="md-tabs__link">
+        
+  
+  How-To Guides
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../tutorials/" class="md-tabs__link">
+        
+  
+  Tutorials
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="NetherEarth Web Documentation" class="md-nav__button md-logo" aria-label="NetherEarth Web Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-gamepad-2" viewBox="0 0 24 24"><path d="M6 11h4M8 9v4M15 12h.01M18 10h.01M17.32 5H6.68a4 4 0 0 0-3.978 3.59q-.008.077-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258q-.01-.075-.017-.151A4 4 0 0 0 17.32 5"/></svg>
+
+    </a>
+    NetherEarth Web Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/IL55/netherearth_web" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+  </div>
+  <div class="md-source__repository">
+    IL55/netherearth_web
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+  
+  <span class="md-ellipsis">
+    
+  
+  NetherEarth Web
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+  
+    <a href="../../../reference/adr-index/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Reference
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Explanation
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Explanation
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Architecture
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+  Architecture
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Architecture Overview
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Architecture Overview
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mvc-layer-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        MVC layer map
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MVC layer map">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-clean" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What is clean
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-the-boundary-is-still-blurred" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Where the boundary is still blurred
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directory-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Directory map
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tick-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Tick architecture
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Data model
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai-pipeline-per-robot-per-game-tick" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        AI pipeline (per robot, per game tick)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#action-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Action system
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rendering" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Rendering
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#todo" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        TODO
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TODO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#medium-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Medium priority
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Low priority
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+      
+        
+        
+      
+    
+    <li class="md-nav__item md-nav__item--pruned md-nav__item--nested">
+      
+        
+  
+  
+  
+  
+    <a href="../adrs/0001-record-architecture-decisions/" class="md-nav__link">
+      
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  ADRs
+
+    
+  </span>
+  
+  
+
+      
+        <span class="md-nav__icon md-icon"></span>
+      
+    </a>
+  
+
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how-to-guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  How-To Guides
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../tutorials/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Tutorials
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mvc-layer-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        MVC layer map
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MVC layer map">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-clean" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What is clean
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-the-boundary-is-still-blurred" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Where the boundary is still blurred
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directory-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Directory map
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tick-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Tick architecture
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Data model
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai-pipeline-per-robot-per-game-tick" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        AI pipeline (per robot, per game tick)
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#action-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Action system
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rendering" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Rendering
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#todo" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        TODO
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TODO">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#medium-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Medium priority
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Low priority
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../../.." class="md-path__link">
+        
+  
+  <span class="md-ellipsis">
+    NetherEarth Web
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+    
+      
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-path__item">
+        <a href="././" class="md-path__link">
+          
+  
+  <span class="md-ellipsis">
+    Explanation
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      <li class="md-path__item">
+        <a href="././" class="md-path__link">
+          
+  
+  <span class="md-ellipsis">
+    Architecture
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+    <a href="https://github.com/IL55/netherearth_web/edit/main/docs/explanation/architecture/architecture-overview.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/IL55/netherearth_web/raw/main/docs/explanation/architecture/architecture-overview.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-code-2" viewBox="0 0 24 24"><path d="M4 12.15V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3.35"/><path d="M14 2v5a1 1 0 0 0 1 1h5M5 16l-3 3 3 3M9 22l3-3-3-3"/></svg>
+    </a>
+  
+
+
+<h1 id="architecture-overview">Architecture Overview</h1>
+<p>Two entry points at the top level:</p>
+<ul>
+<li><code>scene.ts</code> — BabylonJS scene setup, asset loading, sound wiring. Thin — 28 lines.</li>
+<li><code>game-session.ts</code> — owns the full game lifecycle: state, renderers, triggers, menus, bus handlers, clock.</li>
+</ul>
+<hr />
+<h2 id="mvc-layer-map"><abbr title="Model-View-Controller">MVC</abbr> layer map</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Where</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Model</strong></td>
+<td><code>data/</code>, <code>game/</code></td>
+<td>Pure state and simulation. Zero BabylonJS, zero DOM.</td>
+</tr>
+<tr>
+<td><strong>View</strong></td>
+<td><code>view/</code></td>
+<td>Reads state, renders with BabylonJS or DOM. Must not mutate game logic.</td>
+</tr>
+<tr>
+<td><strong>Controller</strong></td>
+<td><code>scene.ts</code>, <code>game-session.ts</code>, <code>controls/</code></td>
+<td>Wires M↔V, handles input, owns lifecycle.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-is-clean">What is clean</h3>
+<ul>
+<li>Every file in <code>game/</code> imports zero BabylonJS symbols. The model is fully headless and testable.</li>
+<li><code>data/</code> is pure types, parsing, and storage — no simulation or rendering.</li>
+<li><code>controls/</code> handles only input bindings — no game logic, no rendering.</li>
+<li>The <strong>event bus</strong> (<code>game/event-bus.ts</code>) is the formal M→V boundary. The model emits typed events; the view subscribes. Neither layer holds a direct reference to the other.</li>
+<li>The <strong>action system</strong> (<code>game/actions/</code>) is the only legal way to mutate robot position or trigger combat.</li>
+<li><code>ConstructionYardTrigger</code> receives <code>onCreate: (config: RobotConfig) =&gt; void</code> from the controller — the view no longer calls <code>spawnManualRobot</code> directly.</li>
+<li><code>StartupMenu</code> receives a <code>StartupMenuStorage</code> interface — it no longer imports from <code>data/storage</code> directly.</li>
+<li>Player-driven robot mutations (<code>cycleRobotGoal</code>, <code>setManualControl</code>, etc.) live in <code>game/robot-mutations.ts</code>, not in <code>view/</code>.</li>
+</ul>
+<h3 id="where-the-boundary-is-still-blurred">Where the boundary is still blurred</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Issue</th>
+<th>Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>view/construction-yard/construction-yard-3d.ts</code></td>
+<td>Calls <code>deductSelectionCost</code> directly — mutates <code>ownerResources</code> from view. <code>ownerResources</code> is an injected ref so the coupling is shallow, but it's still a write from view.</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>view/robot-control/robot-control-3d.ts</code></td>
+<td>Calls <code>setManualControl</code>, <code>setRobotGoal</code>, <code>setMoveGoal</code> from <code>game/robot-mutations</code> — functions are now in the right layer, but they're still invoked by the view panel rather than dispatched as commands to the controller.</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>game-session.ts</code></td>
+<td><code>RobotControlTrigger</code> is constructed with an empty third callback <code>() =&gt; {}</code> — dead parameter.</td>
+<td>Low</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="directory-map">Directory map</h2>
+<div class="highlight"><pre><span></span><code>scene.ts         BabylonJS scene + assets only (scene, light, models, sounds)
+game-session.ts  Controller: full game lifecycle, bus handlers, trigger/menu wiring
+
+data/            Pure data: types, parsing, persistence. Zero BabylonJS.
+  map.ts           MapData interface + loadMap()
+  robot.ts         RobotConfig, robotConfigs presets, calcHealth, calcRobotHeight
+  storage.ts       localStorage: StartupMenuStorage interface, save slots
+                   (saveKey/listSaves/loadSave), key bindings, selected map
+
+game/            Live game state + simulation. Zero BabylonJS.
+  core/
+    warmap.ts      WarMap, RobotObject, MapObject — central type hub
+    utils.ts       createWarMap, removeObject, spawnRobot, findLastByType
+    occupancy.ts   buildOccupancy() — spatial index for move blocking
+    terrain.ts     Terrain passability helpers
+  types/           Enums re-exported through warmap.ts
+                   (direction, nav-mode, nav-state, object-type, owner,
+                    projectile-type, robot-ai, robot-goal, rotate-dir,
+                    sound, weapon-type)
+  actions/         Discriminated-union RobotAction + apply* functions
+                   (apply-fire, apply-move, apply-nuclear, apply-rotate, index, types)
+  ai/
+    simple.ts      simpleAI() + AIResult/AIStateUpdate + stepSimpleAI
+    fight.ts       Combat: fightAction (shoot or advance toward enemy)
+    nav.ts         Direction helpers + isPassable
+    bug2.ts        Bug2 wall-follower: bug2Dirs()
+    tremaux.ts     Trémaux sliding-window: tremauxDirs() + recordCell()
+    nuclear.ts     shouldDetonateNuclear()
+    nav-algo.ts    NavAlgo enum (BUG2 | TREMAUX)
+  mechanics/
+    capture.ts     tickCapture(), CAPTURE_ZONES
+    build.ts       tickBuild(), chooseBuildOption(), chooseBuildGoal()
+    projectile.ts  advanceProjectiles(), SUB_TICKS
+    victory.ts     checkVictory()
+    kill-terrain.ts recordKill() — terrain upgrades on kills
+  ship/            Flying-ship physics (separate from robots)
+                   (collision, constants, index, movement, types)
+  resources.ts     OwnerResources, tickResources(), DAY_TICKS
+  clock.ts         startClock() — drives gameTick every SUB_TICKS sub-ticks
+  event-bus.ts     Typed EventBus singleton (bus) + GameEvent union
+  reset.ts         resetGame() — restores warMap + resources + ship + clock
+                   in-place (preserves reference)
+  robot-mutations.ts  Player-driven robot state changes:
+                   ORDERABLE_GOALS, cycleRobotGoal, setManualControl,
+                   setRobotGoal, setMoveGoal
+  save.ts          GameSave interface + saveGame(), parseGameSave(), applySave()
+                   Serialises warMap/resources/ship to localStorage; strips
+                   nav and dyingTicks (transient fields) on save
+
+view/            BabylonJS rendering + DOM UI. Reads state, must not mutate game logic.
+  shared/
+    models.ts        Asset loader — loads all .glb models via AssetsManager
+    model-textures.ts Overlay texture planes for walls, factories, warbases
+    scene-utils.ts   createOverlayPlane, toggleVisibility, paintFlag helpers
+    sounds.ts        Sounds interface + loadSounds() — native HTMLAudioElement,
+                     fire-and-forget; playSequence() defers until first user gesture
+  map/
+    renderer.ts    Differential renderer — caches by object id, redraws on change
+    robot.ts       Robot 3D mesh management
+    factory.ts     Factory 3D mesh management (owner-aware e-/h-/n- model prefix)
+    warbase.ts     Warbase 3D mesh management
+    map.ts         Debug helper — visualises map data with labelled planes/boxes
+    rotation.ts    Direction ↔ Babylon radian conversion (E/N/W/S)
+    projectile-renderer.ts
+    ship-renderer.ts
+  construction-yard/
+    construction-yard-logic.ts  Robot build &amp; customisation (game-side)
+    construction-yard-3d.ts     Panel 3D rendering
+                   Constructor: (scene, models, ownerResources, warMap,
+                                 onCreate: (config) =&gt; void, onExit: () =&gt; void)
+    trigger.ts     ConstructionYardTrigger — proximity check + open/close
+                   Constructor: (scene, models, ownerResources,
+                                 onCreate: (config) =&gt; void, onExit: () =&gt; void)
+    constants.ts   Layout + speed constants (ROTATION_SPEED, CY_LAYOUT, CY_PARTS)
+    model-utils.ts BabylonJS mesh helpers: createModelWrapper(),
+                   createRobotPreviewWrapper() — clone + auto-scale + stack parts
+    ui-utils.ts    DynamicTexture helpers: createTextPlane(), updateTextOnTexture(),
+                   createBackground()
+  robot-control/
+    queries.ts     Pure reads: isRobotAlive, getRobotHealthPercent, getGoalLabel
+    actions.ts     buildDirectionAction, buildFireAction
+    physics.ts     findRobotUnderShip, setHoverHeight, applyExitBump
+    constants.ts   HOVER_DISTANCE, HOVER_GAP, GOAL_LABELS, RC_LAYOUT
+                   Re-exports ORDERABLE_GOALS from game/robot-mutations
+    index.ts       Barrel: re-exports queries, game/robot-mutations, actions,
+                   physics, constants
+    robot-control-3d.ts  Panel 3D rendering
+    trigger.ts     RobotControlTrigger — ship proximity check + open/close
+  hud/
+    hud.ts         GameHud — live HUD overlay (health bars, resource counts, day timer)
+    hud-data.ts    Pure extractor: robot/warbase/factory counts + resource tallies
+  game-over.ts     Victory / defeat screen
+  startup-menu.ts  Full-screen pause/start menu with four nested dialogs:
+                   main menu, map selector, key binder, load game list.
+                   Constructor: (storage: StartupMenuStorage, onSave: () =&gt; boolean,
+                                 onLoad, onNewGame?)
+                   Emits game:new-map; reads/writes storage only through injected interface.
+
+controls/        User input bindings. Zero game logic.
+  camera.ts        ArcRotateCamera setup + smooth ship-follow (updateCameraTarget)
+  ship.ts          Ship movement input capture; syncs to ShipInput from key bindings
+  game.ts          Debug/dev keyboard bindings
+  keybindings.ts   formatKey() display helper; re-exports storage binding functions
+
+__tests__/       Unit and integration tests (Vitest + NullEngine, no WebGL)
+</code></pre></div>
+<hr />
+<h2 id="tick-architecture">Tick architecture</h2>
+<div class="highlight"><pre><span></span><code>setInterval(100ms)                ← sub-tick
+  │
+  ├─ subTick === 0 → gameTick()   ← full game tick (every 500ms / SUB_TICKS sub-ticks)
+  │     AI loop (simpleAI → applyAIStateUpdate → applyAction)
+  │     tickCapture, tickResources, tickBuild
+  │     checkVictory → bus.emit('game:over')
+  │     bus.emit('tick:game')
+  │
+  ├─ advanceProjectiles()
+  └─ bus.emit('tick:sub')         ← renderer + ship + UI subscribe here
+</code></pre></div>
+<p><strong>EventBus</strong> (<code>game/event-bus.ts</code>) — typed singleton:</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>When</th>
+<th>Who listens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tick:sub</code></td>
+<td>every 100ms</td>
+<td>Renderer, ship physics, trigger checks, <abbr title="Heads-Up Display">HUD</abbr></td>
+</tr>
+<tr>
+<td><code>tick:game</code></td>
+<td>every 500ms</td>
+<td>(currently unused externally)</td>
+</tr>
+<tr>
+<td><code>game:over</code></td>
+<td>on victory</td>
+<td><code>clock.stop()</code>, <code>GameOverScreen</code></td>
+</tr>
+<tr>
+<td><code>game:menu</code></td>
+<td>ESC key / <abbr title="Heads-Up Display">HUD</abbr> button</td>
+<td><code>startupMenu.show()</code></td>
+</tr>
+<tr>
+<td><code>game:start</code></td>
+<td>after map load</td>
+<td><code>resetGame</code>, renderer, <abbr title="Heads-Up Display">HUD</abbr></td>
+</tr>
+<tr>
+<td><code>game:new-map</code></td>
+<td>NEW GAME button</td>
+<td>loads map then emits <code>game:start</code></td>
+</tr>
+<tr>
+<td><code>sound:play</code></td>
+<td>weapon fire, explosion, UI triggers</td>
+<td><code>sounds.play()</code> in <code>scene.ts</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="data-model">Data model</h2>
+<div class="highlight"><pre><span></span><code>WarMap
+  width, height         map dimensions
+  tick: number          monotonic game-tick counter
+  tiles: MapObject[]    static map objects: TILE, FACTORY, WARBASE, WALL, FENCE
+  robots: RobotObject[] mobile units
+  projectiles[]         in-flight projectiles
+  killCounts            terrain upgrade tracking
+
+RobotObject
+  id, x, y, owner, facing, health
+  robotConfig           chassis, weapons, nuclear, electronics, navAlgo
+  goal: RobotGoal       current strategic objective
+  ai: RobotAI           SIMPLE (only value used)
+  nav?: NavState        AI-internal navigation memory (visitCounts, moveOutTarget)
+  goalPosition?         target for MOVE_FORWARD / MOVE_BACKWARD goals
+  dyingTicks?           death-animation countdown; undefined = alive
+
+MapObject
+  id, x, y, type, owner?, subtype?
+  captureCounter?       consecutive ticks held by enemy robot
+  lastBuiltAt?          last tick a robot was built here (build cooldown)
+</code></pre></div>
+<hr />
+<h2 id="ai-pipeline-per-robot-per-game-tick"><abbr title="Artificial Intelligence">AI</abbr> pipeline (per robot, per game tick)</h2>
+<div class="highlight"><pre><span></span><code>simpleAI(robot, warMap, occupancy): AIResult
+  0. shouldDetonateNuclear?  → DETONATE
+  1. fightAction()           → FIRE / ROTATE toward enemy if in range
+  2. Waypoint goal?          → navigate to goalPosition, then DEFEND on arrival
+  3. Goal navigation
+       fresh spawn at warbase → set moveOutTarget (+4 toward enemy warbase)
+       otherwise → initialize robot.nav = {}
+       moveOutTarget present → navigate out
+       target selection via findTarget()
+       nav algorithm: Bug2 (default) or Trémaux (robotConfig.navAlgo)
+       → MOVE / ROTATE / IDLE
+
+applyAIStateUpdate(robot, stateUpdate)
+  applies goal, clearGoalPosition, clearMoveOut after simpleAI returns
+  (robot.nav is mutated directly inside simpleAI — intentional for perf-sensitive nav state)
+</code></pre></div>
+<hr />
+<h2 id="action-system">Action system</h2>
+<p><code>RobotAction</code> is a discriminated union (<code>MOVE | ROTATE | FIRE | DETONATE | IDLE</code>).
+<code>applyAction()</code> dispatches to <code>applyMove</code>, <code>applyRotate</code>, <code>applyFire</code>, <code>applyNuclear</code>.
+Actions are the only legal way to change robot position or trigger combat.</p>
+<hr />
+<h2 id="rendering">Rendering</h2>
+<p><code>Renderer</code> (<code>view/map/renderer.ts</code>) uses a differential strategy: it caches the last-seen state of every object by id. Each <code>render(warMap)</code> call only rebuilds meshes for objects that changed. This keeps the render budget constant regardless of map size.</p>
+<p>The ship, projectiles, and <abbr title="Heads-Up Display">HUD</abbr> have their own dedicated renderers, all called from the <code>tick:sub</code> handler inside <code>GameSession</code>.</p>
+<hr />
+<h2 id="todo">TODO</h2>
+<h3 id="medium-priority">Medium priority</h3>
+<ul>
+<li>
+<p><strong><code>RobotControlTrigger</code> empty third callback.</strong> <code>new RobotControlTrigger(scene, () =&gt; mapData.width, () =&gt; {})</code> — the third argument is a no-op. Remove the parameter or wire it up.</p>
+</li>
+<li>
+<p><strong><code>constructionYardTrigger.check</code> and <code>robotControlTrigger.check</code> run on <code>tick:sub</code>.</strong> They fire every 100ms. Proximity checks are cheap but panel open/close side-effects happen on sub-ticks. Moving to <code>tick:game</code> (500ms) would be more appropriate.</p>
+</li>
+<li>
+<p><strong><code>bus.on('tick:sub')</code> in <code>GameSession</code> still does too much.</strong> Ship physics, two trigger checks, four renders, and <abbr title="Heads-Up Display">HUD</abbr> update in one handler. Extract per-concern sub-tick handlers or a <code>TickCoordinator</code>.</p>
+</li>
+<li>
+<p><strong><code>deductSelectionCost</code> called inside <code>construction-yard-3d.ts</code>.</strong> Mutates <code>ownerResources</code> from the view layer. Could be rolled into the <code>onCreate</code> callback or moved to the controller.</p>
+</li>
+</ul>
+<h3 id="low-priority">Low priority</h3>
+<ul>
+<li>
+<p><strong><code>view/robot-control/index.ts</code> barrel</strong> still re-exports <code>robot-control-3d</code> and <code>trigger</code>. BabylonJS-heavy modules are bundled with pure-logic ones. Callers that only need <code>queries</code> pull in the renderer.</p>
+</li>
+<li>
+<p><strong><code>setRobotGoal</code> and <code>setMoveGoal</code> in <code>game/robot-mutations.ts</code> have no test coverage.</strong></p>
+</li>
+<li>
+<p><strong><code>NavAlgo</code> is only used in <code>robotConfig.navAlgo</code></strong> but not surfaced in the construction UI. The Trémaux path is tested but unreachable by the player.</p>
+</li>
+<li>
+<p><strong><code>ship-height.test.ts</code> has a mid-file import</strong> (line 24). Move to top of file.</p>
+</li>
+<li>
+<p><strong><code>game/core/utils.ts</code> import order.</strong> Imports appear after function definitions at the bottom. Standard imports belong at the top.</p>
+</li>
+</ul>
+<hr />
+<p>Documentation follows the <a href="https://diataxis.fr/">Diataxis framework</a>: Tutorials, How-To Guides, Reference, Explanation.</p>
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../../reference/adr-index/" class="md-footer__link md-footer__link--prev" aria-label="Previous: ADRs">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                ADRs
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../adrs/0001-record-architecture-decisions/" class="md-footer__link md-footer__link--next" aria-label="Next: ADR 1. Record architecture decisions">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                ADR 1. Record architecture decisions
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Igor Lobiv
+
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/IL55/netherearth_web" target="_blank" rel="noopener" title="IL55&#x2f;netherearth_web" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M216.5 362.5c-66-8-112.5-55.5-112.5-117 0-25 9-52 24-70-6.5-16.5-5.5-51.5 2-66 20-2.5 47 8 63 22.5 19-6 39-9 63.5-9s44.5 3 62.5 8.5c15.5-14 43-24.5 63-22 7 13.5 8 48.5 1.5 65.5 16 19 24.5 44.5 24.5 70.5 0 61.5-46.5 108-113.5 116.5 17 11 28.5 35 28.5 62.5v52c0 15 12.5 23.5 27.5 17.5C441 459.5 512 369 512 257 512 115.5 397 0 255.5 0S0 115.5 0 257c0 111 70.5 203 165.5 237.5 13.5 5 26.5-4 26.5-17.5v-40c-7 3-16 5-24 5-33 0-52.5-18-66.5-51.5-5.5-13.5-11.5-21.5-23-23-6-.5-8-3-8-6 0-6 10-10.5 20-10.5 14.5 0 27 9 40 27.5 10 14.5 20.5 21 33 21s20.5-4.5 32-16c8.5-8.5 15-16 21-21"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      
+      
+        
+        
+      <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["announce.dismiss","content.action.edit","content.action.view","content.code.annotate","content.code.copy","content.code.select","content.footnote.tooltips","content.tabs.link","content.tooltips","header.autohide","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.prefetch","navigation.instant.progress","navigation.path","navigation.prune","navigation.tabs","navigation.tabs.sticky","navigation.top","navigation.tracking","search.highlight","toc.follow"],"redirect":null,"search":"../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.8dcc8e9c.min.js"></script>
+      
+    
+  </body>
+</html>

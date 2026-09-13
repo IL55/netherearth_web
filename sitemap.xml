@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url>
+        <loc>https://IL55.github.io/netherearth_web/</loc>
+      </url>
+      <url>
+        <loc>https://IL55.github.io/netherearth_web/reference/adr-index/</loc>
+      </url>
+      <url>
+        <loc>https://IL55.github.io/netherearth_web/explanation/architecture/architecture-overview/</loc>
+      </url>
+      <url>
+        <loc>https://IL55.github.io/netherearth_web/explanation/architecture/adrs/0001-record-architecture-decisions/</loc>
+      </url>
+      <url>
+        <loc>https://IL55.github.io/netherearth_web/how-to-guides/</loc>
+      </url>
+      <url>
+        <loc>https://IL55.github.io/netherearth_web/tutorials/</loc>
+      </url>
+</urlset>
