@@ -15,7 +15,7 @@ import { HOVER_DISTANCE, HOVER_GAP } from './constants';
  */
 export function findRobotUnderShip(
     warMap: WarMap,
-    ship: ShipState,
+    ship: Pick<ShipState, 'x' | 'y' | 'height'>,
     owner: Owner,
 ): RobotObject | null {
     for (const obj of warMap.robots) {
