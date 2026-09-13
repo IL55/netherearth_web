@@ -4,9 +4,12 @@ on:
     branches: [ main ]
     paths:
       - 'netherearth_web-ui/**'
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
 
