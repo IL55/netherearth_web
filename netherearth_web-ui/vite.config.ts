@@ -9,7 +9,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/netherearth_web/',
+  base: '/netherearth_web/game/',
   test: {
     environment: 'jsdom',
     environmentOptions: {

@@ -6,7 +6,7 @@ export default defineConfig({
     fullyParallel: true,
     reporter: process.env.CI ? 'github' : 'list',
     use: {
-        baseURL: 'http://localhost:5173/netherearth_web',
+        baseURL: 'http://localhost:5173/netherearth_web/game',
         trace: 'on-first-retry',
     },
     projects: [
@@ -15,7 +15,7 @@ export default defineConfig({
     ],
     webServer: {
         command: 'npm run dev',
-        url: 'http://localhost:5173/netherearth_web/',
+        url: 'http://localhost:5173/netherearth_web/game/',
         reuseExistingServer: !process.env.CI,
         env: { VITE_E2E: '1' },
     },
